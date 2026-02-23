@@ -153,6 +153,8 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      align-items: center;
+      text-align: center;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
       transition: transform 120ms ease;
     }
@@ -161,7 +163,8 @@
 
     .surah-top {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
+      width: 100%;
       gap: 0.5rem;
     }
 
@@ -172,16 +175,18 @@
     }
 
     .surah-num {
-      color: var(--muted);
+      color: inherit;
+      opacity: 0.85;
       font-size: 0.76rem;
     }
 
     .tile-actions {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       margin-top: 0.75rem;
       gap: 0.35rem;
+      width: 100%;
     }
 
     .tile-actions span {
@@ -219,6 +224,9 @@
       gap: 0.5rem;
       padding: 0.85rem;
       border-bottom: 1px solid var(--line);
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
     .ayah-list {
@@ -443,6 +451,8 @@
         const tile = document.createElement("button");
         tile.className = "surah-tile";
         tile.style.background = colorForPercent(pct);
+        const isComplete = pct === 100;
+        tile.style.color = isComplete ? "#f6fff8" : "#1f3324";
         tile.innerHTML = `
           <div class="surah-top">
             <div>
@@ -451,7 +461,7 @@
             </div>
           </div>
           <div class="tile-actions">
-            <span style="color:${pct===100 ? '#e8ffef' : '#1f3324'}">${pct}%</span>
+            <span style="color:${isComplete ? '#f6fff8' : '#1f3324'}">${pct}%</span>
           </div>
         `;
         tile.addEventListener("click", () => openSurahModal(idx));
@@ -476,13 +486,39 @@
       diveInBtn.dataset.ayahCount = String(ayahCount);
     }
 
+    function normalizeAyahsForDiveIn(index, ayahs) {
+      const surahNumber = index + 1;
+      const expectedCount = SURAHS[index][1];
+      const basmalahPattern = /^\s*بِسْمِ\s+اللَّهِ\s+الرَّحْمَٰنِ\s+الرَّحِيمِ\s*$/;
+
+      // Some sources return Bismillah as a standalone leading ayah for most surahs,
+      // which shifts all displayed ayah texts by one. If that happens, drop it and
+      // reindex so displayed Ayah 1 is correct.
+      if (
+        surahNumber !== 1 &&
+        surahNumber !== 9 &&
+        ayahs.length === expectedCount + 1 &&
+        basmalahPattern.test(ayahs[0].text)
+      ) {
+        return ayahs.slice(1).map((ayah, i) => ({
+          number: i + 1,
+          text: ayah.text
+        }));
+      }
+
+      return ayahs.map((ayah) => ({
+        number: ayah.numberInSurah,
+        text: ayah.text
+      }));
+    }
+
     async function loadSurahText(index) {
       const surahNumber = index + 1;
       if (surahCache[surahNumber]) return surahCache[surahNumber];
       const response = await fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}`);
       if (!response.ok) throw new Error("Could not load surah");
       const data = await response.json();
-      surahCache[surahNumber] = data.data.ayahs.map((a) => ({ number: a.numberInSurah, text: a.text }));
+      surahCache[surahNumber] = normalizeAyahsForDiveIn(index, data.data.ayahs);
       return surahCache[surahNumber];
     }
 
@@ -545,6 +581,17 @@
     });
 
     closeModalBtn.addEventListener("click", () => surahDialog.close());
+
+
+    surahDialog.addEventListener("click", (e) => {
+      const rect = surahDialog.getBoundingClientRect();
+      const clickedOutside =
+        e.clientX < rect.left ||
+        e.clientX > rect.right ||
+        e.clientY < rect.top ||
+        e.clientY > rect.bottom;
+      if (clickedOutside) surahDialog.close();
+    });
 
     markCompleteBtn.addEventListener("click", () => {
       if (activeSurahIndex === null) return;
