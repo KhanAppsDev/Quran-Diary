@@ -41,7 +41,9 @@
       --radius:   14px;
       --radius-sm:10px;
       --tile-empty: #ede8dc;
+      --tile-text-empty:       #6b5d42;
       --tile-text-on-progress: #1f3324;
+      --tile-text-complete:    #f6fff8;
       /* Tile progress colors */
       --tile-25:  #f8e47f;
       --tile-50:  #d9e88e;
@@ -61,35 +63,39 @@
       --accent:   #5b9bd5;
       --shadow:   0 6px 24px rgba(0,0,0,0.4);
       --shadow-sm:0 2px 8px rgba(0,0,0,0.3);
-      --tile-empty: #1e232e;
-      --tile-text-on-progress: #0f1a10;
-      /* Dark-tinted progress colors */
-      --tile-25:  #4a4210;
-      --tile-50:  #364a18;
-      --tile-75:  #1e4a24;
-      --tile-99:  #145a2a;
-      --tile-100: #0a3d1f;
+      /* Dark tile colors — muted greens with LIGHT text */
+      --tile-empty:            #252b38;
+      --tile-text-empty:       #8b95ab;
+      --tile-text-on-progress: #c8ecd0;
+      --tile-text-complete:    #c8f0ce;
+      --tile-25:  #3a3818;
+      --tile-50:  #2a3d18;
+      --tile-75:  #1a3f22;
+      --tile-99:  #154d28;
+      --tile-100: #0d3a1c;
     }
 
     [data-theme="glass"] {
-      --bg:       #e8edf5;
-      --bg2:      #dde4ef;
-      --surface:  rgba(255,255,255,0.55);
-      --surface2: rgba(255,255,255,0.35);
+      --bg:       #eef2fa;
+      --bg2:      #e4eaf5;
+      --surface:  #f4f7fd;
+      --surface2: #eaeff8;
       --text:     #1a2035;
-      --text2:    #5a6480;
-      --line:     rgba(180,190,215,0.5);
+      --text2:    #4a5680;
+      --line:     #c8d0e8;
       --accent:   #3a5fcb;
-      --shadow:   0 8px 32px rgba(30,50,120,0.12);
-      --shadow-sm:0 2px 12px rgba(30,50,120,0.07);
-      --tile-empty: rgba(220,228,245,0.6);
-      --tile-text-on-progress: #1a2035;
-      /* Glass-tinted progress colors */
-      --tile-25:  #f5e07a;
-      --tile-50:  #d4e388;
-      --tile-75:  #98ce74;
-      --tile-99:  #44a361;
-      --tile-100: #0d4d2c;
+      --shadow:   0 8px 32px rgba(30,50,120,0.14);
+      --shadow-sm:0 2px 12px rgba(30,50,120,0.08);
+      /* Glass tile colors — light backgrounds, dark text */
+      --tile-empty:            #dde5f5;
+      --tile-text-empty:       #4a5680;
+      --tile-text-on-progress: #1a2a18;
+      --tile-text-complete:    #f0fff4;
+      --tile-25:  #f5e882;
+      --tile-50:  #d8eea0;
+      --tile-75:  #8fd47a;
+      --tile-99:  #3da85e;
+      --tile-100: #0d5c30;
     }
 
     /* ── RESET ───────────────────────────────────────────────────── */
@@ -313,17 +319,16 @@
     #tutorialOverlay.visible { opacity: 1; pointer-events: auto; }
 
     .tutorial-card {
+      /* Fully opaque on all themes — glass surface var is now solid */
       background: var(--surface);
       border: 1px solid var(--line);
       border-radius: 18px;
       box-shadow: var(--shadow);
       padding: 2rem 1.7rem 1.5rem;
       width: min(100%, 400px);
-      max-height: 88vh;
+      max-height: 90vh;
       overflow-y: auto;
       position: relative;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       -webkit-overflow-scrolling: touch;
     }
     .tutorial-skip {
@@ -344,11 +349,23 @@
     }
     .tutorial-skip:hover { color: var(--text); background: var(--bg2); }
 
+    /* Fixed-height step wrapper so nav buttons never shift position */
+    .tutorial-steps-wrap {
+      min-height: 230px;
+      margin-bottom: 0.5rem;
+    }
     .tutorial-step { display: none; }
-    .tutorial-step.active { display: block; }
+    .tutorial-step.active {
+      display: block;
+      animation: tutFade 0.18s ease;
+    }
+    @keyframes tutFade {
+      from { opacity: 0; transform: translateY(3px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
     .tutorial-icon  { font-size: 2.2rem; text-align: center; margin-bottom: 0.75rem; }
     .tutorial-title { font-family: var(--font-latin); font-size: 1.1rem; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 0.5rem; line-height: 1.3; }
-    .tutorial-body  { font-family: var(--font-latin); font-size: 0.9rem; color: var(--text2); line-height: 1.65; text-align: center; margin-bottom: 1rem; }
+    .tutorial-body  { font-family: var(--font-latin); font-size: 0.9rem; color: var(--text2); line-height: 1.65; text-align: center; margin-bottom: 0.5rem; }
     .tutorial-body em { color: var(--accent); font-style: normal; font-weight: 600; }
 
     .tutorial-hadith {
@@ -356,15 +373,19 @@
       border-left: 3px solid var(--accent);
       border-radius: 0 8px 8px 0;
       padding: 0.75rem 0.9rem;
-      margin: 0.8rem 0;
+      margin: 0.75rem 0;
       text-align: left;
     }
-    .tutorial-hadith p    { font-family: var(--font-latin); font-size: 0.85rem; color: var(--text); line-height: 1.65; font-style: italic; }
-    .tutorial-hadith cite { font-family: var(--font-latin); font-size: 0.75rem; color: var(--text2); display: block; margin-top: 0.4rem; font-style: normal; }
+    .tutorial-hadith p    { font-family: var(--font-latin); font-size: 0.84rem; color: var(--text); line-height: 1.65; font-style: italic; }
+    .tutorial-hadith cite { font-family: var(--font-latin); font-size: 0.74rem; color: var(--text2); display: block; margin-top: 0.4rem; font-style: normal; }
 
-    .tutorial-dots { display: flex; justify-content: center; gap: 0.4rem; margin-bottom: 1rem; }
-    .tutorial-dot  { width: 7px; height: 7px; border-radius: 50%; background: var(--line); transition: background 0.2s; }
-    .tutorial-dot.active { background: var(--accent); }
+    /* Dots: explicit opaque colors so they're visible in all themes */
+    .tutorial-dots { display: flex; justify-content: center; gap: 0.45rem; margin-bottom: 1rem; }
+    .tutorial-dot  { width: 8px; height: 8px; border-radius: 50%; background: var(--line); border: 1.5px solid var(--line); transition: background 0.2s, border-color 0.2s; }
+    .tutorial-dot.active { background: var(--accent); border-color: var(--accent); }
+    /* Force dots visible on glass (line is very light there) */
+    [data-theme="glass"] .tutorial-dot { background: #c0cce8; border-color: #a0b0d8; }
+    [data-theme="glass"] .tutorial-dot.active { background: var(--accent); border-color: var(--accent); }
 
     .tutorial-nav { display: flex; gap: 0.6rem; justify-content: center; }
     .tutorial-nav button { font-family: var(--font-latin); font-size: 0.9rem; font-weight: 600; padding: 0.65rem 1.4rem; border-radius: var(--radius-sm); cursor: pointer; min-height: 44px; border: none; transition: opacity 0.15s; }
@@ -660,7 +681,8 @@
     <div class="tutorial-card">
       <button class="tutorial-skip" id="tutSkipBtn" type="button">Skip</button>
 
-      <div class="tutorial-step active" id="tutStep1">
+      <div class="tutorial-steps-wrap">
+        <div class="tutorial-step active" id="tutStep1">
         <div class="tutorial-icon">📖</div>
         <div class="tutorial-title">Welcome to your Quran Diary</div>
         <div class="tutorial-hadith">
@@ -697,6 +719,8 @@
         </div>
       </div>
 
+      </div><!-- end tutorial-steps-wrap -->
+
       <div class="tutorial-dots" id="tutDots">
         <div class="tutorial-dot active"></div>
         <div class="tutorial-dot"></div>
@@ -716,7 +740,7 @@
     const TOTAL_AYAHS = 6236;
     const STORAGE_KEY = "quranDiary.v2";
     const THEMES      = ["parchment", "dark", "glass"];
-    const THEME_ICONS = { parchment: "☀", dark: "☾", glass: "◈" };
+    const THEME_ICONS = { parchment: "📜", dark: "☾", glass: "◈" };
 
     const API_EDITION = { uthmani: 'quran-uthmani', indopak: 'quran-indopak' };
     const FONT_VAR    = {
@@ -795,6 +819,8 @@
       applyTheme(state.theme);
       selectThemeBtn(state.theme);
       saveState();
+      // Re-render tiles so their inline background/color reflects the new theme vars
+      if (!appScreen.classList.contains('hidden')) renderApp();
     }
 
     /* ── SCRIPT / FONT ───────────────────────────────────────── */
@@ -889,6 +915,18 @@
     tutBackBtn.addEventListener('click', () => { if (tutStep > 0) { tutStep--; renderTutStep(); } });
     tutSkipBtn.addEventListener('click', hideTutorial);
 
+    // Click anywhere on the card (not a button) to advance
+    document.querySelector('.tutorial-card').addEventListener('click', function(e) {
+      // Don't fire if they clicked a button
+      if (e.target.closest('button')) return;
+      tutStep < TUT_TOTAL - 1 ? (tutStep++, renderTutStep()) : hideTutorial();
+    });
+
+    // Click outside the card (on the backdrop) to skip/close
+    tutorialOverlay.addEventListener('click', function(e) {
+      if (e.target === tutorialOverlay) hideTutorial();
+    });
+
     /* ── APP ──────────────────────────────────────────────────── */
     function showApp() {
       landingScreen.classList.add('hidden');
@@ -919,9 +957,14 @@
         tile.type      = "button";
         tile.style.background  = color;
         tile.style.borderColor = pct > 0 ? 'transparent' : '';
-        tile.style.color       = complete        ? '#f6fff8'
-                                : pct > 0        ? 'var(--tile-text-on-progress)'
-                                :                  'var(--text)';
+        // Use theme-appropriate text color via CSS vars (resolved at paint time)
+        if (complete) {
+          tile.style.color = 'var(--tile-text-complete)';
+        } else if (pct > 0) {
+          tile.style.color = 'var(--tile-text-on-progress)';
+        } else {
+          tile.style.color = 'var(--tile-text-empty)';
+        }
 
         const nameEl = document.createElement('div');
         nameEl.className   = 'surah-name';
@@ -934,7 +977,7 @@
         const pctEl = document.createElement('div');
         pctEl.className   = 'tile-pct';
         pctEl.textContent = pct > 0 ? pct + '%' : '';
-        pctEl.style.color = complete ? '#f6fff8' : '';
+        if (complete) pctEl.style.color = 'var(--tile-text-complete)';
 
         tile.appendChild(nameEl);
         tile.appendChild(numEl);
@@ -997,22 +1040,67 @@
     }
 
     /* ── BISMILLAH / NORMALIZE ────────────────────────────────── */
+    // Root cause of old bug: the regex used standard Arabic diacritics (U+064B-U+065F)
+    // but the quran-uthmani API uses Quranic annotation marks (e.g. U+06E1 small sukun,
+    // U+0671 alef wasla) that fall outside the regex's character class.
+    // Fix: work purely with base consonants (strip everything that isn't a letter).
+
+    function _bismConsonants(text) {
+      // Returns {cons: string, poss: number[]} — consonant chars and their original indices
+      const LETTER = /[\u0621-\u063A\u0641-\u064A\u0671]/;
+      const cons = [], poss = [];
+      for (let i = 0; i < text.length; i++) {
+        if (LETTER.test(text[i])) { cons.push(text[i]); poss.push(i); }
+      }
+      return { cons: cons.join(''), poss };
+    }
+
+    function _hasBismillah(text) {
+      // Detects bismillah by base consonants only — immune to diacritic variants
+      const { cons } = _bismConsonants(text);
+      // Must start with بسم and contain رحيم within first 25 consonants
+      return cons.startsWith('\u0628\u0633\u0645') &&
+             cons.substring(0, 25).includes('\u0631\u062D\u064A\u0645');
+    }
+
+    function _stripBismillah(text) {
+      // Finds the م of الرحيم and returns everything after it
+      const { cons, poss } = _bismConsonants(text);
+      let rahimEnd = -1;
+      // Try ٱلرحيم (wasla alef) first, then الرحيم (plain alef)
+      for (const pat of ['\u0671\u0644\u0631\u062D\u064A\u0645', '\u0627\u0644\u0631\u062D\u064A\u0645']) {
+        const i = cons.indexOf(pat);
+        if (i >= 0) { rahimEnd = poss[i + 5]; break; }
+      }
+      // Fallback: find رحيم consonants anywhere in first 25
+      if (rahimEnd < 0) {
+        const ri = cons.substring(0, 25).indexOf('\u0631\u062D\u064A\u0645');
+        if (ri >= 0) rahimEnd = poss[ri + 3];
+      }
+      if (rahimEnd < 0) return text;
+      // Skip everything that isn't an Arabic base letter (diacritics, verse markers, spaces)
+      return text.slice(rahimEnd + 1).replace(/^[^\u0621-\u063A\u0641-\u064A]+/, '').trim();
+    }
+
     function normalizeAyahs(index, ayahs) {
       const surahNumber = index + 1;
       const expected    = SURAHS[index][1];
-      // Matches standalone Bismillah line or Bismillah prefix baked into ayah text
-      const bPat = /^\s*بِسْمِ\s+اللَّهِ[\s\S]{0,80}رَّحِيمِ\s*/;
 
-      // API returns extra leading ayah
-      if (!NO_BISMILLAH.has(surahNumber) && ayahs.length === expected + 1 && bPat.test(ayahs[0].text)) {
+      // Surahs 1 and 9 never get bismillah treatment
+      if (NO_BISMILLAH.has(surahNumber)) {
+        return ayahs.map(a => ({ number: a.numberInSurah, text: a.text }));
+      }
+
+      // Case A: API returned bismillah as a separate leading ayah (count = expected + 1)
+      if (ayahs.length === expected + 1 && _hasBismillah(ayahs[0].text)) {
         return ayahs.slice(1).map((a, i) => ({ number: i + 1, text: a.text }));
       }
 
+      // Case B: Bismillah baked into ayah 1 text (normal case for quran-uthmani edition)
       const result = ayahs.map(a => ({ number: a.numberInSurah, text: a.text }));
-
-      // Bismillah baked into ayah 1 text — strip it
-      if (!NO_BISMILLAH.has(surahNumber) && result.length > 0 && bPat.test(result[0].text)) {
-        result[0] = { number: result[0].number, text: result[0].text.replace(bPat, '').trimStart() };
+      if (result.length > 0 && _hasBismillah(result[0].text)) {
+        const stripped = _stripBismillah(result[0].text);
+        result[0] = { number: result[0].number, text: stripped };
       }
 
       return result;
@@ -1132,6 +1220,6 @@
     }
   </script>
 
-  <!-- Version: 1.2.0 -->
+  <!-- Version: 1.2.1 -->
 </body>
 </html>
