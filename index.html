@@ -6,72 +6,93 @@
   <title>Quran Diary</title>
 
   <!--
-    FONT STRATEGY — why this is explicit and not inherited:
-    Local Arabic fonts (Geeza Pro on iOS, Traditional Arabic on Windows, various on Android)
-    silently override any inherited font-family. To guarantee consistent rendering
-    we MUST: (1) load via @font-face or Google Fonts with font-display:block,
-    (2) assign font-family EXPLICITLY on every Arabic element — never rely on inheritance.
-    Scheherazade New = best freely available Uthmani Hafs rendering.
-    Noto Nastaliq Urdu = best freely available IndoPak Nastaliq rendering.
+    FONT STRATEGY: font-display:block prevents any flash of local fonts.
+    Every Arabic element sets font-family explicitly — never inherited.
+    Scheherazade New = Uthmani Hafs | Noto Nastaliq Urdu = IndoPak
   -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&family=Noto+Nastaliq+Urdu:wght@400;700&display=block" rel="stylesheet" />
 
   <style>
-    /* ── BASE FONTS ─────────────────────────────────────────────────── */
-    /* Latin UI uses Georgia + system stack (deliberately classical, not Inter) */
+    /* ─────────────────────────────────────────────────────────────────
+       THEME VARIABLES
+       parchment = default (:root)
+       dark      = [data-theme="dark"]
+       glass     = [data-theme="glass"]
+    ───────────────────────────────────────────────────────────────── */
     :root {
-      --font-latin: Georgia, 'Times New Roman', serif;
+      --font-latin:   Georgia, 'Times New Roman', serif;
       --font-uthmani: 'Scheherazade New', serif;
       --font-indopak: 'Noto Nastaliq Urdu', serif;
-      --font-arabic: var(--font-uthmani); /* default, overridden by JS */
+      --font-arabic:  var(--font-uthmani); /* overridden by applyScript() */
 
-      /* ── THEME: PARCHMENT (default) ─── */
-      --bg: #f5f0e8;
-      --bg2: #ede8dc;
-      --surface: #faf7f2;
+      /* Parchment */
+      --bg:       #f5f0e8;
+      --bg2:      #ede8dc;
+      --surface:  #faf7f2;
       --surface2: #f0ece3;
-      --text: #2c2416;
-      --text2: #6b5d42;
-      --line: #d4c9b0;
-      --accent: #7a5c2e;
-      --accent2: #4a7c59;
-      --shadow: 0 6px 24px rgba(60,40,10,0.12);
-      --shadow-sm: 0 2px 8px rgba(60,40,10,0.07);
-      --radius: 14px;
-      --radius-sm: 10px;
+      --text:     #2c2416;
+      --text2:    #6b5d42;
+      --line:     #d4c9b0;
+      --accent:   #7a5c2e;
+      --shadow:   0 6px 24px rgba(60,40,10,0.12);
+      --shadow-sm:0 2px 8px rgba(60,40,10,0.07);
+      --radius:   14px;
+      --radius-sm:10px;
+      --tile-empty: #ede8dc;
+      --tile-text-on-progress: #1f3324;
+      /* Tile progress colors */
+      --tile-25:  #f8e47f;
+      --tile-50:  #d9e88e;
+      --tile-75:  #9fd37c;
+      --tile-99:  #4ca867;
+      --tile-100: #0f5132;
     }
 
     [data-theme="dark"] {
-      --bg: #0f1117;
-      --bg2: #181c24;
-      --surface: #1e232e;
+      --bg:       #0f1117;
+      --bg2:      #181c24;
+      --surface:  #1e232e;
       --surface2: #252b38;
-      --text: #e8ecf4;
-      --text2: #8b95ab;
-      --line: #2e3547;
-      --accent: #5b9bd5;
-      --accent2: #4caf82;
-      --shadow: 0 6px 24px rgba(0,0,0,0.4);
-      --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+      --text:     #e8ecf4;
+      --text2:    #8b95ab;
+      --line:     #2e3547;
+      --accent:   #5b9bd5;
+      --shadow:   0 6px 24px rgba(0,0,0,0.4);
+      --shadow-sm:0 2px 8px rgba(0,0,0,0.3);
+      --tile-empty: #1e232e;
+      --tile-text-on-progress: #0f1a10;
+      /* Dark-tinted progress colors */
+      --tile-25:  #4a4210;
+      --tile-50:  #364a18;
+      --tile-75:  #1e4a24;
+      --tile-99:  #145a2a;
+      --tile-100: #0a3d1f;
     }
 
     [data-theme="glass"] {
-      --bg: #e8edf5;
-      --bg2: #dde4ef;
-      --surface: rgba(255,255,255,0.55);
+      --bg:       #e8edf5;
+      --bg2:      #dde4ef;
+      --surface:  rgba(255,255,255,0.55);
       --surface2: rgba(255,255,255,0.35);
-      --text: #1a2035;
-      --text2: #5a6480;
-      --line: rgba(180,190,215,0.5);
-      --accent: #3a5fcb;
-      --accent2: #2e9e7a;
-      --shadow: 0 8px 32px rgba(30,50,120,0.12);
-      --shadow-sm: 0 2px 12px rgba(30,50,120,0.07);
+      --text:     #1a2035;
+      --text2:    #5a6480;
+      --line:     rgba(180,190,215,0.5);
+      --accent:   #3a5fcb;
+      --shadow:   0 8px 32px rgba(30,50,120,0.12);
+      --shadow-sm:0 2px 12px rgba(30,50,120,0.07);
+      --tile-empty: rgba(220,228,245,0.6);
+      --tile-text-on-progress: #1a2035;
+      /* Glass-tinted progress colors */
+      --tile-25:  #f5e07a;
+      --tile-50:  #d4e388;
+      --tile-75:  #98ce74;
+      --tile-99:  #44a361;
+      --tile-100: #0d4d2c;
     }
 
-    /* ── RESET ──────────────────────────────────────────────────────── */
+    /* ── RESET ───────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
@@ -80,35 +101,31 @@
       background: var(--bg);
       min-height: 100vh;
       transition: background 0.3s, color 0.3s;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
     }
 
-    /* Glass theme background effect */
-    [data-theme="glass"] body::before {
+    body::before {
       content: '';
       position: fixed;
       inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    [data-theme="glass"] body::before {
       background:
         radial-gradient(ellipse 80% 60% at 20% 20%, rgba(100,140,255,0.18) 0%, transparent 60%),
         radial-gradient(ellipse 60% 80% at 80% 80%, rgba(80,200,160,0.12) 0%, transparent 60%);
-      pointer-events: none;
-      z-index: 0;
     }
-
-    /* Dark theme background effect */
     [data-theme="dark"] body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
       background:
         radial-gradient(ellipse 70% 50% at 10% 10%, rgba(91,155,213,0.07) 0%, transparent 60%),
         radial-gradient(ellipse 50% 70% at 90% 90%, rgba(76,175,130,0.06) 0%, transparent 60%);
-      pointer-events: none;
-      z-index: 0;
     }
 
     .hidden { display: none !important; }
 
-    /* ── LANDING SCREEN ─────────────────────────────────────────────── */
+    /* ── LANDING SCREEN ──────────────────────────────────────────── */
     #landingScreen {
       min-height: 100vh;
       display: flex;
@@ -119,7 +136,6 @@
       position: relative;
       z-index: 1;
     }
-
     .landing-card {
       background: var(--surface);
       border: 1px solid var(--line);
@@ -129,27 +145,22 @@
       width: min(100%, 460px);
       display: flex;
       flex-direction: column;
-      gap: 1.6rem;
-
-      /* Glass morphism when glass theme active */
+      gap: 1.5rem;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
 
-    /* Assalamu Alaikum — font-family EXPLICIT, never inherited */
+    /* Greeting — EXPLICIT font, responds to script toggle */
     .salaam {
-      font-family: var(--font-arabic) !important; /* responds to script choice */
-      font-size: clamp(2rem, 7vw, 2.8rem);
+      font-family: var(--font-arabic) !important;
+      font-size: clamp(1.9rem, 7vw, 2.7rem);
       font-weight: 400;
-      line-height: 1.4;
+      line-height: 1.5;
       text-align: center;
       color: var(--accent);
       direction: rtl;
       unicode-bidi: isolate;
-      letter-spacing: 0;
-      /* font-display:block means this text is invisible until font loads — no flash of Latin chars */
     }
-
     .salaam-sub {
       font-family: var(--font-latin);
       font-size: 0.85rem;
@@ -159,13 +170,8 @@
       font-style: italic;
     }
 
-    /* Name input section */
-    .landing-section {
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-    }
-
+    /* Name input */
+    .landing-section { display: flex; flex-direction: column; gap: 0.6rem; }
     .landing-section label {
       font-family: var(--font-latin);
       font-size: 0.88rem;
@@ -174,7 +180,6 @@
       letter-spacing: 0.4px;
       text-transform: uppercase;
     }
-
     .landing-section input {
       font-family: var(--font-latin);
       font-size: 1.05rem;
@@ -187,136 +192,90 @@
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
-
     .landing-section input:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
     }
 
-    /* Script choice */
+    /* Ta'awwudh shown once above script buttons — EXPLICIT font each */
+    .tawwudh-display { text-align: center; padding: 0.4rem 0.4rem 0.15rem; }
+    .tawwudh-text-uthmani {
+      font-family: 'Scheherazade New', serif !important;
+      font-size: 1.25rem;
+      direction: rtl;
+      line-height: 1.9;
+      color: var(--accent);
+      display: block;
+    }
+    .tawwudh-text-indopak {
+      font-family: 'Noto Nastaliq Urdu', serif !important;
+      font-size: 1.15rem;
+      direction: rtl;
+      line-height: 2.1;
+      color: var(--accent);
+      display: none;
+    }
+
     .choice-label {
       font-family: var(--font-latin);
-      font-size: 0.88rem;
+      font-size: 0.78rem;
       font-weight: 600;
       color: var(--text2);
-      letter-spacing: 0.4px;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
-      margin-bottom: 0.6rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
     }
-
-    .script-options {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-    }
-
+    .script-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
     .script-btn {
       font-family: var(--font-latin);
       border: 1.5px solid var(--line);
       border-radius: var(--radius-sm);
-      padding: 0.9rem 0.6rem;
+      padding: 0.7rem 0.5rem;
       background: var(--surface2);
-      color: var(--text);
+      color: var(--text2);
       cursor: pointer;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 0.5rem;
-      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-      min-height: 80px; /* 44px+ touch target */
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      min-height: 44px;
+      transition: border-color 0.18s, background 0.18s, color 0.18s, box-shadow 0.18s;
     }
-
-    .script-btn:hover {
-      border-color: var(--accent);
-      background: var(--bg2);
-    }
-
+    .script-btn:hover { border-color: var(--accent); background: var(--bg2); color: var(--text); }
     .script-btn.selected {
       border-color: var(--accent);
-      background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+      background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+      color: var(--accent);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
     }
 
-    /* Script preview text — EXPLICIT font-family, NEVER inherited */
-    .script-preview-uthmani {
-      font-family: 'Scheherazade New', serif !important;
-      font-size: 1.3rem;
-      direction: rtl;
-      line-height: 1.5;
-      color: var(--accent);
-    }
-
-    .script-preview-indopak {
-      font-family: 'Noto Nastaliq Urdu', serif !important;
-      font-size: 1.2rem;
-      direction: rtl;
-      line-height: 1.7;
-      color: var(--accent);
-    }
-
-    .script-name {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--text2);
-      letter-spacing: 0.3px;
-    }
-
-    /* Theme choice */
-    .theme-options {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.6rem;
-    }
-
+    /* Theme buttons */
+    .theme-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
     .theme-btn {
       border: 1.5px solid var(--line);
       border-radius: var(--radius-sm);
-      padding: 0.75rem 0.4rem;
+      padding: 0.7rem 0.3rem;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.45rem;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      gap: 0.4rem;
+      transition: border-color 0.18s, box-shadow 0.18s;
       background: transparent;
-      min-height: 70px; /* 44px+ touch target */
+      min-height: 66px;
     }
-
     .theme-btn.selected {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
     }
-
-    .theme-swatch {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 2px solid rgba(0,0,0,0.08);
-      flex-shrink: 0;
-    }
-
-    .theme-swatch.parchment {
-      background: linear-gradient(135deg, #f5f0e8 40%, #7a5c2e 100%);
-    }
-
-    .theme-swatch.dark {
-      background: linear-gradient(135deg, #0f1117 40%, #5b9bd5 100%);
-    }
-
-    .theme-swatch.glass {
-      background: linear-gradient(135deg, rgba(200,215,255,0.8) 0%, rgba(80,200,160,0.5) 100%);
-      backdrop-filter: blur(4px);
-      border: 2px solid rgba(100,140,255,0.3);
-    }
-
-    .theme-name {
-      font-family: var(--font-latin);
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--text2);
-      letter-spacing: 0.3px;
-      text-align: center;
-    }
+    .theme-swatch { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.08); flex-shrink: 0; }
+    .theme-swatch.parchment { background: linear-gradient(135deg, #f5f0e8 40%, #7a5c2e 100%); }
+    .theme-swatch.dark      { background: linear-gradient(135deg, #0f1117 40%, #5b9bd5 100%); }
+    .theme-swatch.glass     { background: linear-gradient(135deg, rgba(200,215,255,0.8) 0%, rgba(80,200,160,0.5) 100%); border: 2px solid rgba(100,140,255,0.3); }
+    .theme-name { font-family: var(--font-latin); font-size: 0.72rem; font-weight: 600; color: var(--text2); letter-spacing: 0.3px; text-align: center; }
 
     /* Enter button */
     .enter-btn {
@@ -331,14 +290,89 @@
       padding: 1rem;
       width: 100%;
       cursor: pointer;
-      min-height: 48px; /* 44px+ touch target */
+      min-height: 48px;
       transition: opacity 0.2s, transform 0.1s;
     }
-
-    .enter-btn:hover { opacity: 0.88; }
+    .enter-btn:hover  { opacity: 0.88; }
     .enter-btn:active { transform: scale(0.985); }
 
-    /* ── APP SCREEN ─────────────────────────────────────────────────── */
+    /* ── TUTORIAL OVERLAY ────────────────────────────────────────── */
+    #tutorialOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,0.58);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+    #tutorialOverlay.visible { opacity: 1; pointer-events: auto; }
+
+    .tutorial-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 2rem 1.7rem 1.5rem;
+      width: min(100%, 400px);
+      max-height: 88vh;
+      overflow-y: auto;
+      position: relative;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      -webkit-overflow-scrolling: touch;
+    }
+    .tutorial-skip {
+      position: absolute;
+      top: 0.9rem;
+      right: 0.9rem;
+      font-family: var(--font-latin);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text2);
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.3rem 0.7rem;
+      cursor: pointer;
+      min-height: 32px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .tutorial-skip:hover { color: var(--text); background: var(--bg2); }
+
+    .tutorial-step { display: none; }
+    .tutorial-step.active { display: block; }
+    .tutorial-icon  { font-size: 2.2rem; text-align: center; margin-bottom: 0.75rem; }
+    .tutorial-title { font-family: var(--font-latin); font-size: 1.1rem; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 0.5rem; line-height: 1.3; }
+    .tutorial-body  { font-family: var(--font-latin); font-size: 0.9rem; color: var(--text2); line-height: 1.65; text-align: center; margin-bottom: 1rem; }
+    .tutorial-body em { color: var(--accent); font-style: normal; font-weight: 600; }
+
+    .tutorial-hadith {
+      background: var(--bg2);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 0.75rem 0.9rem;
+      margin: 0.8rem 0;
+      text-align: left;
+    }
+    .tutorial-hadith p    { font-family: var(--font-latin); font-size: 0.85rem; color: var(--text); line-height: 1.65; font-style: italic; }
+    .tutorial-hadith cite { font-family: var(--font-latin); font-size: 0.75rem; color: var(--text2); display: block; margin-top: 0.4rem; font-style: normal; }
+
+    .tutorial-dots { display: flex; justify-content: center; gap: 0.4rem; margin-bottom: 1rem; }
+    .tutorial-dot  { width: 7px; height: 7px; border-radius: 50%; background: var(--line); transition: background 0.2s; }
+    .tutorial-dot.active { background: var(--accent); }
+
+    .tutorial-nav { display: flex; gap: 0.6rem; justify-content: center; }
+    .tutorial-nav button { font-family: var(--font-latin); font-size: 0.9rem; font-weight: 600; padding: 0.65rem 1.4rem; border-radius: var(--radius-sm); cursor: pointer; min-height: 44px; border: none; transition: opacity 0.15s; }
+    .tutorial-nav button:hover { opacity: 0.85; }
+    .tut-btn-primary   { background: var(--accent); color: #fff; }
+    .tut-btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--line) !important; }
+
+    /* ── APP SCREEN ──────────────────────────────────────────────── */
     #appScreen { position: relative; z-index: 1; }
 
     .app-header {
@@ -349,308 +383,187 @@
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--line);
-      padding: 0.85rem 1rem;
+      padding: 0.8rem 1rem;
     }
-
-    .title-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
+    .title-row { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; }
     h1 {
       font-family: var(--font-latin);
       font-size: 1.05rem;
       font-weight: 700;
       letter-spacing: 0.2px;
       color: var(--text);
-    }
-
-    .overall {
-      font-family: var(--font-latin);
-      font-size: 0.82rem;
-      color: var(--text2);
+      flex: 1;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+    .overall { font-family: var(--font-latin); font-size: 0.82rem; color: var(--text2); white-space: nowrap; }
 
-    .container {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 1rem;
-    }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 1rem;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap: 0.65rem;
-      margin-bottom: 1rem;
-    }
-
-    .stat {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
-      padding: 0.68rem;
-      text-align: center;
-      backdrop-filter: blur(6px);
-    }
-
-    .stat strong {
-      font-family: var(--font-latin);
-      display: block;
-      font-size: 1rem;
-      margin-bottom: 0.15rem;
-      color: var(--text);
-    }
-
-    .stat span {
-      font-family: var(--font-latin);
+    /* Circular theme toggle in header */
+    #themeToggleBtn {
+      width: 36px;
+      height: 36px;
+      min-height: 36px;
+      border-radius: 50%;
+      border: 1.5px solid var(--line);
+      background: var(--surface2);
       color: var(--text2);
-      font-size: 0.78rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      font-size: 1rem;
+      padding: 0;
+      transition: background 0.18s, border-color 0.18s, color 0.18s;
     }
+    #themeToggleBtn:hover { background: var(--bg2); border-color: var(--accent); color: var(--accent); }
 
+    .container { max-width: 1400px; margin: 0 auto; padding: 1rem; }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0.65rem; margin-bottom: 1rem; }
+    .stat  { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 0.68rem; text-align: center; backdrop-filter: blur(6px); }
+    .stat strong { font-family: var(--font-latin); display: block; font-size: 1rem; margin-bottom: 0.15rem; color: var(--text); }
+    .stat span   { font-family: var(--font-latin); color: var(--text2); font-size: 0.78rem; }
+
+    /* ─────────────────────────────────────────────────────────────────
+       SURAH GRID — COLUMN COUNT SETTINGS
+       114 = 2 × 3 × 19 — valid column counts: 1, 2, 3, 6, 19, 38, 57, 114
+       ┌──────────────────────────────────────────────────────────────┐
+       │  ← TWEAK ZONE: change the repeat(N) values below            │
+       │  Mobile portrait  (≤600px):          3 columns              │
+       │  Tablet / mid     (601–1199px):       6 columns              │
+       │  Wide desktop     (≥1200px):         19 columns              │
+       │  Landscape phone  (h≤500, landscape): 6 columns             │
+       └──────────────────────────────────────────────────────────────┘
+    ───────────────────────────────────────────────────────────────── */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 0.72rem;
+      grid-template-columns: repeat(6, minmax(0, 1fr)); /* ← TABLET DEFAULT */
+      gap: 0.55rem;
       margin-bottom: 1.25rem;
     }
 
+    /* Surah tile */
     .surah-tile {
+      background: var(--tile-empty);
       border: 1px solid var(--line);
       border-radius: var(--radius-sm);
-      padding: 0.65rem;
-      min-height: 102px;
+      padding: 0.5rem 0.35rem;
+      min-height: 68px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
       text-align: center;
       box-shadow: var(--shadow-sm);
-      transition: transform 120ms ease, box-shadow 120ms ease;
+      will-change: transform;
+      transition: transform 120ms ease;
       cursor: pointer;
     }
-
-    .surah-tile:active { transform: scale(0.986); }
-
-    .surah-top {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-    }
-
-    .surah-name {
-      font-family: var(--font-latin);
-      font-size: 0.88rem;
-      font-weight: 600;
-      line-height: 1.2;
-    }
-
-    .surah-num {
-      font-family: var(--font-latin);
-      opacity: 0.85;
-      font-size: 0.76rem;
-    }
-
-    .tile-actions {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 0.75rem;
-      gap: 0.35rem;
-      width: 100%;
-    }
-
-    .tile-actions span {
-      font-family: var(--font-latin);
-      font-size: 0.82rem;
-      font-weight: 700;
-    }
+    .surah-tile:active { transform: scale(0.952); }
+    .surah-name { font-family: var(--font-latin); font-size: 0.78rem; font-weight: 600; line-height: 1.2; }
+    .surah-num  { font-family: var(--font-latin); opacity: 0.8; font-size: 0.68rem; }
+    .tile-pct   { font-family: var(--font-latin); font-size: 0.72rem; font-weight: 700; margin-top: 0.25rem; }
 
     .clear-wrap { padding-bottom: 0.9rem; }
 
-    /* ── DIALOG / MODAL ─────────────────────────────────────────────── */
+    /* ── DIALOG ──────────────────────────────────────────────────── */
     dialog {
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      width: min(96vw, 780px);
+      width: min(96vw, 680px);
       max-height: 88vh;
       box-shadow: var(--shadow);
       padding: 0;
       background: var(--surface);
       color: var(--text);
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
     }
+    dialog::backdrop { background: rgba(0,0,0,0.52); }
 
-    dialog::backdrop { background: rgba(0,0,0,0.5); }
+    .modal-header { position: sticky; top: 0; background: var(--surface); z-index: 1; border-bottom: 1px solid var(--line); padding: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header strong { font-family: var(--font-latin); color: var(--text); }
 
-    .modal-header {
-      position: sticky;
-      top: 0;
-      background: var(--surface);
-      z-index: 1;
-      border-bottom: 1px solid var(--line);
-      padding: 0.85rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .modal-header strong {
-      font-family: var(--font-latin);
-      color: var(--text);
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 0.5rem;
-      padding: 0.85rem;
-      border-bottom: 1px solid var(--line);
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+    /* Centered actions */
+    .modal-actions { display: flex; gap: 0.6rem; padding: 0.85rem; border-bottom: 1px solid var(--line); justify-content: center; align-items: center; flex-wrap: wrap; }
+    #modalPercent  { font-family: var(--font-latin); font-size: 0.85rem; color: var(--text2); width: 100%; text-align: center; margin-top: 0.1rem; }
 
     .ayah-list {
-      max-height: 62vh;
-      overflow: auto;
+      max-height: 58vh;
+      overflow-y: auto;
+      overflow-x: hidden;
       padding: 0.5rem 0.85rem 0.9rem;
       background: var(--bg2);
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      scroll-behavior: smooth;
     }
 
-    /* ── BISMILLAH HEADER ───────────────────────────────────────────── */
-    .bismillah-header {
-      text-align: center;
-      padding: 0.9rem 0.5rem 0.6rem;
-      margin-top: 0.45rem;
-      border-bottom: 1px solid var(--line);
-      margin-bottom: 0.1rem;
-    }
+    /* Bismillah header — no label, just the text + divider */
+    .bismillah-header { text-align: center; padding: 0.85rem 0.5rem 0.55rem; margin-top: 0.45rem; border-bottom: 1px solid var(--line); margin-bottom: 0.1rem; }
+    .bismillah-text { font-family: var(--font-arabic) !important; font-size: 1.3rem; line-height: 2; direction: rtl; text-align: center; color: var(--text); unicode-bidi: isolate; }
 
-    /* EXPLICIT font-family — this MUST NOT inherit */
-    .bismillah-text {
-      font-family: var(--font-arabic) !important;
-      font-size: 1.3rem;
-      line-height: 2;
-      direction: rtl;
-      text-align: center;
-      color: var(--text);
-      unicode-bidi: isolate;
-    }
+    /* Ayah rows */
+    .ayah-item { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 0.55rem; margin-top: 0.4rem; background: var(--surface); display: flex; gap: 0.6rem; align-items: flex-start; }
+    .ayah-item input[type="checkbox"] { width: auto; margin-top: 0.25rem; min-width: 18px; min-height: 18px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+    .ayah-label { font-family: var(--font-latin); color: var(--text2); font-size: 0.75rem; margin-bottom: 0.2rem; }
+    /* EXPLICIT font on all Arabic — immune to local overrides */
+    .ayah-text  { font-family: var(--font-arabic) !important; margin: 0; font-size: 1.12rem; line-height: 2; direction: rtl; text-align: right; color: var(--text); unicode-bidi: isolate; }
 
-    .bismillah-label {
-      font-family: var(--font-latin);
-      font-size: 0.72rem;
-      color: var(--text2);
-      letter-spacing: 0.3px;
-      text-transform: uppercase;
-      margin-top: 0.2rem;
-    }
+    .modal-footer { border-top: 1px solid var(--line); padding: 0.75rem; display: flex; justify-content: space-between; gap: 0.5rem; position: sticky; bottom: 0; background: var(--surface); }
 
-    .ayah-item {
-      border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
-      padding: 0.58rem;
-      margin-top: 0.45rem;
-      background: var(--surface);
-      display: flex;
-      gap: 0.65rem;
-      align-items: flex-start;
-    }
-
-    .ayah-item input[type="checkbox"] {
-      width: auto;
-      margin-top: 0.2rem;
-      min-width: 18px;
-      min-height: 18px;
-      accent-color: var(--accent);
-      cursor: pointer;
-    }
-
-    .ayah-label {
-      font-family: var(--font-latin);
-      color: var(--text2);
-      font-size: 0.75rem;
-      margin-bottom: 0.25rem;
-    }
-
-    /* EXPLICIT font-family on ALL Arabic text — the core fix */
-    .ayah-text {
-      font-family: var(--font-arabic) !important;
-      margin: 0;
-      font-size: 1.15rem;
-      line-height: 2;
-      direction: rtl;
-      text-align: right;
-      color: var(--text);
-      unicode-bidi: isolate;
-    }
-
-    .modal-footer {
-      border-top: 1px solid var(--line);
-      padding: 0.75rem;
-      display: flex;
-      justify-content: space-between;
-      gap: 0.5rem;
-      position: sticky;
-      bottom: 0;
-      background: var(--surface);
-    }
-
-    /* ── BUTTONS ────────────────────────────────────────────────────── */
-    button {
-      border: 0;
-      border-radius: var(--radius-sm);
-      padding: 0.72rem 0.9rem;
-      font-family: var(--font-latin);
-      font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-      min-height: 44px; /* touch target */
-      transition: opacity 0.15s;
-    }
-
+    /* ── BUTTONS ─────────────────────────────────────────────────── */
+    button { border: 0; border-radius: var(--radius-sm); padding: 0.72rem 0.9rem; font-family: var(--font-latin); font-weight: 600; font-size: 0.95rem; cursor: pointer; min-height: 44px; transition: opacity 0.15s; }
     button:hover { opacity: 0.85; }
-
-    .primary { background: var(--accent); color: #fff; }
+    .primary   { background: var(--accent); color: #fff; }
     .secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--line); }
-    .danger { background: color-mix(in srgb, #c0392b 12%, var(--surface)); color: #c0392b; border: 1px solid color-mix(in srgb, #c0392b 20%, var(--line)); }
+    .danger    { background: color-mix(in srgb, #c0392b 12%, var(--surface)); color: #c0392b; border: 1px solid color-mix(in srgb, #c0392b 20%, var(--line)); }
 
-    /* ── RESPONSIVE ─────────────────────────────────────────────────── */
-    @media (max-width: 900px) {
-      .landing-card { padding: 1.8rem 1.4rem; }
+    /* ─────────────────────────────────────────────────────────────────
+       RESPONSIVE — SURAH GRID BREAKPOINTS
+       ← EASY TWEAK: change repeat(N) in each block below
+    ───────────────────────────────────────────────────────────────── */
+
+    /* Wide desktop ≥1200px: 19 columns */
+    @media (min-width: 1200px) {
+      .grid { grid-template-columns: repeat(19, minmax(0, 1fr)); gap: 0.38rem; } /* ← TWEAK: 19 */
+      .surah-tile { min-height: 56px; padding: 0.3rem 0.22rem; }
+      .surah-name { font-size: 0.65rem; }
+      .surah-num  { font-size: 0.58rem; }
+      .tile-pct   { font-size: 0.62rem; }
     }
 
+    /* Mobile portrait ≤600px: 3 columns */
     @media (max-width: 600px) {
+      .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.45rem; } /* ← TWEAK: 3 */
       .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
       .stats .stat:last-child { grid-column: 1/-1; }
-      .grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
       .landing-card { padding: 1.4rem 1rem; gap: 1.2rem; }
       .salaam { font-size: clamp(1.7rem, 8vw, 2.2rem); }
-      .script-options { grid-template-columns: 1fr 1fr; }
     }
 
+    /* Very small ≤380px */
     @media (max-width: 380px) {
-      .theme-options { grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
-      .script-options { grid-template-columns: 1fr 1fr; }
-      .salaam { font-size: 1.6rem; }
+      .salaam { font-size: 1.55rem; }
+      .surah-name { font-size: 0.72rem; }
     }
 
-    /* Landscape orientation adjustment */
+    /* Landscape phone h≤500: 6 columns */
     @media (max-height: 500px) and (orientation: landscape) {
+      .grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } /* ← TWEAK: 6 */
       #landingScreen { padding: 0.75rem 1rem; justify-content: flex-start; }
-      .landing-card { gap: 1rem; padding: 1rem; }
-      .salaam { font-size: 1.6rem; }
+      .landing-card  { gap: 0.9rem; padding: 1rem; }
+      .salaam        { font-size: 1.5rem; }
+    }
+
+    @media (max-width: 900px) {
+      .landing-card { padding: 1.8rem 1.4rem; }
     }
   </style>
 </head>
@@ -660,41 +573,30 @@
   <section id="landingScreen">
     <div class="landing-card">
 
-      <!-- Assalamu Alaikum in Arabic -->
       <div>
         <div class="salaam">ٱلسَّلَامُ عَلَيْكُمْ</div>
         <div class="salaam-sub">Peace be upon you</div>
       </div>
 
-      <!-- First name -->
       <div class="landing-section">
         <label for="landingName">What's your first name?</label>
-        <input
-          id="landingName"
-          type="text"
-          maxlength="32"
-          placeholder="e.g. Maryam"
-          autocomplete="given-name"
-          spellcheck="false"
-        />
+        <input id="landingName" type="text" maxlength="32"
+          placeholder="e.g. Maryam" autocomplete="given-name" spellcheck="false" />
       </div>
 
-      <!-- Script preference -->
+      <!-- Ta'awwudh once above the two buttons -->
       <div>
-        <div class="choice-label">Script preference</div>
+        <div class="tawwudh-display">
+          <span class="tawwudh-text-uthmani" id="tawwudhUthmani">أَعُوذُ بِٱللَّهِ مِنَ ٱلشَّيْطَٰنِ ٱلرَّجِيمِ</span>
+          <span class="tawwudh-text-indopak" id="tawwudhIndopak">أَعُوذُ بِاللَّهِ مِنَ الشَّيطَانِ الرَّجِيمِ</span>
+        </div>
+        <div class="choice-label">Choose your script</div>
         <div class="script-options">
-          <button class="script-btn selected" data-script="uthmani" type="button" aria-pressed="true">
-            <span class="script-preview-uthmani">أَعُوذُ بِٱللَّهِ مِنَ ٱلشَّيْطَٰنِ ٱلرَّجِيمِ</span>
-            <span class="script-name">Uthmani</span>
-          </button>
-          <button class="script-btn" data-script="indopak" type="button" aria-pressed="false">
-            <span class="script-preview-indopak">أَعُوذُ بِاللَّهِ مِنَ الشَّيطَانِ الرَّجِيمِ</span>
-            <span class="script-name">IndoPak</span>
-          </button>
+          <button class="script-btn selected" data-script="uthmani" type="button" aria-pressed="true">Uthmani</button>
+          <button class="script-btn" data-script="indopak" type="button" aria-pressed="false">IndoPak</button>
         </div>
       </div>
 
-      <!-- Theme preference -->
       <div>
         <div class="choice-label">Theme</div>
         <div class="theme-options">
@@ -714,7 +616,6 @@
       </div>
 
       <button class="enter-btn" id="landingEnterBtn" type="button">Enter →</button>
-
     </div>
   </section>
 
@@ -724,9 +625,9 @@
       <div class="title-row">
         <h1 id="appTitle"></h1>
         <div id="overallHeader" class="overall"></div>
+        <button id="themeToggleBtn" title="Cycle theme" aria-label="Cycle theme">☀</button>
       </div>
     </header>
-
     <div class="container">
       <section class="stats" id="stats"></section>
       <section class="grid" id="surahGrid"></section>
@@ -742,35 +643,83 @@
       <strong id="modalTitle">Surah</strong>
       <button id="closeModalBtn" class="secondary" style="padding:.45rem .7rem">Close</button>
     </div>
-
     <div class="modal-actions">
       <button id="diveInBtn" class="primary">Dive in</button>
       <button id="markCompleteBtn" class="secondary">Mark complete</button>
-      <span id="modalPercent" style="margin-left:auto;align-self:center;font-family:Georgia,serif;font-size:.85rem;color:var(--text2);"></span>
+      <div id="modalPercent"></div>
     </div>
-
     <div id="ayahList" class="ayah-list hidden"></div>
-
     <div id="modalFooter" class="modal-footer hidden">
       <button id="prevSurahBtn" class="secondary">← Previous</button>
       <button id="nextSurahBtn" class="secondary">Next →</button>
     </div>
   </dialog>
 
+  <!-- ── TUTORIAL OVERLAY ── -->
+  <div id="tutorialOverlay" role="dialog" aria-modal="true" aria-label="Welcome tutorial">
+    <div class="tutorial-card">
+      <button class="tutorial-skip" id="tutSkipBtn" type="button">Skip</button>
+
+      <div class="tutorial-step active" id="tutStep1">
+        <div class="tutorial-icon">📖</div>
+        <div class="tutorial-title">Welcome to your Quran Diary</div>
+        <div class="tutorial-hadith">
+          <p>"It will be said to the companion of the Quran: Recite and ascend as you recited in the world! Verily, your rank is determined by the last verse you recite."</p>
+          <cite>— Prophet Muhammad ﷺ &nbsp;·&nbsp; Sunan al-Tirmidhī 2914 &nbsp;·&nbsp; Sahih</cite>
+        </div>
+        <div class="tutorial-body">May this app be an aid on your journey of ascension. Every ayah you mark brings you one step closer.</div>
+      </div>
+
+      <div class="tutorial-step" id="tutStep2">
+        <div class="tutorial-icon">🟩</div>
+        <div class="tutorial-title">Your 114 Surahs</div>
+        <div class="tutorial-body">
+          Each tile is one surah. Tap any tile to open it.<br/><br/>
+          Colors track your progress — from pale when unstarted, to deep green when fully memorized.
+        </div>
+      </div>
+
+      <div class="tutorial-step" id="tutStep3">
+        <div class="tutorial-icon">✅</div>
+        <div class="tutorial-title">Mark Complete or Dive In</div>
+        <div class="tutorial-body">
+          <em>Mark complete</em> — marks every ayah at once.<br/><br/>
+          <em>Dive in</em> — see each ayah individually. Check only what you truly know by heart.
+        </div>
+      </div>
+
+      <div class="tutorial-step" id="tutStep4">
+        <div class="tutorial-icon">☀</div>
+        <div class="tutorial-title">Change your theme anytime</div>
+        <div class="tutorial-body">
+          Tap the <em>circle icon ☀</em> in the top-right header to cycle through<br/>
+          Parchment · Dark · Glass.
+        </div>
+      </div>
+
+      <div class="tutorial-dots" id="tutDots">
+        <div class="tutorial-dot active"></div>
+        <div class="tutorial-dot"></div>
+        <div class="tutorial-dot"></div>
+        <div class="tutorial-dot"></div>
+      </div>
+      <div class="tutorial-nav">
+        <button class="tut-btn-secondary" id="tutBackBtn" type="button" style="display:none">Back</button>
+        <button class="tut-btn-primary"   id="tutNextBtn" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     'use strict';
 
     const TOTAL_AYAHS = 6236;
     const STORAGE_KEY = "quranDiary.v2";
+    const THEMES      = ["parchment", "dark", "glass"];
+    const THEME_ICONS = { parchment: "☀", dark: "☾", glass: "◈" };
 
-    // API editions by script
-    const API_EDITION = {
-      uthmani: 'quran-uthmani',
-      indopak: 'quran-indopak'
-    };
-
-    // CSS font variables by script
-    const FONT_VAR = {
+    const API_EDITION = { uthmani: 'quran-uthmani', indopak: 'quran-indopak' };
+    const FONT_VAR    = {
       uthmani: "'Scheherazade New', serif",
       indopak: "'Noto Nastaliq Urdu', serif"
     };
@@ -779,227 +728,217 @@
       ["Al-Fatihah",7],["Al-Baqarah",286],["Ali 'Imran",200],["An-Nisa",176],["Al-Ma'idah",120],["Al-An'am",165],["Al-A'raf",206],["Al-Anfal",75],["At-Tawbah",129],["Yunus",109],["Hud",123],["Yusuf",111],["Ar-Ra'd",43],["Ibrahim",52],["Al-Hijr",99],["An-Nahl",128],["Al-Isra",111],["Al-Kahf",110],["Maryam",98],["Ta-Ha",135],["Al-Anbiya",112],["Al-Hajj",78],["Al-Mu'minun",118],["An-Nur",64],["Al-Furqan",77],["Ash-Shu'ara",227],["An-Naml",93],["Al-Qasas",88],["Al-Ankabut",69],["Ar-Rum",60],["Luqman",34],["As-Sajdah",30],["Al-Ahzab",73],["Saba",54],["Fatir",45],["Ya-Sin",83],["As-Saffat",182],["Sad",88],["Az-Zumar",75],["Ghafir",85],["Fussilat",54],["Ash-Shura",53],["Az-Zukhruf",89],["Ad-Dukhan",59],["Al-Jathiyah",37],["Al-Ahqaf",35],["Muhammad",38],["Al-Fath",29],["Al-Hujurat",18],["Qaf",45],["Adh-Dhariyat",60],["At-Tur",49],["An-Najm",62],["Al-Qamar",55],["Ar-Rahman",78],["Al-Waqi'ah",96],["Al-Hadid",29],["Al-Mujadila",22],["Al-Hashr",24],["Al-Mumtahanah",13],["As-Saff",14],["Al-Jumu'ah",11],["Al-Munafiqun",11],["At-Taghabun",18],["At-Talaq",12],["At-Tahrim",12],["Al-Mulk",30],["Al-Qalam",52],["Al-Haqqah",52],["Al-Ma'arij",44],["Nuh",28],["Al-Jinn",28],["Al-Muzzammil",20],["Al-Muddaththir",56],["Al-Qiyamah",40],["Al-Insan",31],["Al-Mursalat",50],["An-Naba",40],["An-Nazi'at",46],["Abasa",42],["At-Takwir",29],["Al-Infitar",19],["Al-Mutaffifin",36],["Al-Inshiqaq",25],["Al-Buruj",22],["At-Tariq",17],["Al-A'la",19],["Al-Ghashiyah",26],["Al-Fajr",30],["Al-Balad",20],["Ash-Shams",15],["Al-Layl",21],["Ad-Duha",11],["Ash-Sharh",8],["At-Tin",8],["Al-'Alaq",19],["Al-Qadr",5],["Al-Bayyinah",8],["Az-Zalzalah",8],["Al-'Adiyat",11],["Al-Qari'ah",11],["At-Takathur",8],["Al-'Asr",3],["Al-Humazah",9],["Al-Fil",5],["Quraysh",4],["Al-Ma'un",7],["Al-Kawthar",3],["Al-Kafirun",6],["An-Nasr",3],["Al-Masad",5],["Al-Ikhlas",4],["Al-Falaq",5],["An-Nas",6]
     ];
 
-    // Surahs that do NOT get a Bismillah header: Al-Fatihah (1) and At-Tawbah (9)
-    const NO_BISMILLAH = new Set([1, 9]);
+    const NO_BISMILLAH   = new Set([1, 9]);
     const BISMILLAH_TEXT = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ";
 
-    // ── DOM REFS ──────────────────────────────────────────────────────
-    const landingScreen  = document.getElementById("landingScreen");
-    const landingName    = document.getElementById("landingName");
-    const landingEnterBtn= document.getElementById("landingEnterBtn");
-    const appScreen      = document.getElementById("appScreen");
-    const appTitle       = document.getElementById("appTitle");
-    const overallHeader  = document.getElementById("overallHeader");
-    const statsEl        = document.getElementById("stats");
-    const surahGrid      = document.getElementById("surahGrid");
-    const clearDataBtn   = document.getElementById("clearDataBtn");
-    const surahDialog    = document.getElementById("surahDialog");
-    const modalTitle     = document.getElementById("modalTitle");
-    const modalPercent   = document.getElementById("modalPercent");
-    const closeModalBtn  = document.getElementById("closeModalBtn");
-    const diveInBtn      = document.getElementById("diveInBtn");
-    const markCompleteBtn= document.getElementById("markCompleteBtn");
-    const ayahListEl     = document.getElementById("ayahList");
-    const modalFooter    = document.getElementById("modalFooter");
-    const prevSurahBtn   = document.getElementById("prevSurahBtn");
-    const nextSurahBtn   = document.getElementById("nextSurahBtn");
+    /* ── DOM REFS ────────────────────────────────────────────── */
+    const landingScreen   = document.getElementById("landingScreen");
+    const landingName     = document.getElementById("landingName");
+    const landingEnterBtn = document.getElementById("landingEnterBtn");
+    const appScreen       = document.getElementById("appScreen");
+    const appTitle        = document.getElementById("appTitle");
+    const overallHeader   = document.getElementById("overallHeader");
+    const statsEl         = document.getElementById("stats");
+    const surahGrid       = document.getElementById("surahGrid");
+    const clearDataBtn    = document.getElementById("clearDataBtn");
+    const themeToggleBtn  = document.getElementById("themeToggleBtn");
+    const surahDialog     = document.getElementById("surahDialog");
+    const modalTitle      = document.getElementById("modalTitle");
+    const modalPercent    = document.getElementById("modalPercent");
+    const closeModalBtn   = document.getElementById("closeModalBtn");
+    const diveInBtn       = document.getElementById("diveInBtn");
+    const markCompleteBtn = document.getElementById("markCompleteBtn");
+    const ayahListEl      = document.getElementById("ayahList");
+    const modalFooter     = document.getElementById("modalFooter");
+    const prevSurahBtn    = document.getElementById("prevSurahBtn");
+    const nextSurahBtn    = document.getElementById("nextSurahBtn");
+    const tutorialOverlay = document.getElementById("tutorialOverlay");
+    const tutSkipBtn      = document.getElementById("tutSkipBtn");
+    const tutNextBtn      = document.getElementById("tutNextBtn");
+    const tutBackBtn      = document.getElementById("tutBackBtn");
 
-    // ── STATE ─────────────────────────────────────────────────────────
+    /* ── STATE ───────────────────────────────────────────────── */
     let state = loadState();
     let activeSurahIndex = null;
-    // Cache keyed by "surahNumber_script" so switching script invalidates cache
     let surahCache = {};
 
     function loadState() {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { firstName: "", memorized: {}, script: "uthmani", theme: "parchment", landingSeen: false };
+      if (!raw) return { firstName:"", memorized:{}, script:"uthmani", theme:"parchment", landingSeen:false, tutorialSeen:false };
       try {
         const p = JSON.parse(raw);
         return {
-          firstName:   p.firstName   || "",
-          memorized:   p.memorized   || {},
-          script:      p.script      || "uthmani",
-          theme:       p.theme       || "parchment",
-          landingSeen: p.landingSeen || false
+          firstName:    p.firstName    || "",
+          memorized:    p.memorized    || {},
+          script:       p.script       || "uthmani",
+          theme:        p.theme        || "parchment",
+          landingSeen:  p.landingSeen  || false,
+          tutorialSeen: p.tutorialSeen || false
         };
       } catch {
-        return { firstName: "", memorized: {}, script: "uthmani", theme: "parchment", landingSeen: false };
+        return { firstName:"", memorized:{}, script:"uthmani", theme:"parchment", landingSeen:false, tutorialSeen:false };
       }
     }
+    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-
-    // ── THEME ─────────────────────────────────────────────────────────
+    /* ── THEME ───────────────────────────────────────────────── */
     function applyTheme(theme) {
       const html = document.documentElement;
-      // Remove all theme attrs, then set the correct one
       html.removeAttribute("data-theme");
       if (theme === "dark")  html.setAttribute("data-theme", "dark");
       if (theme === "glass") html.setAttribute("data-theme", "glass");
-      // parchment = no data-theme attribute (default :root vars)
+      themeToggleBtn.textContent = THEME_ICONS[theme] || "☀";
+    }
+    function cycleTheme() {
+      const idx   = THEMES.indexOf(state.theme);
+      state.theme = THEMES[(idx + 1) % THEMES.length];
+      applyTheme(state.theme);
+      selectThemeBtn(state.theme);
+      saveState();
     }
 
-    // ── ARABIC FONT ───────────────────────────────────────────────────
+    /* ── SCRIPT / FONT ───────────────────────────────────────── */
     function applyScript(script) {
-      // Set the CSS custom property so all Arabic elements pick it up
       document.documentElement.style.setProperty('--font-arabic', FONT_VAR[script] || FONT_VAR.uthmani);
+      document.getElementById('tawwudhUthmani').style.display = script === 'uthmani' ? 'block' : 'none';
+      document.getElementById('tawwudhIndopak').style.display = script === 'indopak' ? 'block' : 'none';
     }
 
-    // ── LANDING PAGE ──────────────────────────────────────────────────
+    /* ── POSSESSIVE NAME ─────────────────────────────────────── */
+    function possessive(name) {
+      return name.endsWith('s') ? name + "'" : name + "'s";
+    }
+
+    /* ── LANDING ─────────────────────────────────────────────── */
     function initLanding() {
-      // Pre-select saved preferences on the landing UI
       applyTheme(state.theme);
       applyScript(state.script);
       selectScriptBtn(state.script);
       selectThemeBtn(state.theme);
       if (state.firstName) landingName.value = state.firstName;
     }
-
     function selectScriptBtn(script) {
       document.querySelectorAll('.script-btn').forEach(btn => {
-        const active = btn.dataset.script === script;
-        btn.classList.toggle('selected', active);
-        btn.setAttribute('aria-pressed', String(active));
+        const on = btn.dataset.script === script;
+        btn.classList.toggle('selected', on);
+        btn.setAttribute('aria-pressed', String(on));
       });
     }
-
     function selectThemeBtn(theme) {
       document.querySelectorAll('.theme-btn').forEach(btn => {
-        const active = btn.dataset.themeChoice === theme;
-        btn.classList.toggle('selected', active);
-        btn.setAttribute('aria-pressed', String(active));
+        const on = btn.dataset.themeChoice === theme;
+        btn.classList.toggle('selected', on);
+        btn.setAttribute('aria-pressed', String(on));
       });
     }
 
-    // Script toggle buttons
     document.querySelectorAll('.script-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const script = btn.dataset.script;
-        state.script = script;
-        applyScript(script);
-        selectScriptBtn(script);
-        surahCache = {}; // invalidate cache — different edition needed
+        state.script = btn.dataset.script;
+        applyScript(state.script);
+        selectScriptBtn(state.script);
+        surahCache = {};
       });
     });
-
-    // Theme toggle buttons
     document.querySelectorAll('.theme-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const theme = btn.dataset.themeChoice;
-        state.theme = theme;
-        applyTheme(theme);
-        selectThemeBtn(theme);
+        state.theme = btn.dataset.themeChoice;
+        applyTheme(state.theme);
+        selectThemeBtn(state.theme);
       });
     });
 
-    landingName.addEventListener('keydown', e => {
-      if (e.key === 'Enter') landingEnterBtn.click();
-    });
-
+    landingName.addEventListener('keydown', e => { if (e.key === 'Enter') landingEnterBtn.click(); });
     landingEnterBtn.addEventListener('click', () => {
       const name = landingName.value.trim();
       if (!name) {
         landingName.focus();
         landingName.style.borderColor = '#c0392b';
-        setTimeout(() => landingName.style.borderColor = '', 1200);
+        setTimeout(() => { landingName.style.borderColor = ''; }, 1200);
         return;
       }
-      state.firstName = name;
+      state.firstName   = name;
       state.landingSeen = true;
       saveState();
       showApp();
     });
 
-    // ── MEMORIZATION HELPERS ──────────────────────────────────────────
-    function getMemorizedSet(surahNumber) {
-      return new Set(state.memorized[String(surahNumber)] || []);
-    }
+    /* ── TUTORIAL ─────────────────────────────────────────────── */
+    const TUT_TOTAL = 4;
+    let tutStep     = 0;
 
-    function setMemorizedSet(surahNumber, setObj) {
-      state.memorized[String(surahNumber)] = [...setObj].sort((a, b) => a - b);
+    function showTutorial() {
+      tutStep = 0;
+      renderTutStep();
+      tutorialOverlay.classList.add('visible');
+    }
+    function hideTutorial() {
+      tutorialOverlay.classList.remove('visible');
+      state.tutorialSeen = true;
       saveState();
     }
-
-    function setSurahComplete(surahNumber, ayahCount, complete = true) {
-      const next = new Set();
-      if (complete) for (let i = 1; i <= ayahCount; i++) next.add(i);
-      setMemorizedSet(surahNumber, next);
+    function renderTutStep() {
+      document.querySelectorAll('.tutorial-step').forEach((el, i) => el.classList.toggle('active', i === tutStep));
+      document.querySelectorAll('.tutorial-dot') .forEach((el, i) => el.classList.toggle('active', i === tutStep));
+      tutBackBtn.style.display = tutStep === 0 ? 'none' : '';
+      tutNextBtn.textContent   = tutStep === TUT_TOTAL - 1 ? 'Got it ✓' : 'Next';
     }
+    tutNextBtn.addEventListener('click', () => {
+      tutStep < TUT_TOTAL - 1 ? (tutStep++, renderTutStep()) : hideTutorial();
+    });
+    tutBackBtn.addEventListener('click', () => { if (tutStep > 0) { tutStep--; renderTutStep(); } });
+    tutSkipBtn.addEventListener('click', hideTutorial);
 
-    function surahPercent(index) {
-      const surahNumber = index + 1;
-      const ayahCount   = SURAHS[index][1];
-      return Math.round((getMemorizedSet(surahNumber).size / ayahCount) * 100);
-    }
-
-    function colorForPercent(percent) {
-      if (percent === 0)   return null; // use theme var
-      if (percent < 25)    return "#f8e47f";
-      if (percent < 50)    return "#d9e88e";
-      if (percent < 75)    return "#9fd37c";
-      if (percent < 100)   return "#4ca867";
-      return "#0f5132";
-    }
-
-    function getGlobalStats() {
-      let memorizedAyahs = 0, completedSurahs = 0;
-      SURAHS.forEach(([, ayahCount], idx) => {
-        const size = getMemorizedSet(idx + 1).size;
-        memorizedAyahs += size;
-        if (size === ayahCount) completedSurahs++;
-      });
-      return {
-        memorizedAyahs,
-        completedSurahs,
-        percent: Math.round((memorizedAyahs / TOTAL_AYAHS) * 1000) / 10
-      };
-    }
-
-    // ── RENDER ────────────────────────────────────────────────────────
+    /* ── APP ──────────────────────────────────────────────────── */
     function showApp() {
       landingScreen.classList.add('hidden');
       appScreen.classList.remove('hidden');
       renderApp();
+      if (!state.tutorialSeen) setTimeout(showTutorial, 320);
     }
 
     function renderApp() {
       const name  = state.firstName.trim();
       const stats = getGlobalStats();
-      appTitle.textContent    = `${name}'s Quran Diary`;
-      overallHeader.textContent = `${stats.percent}% memorized`;
+      appTitle.textContent      = possessive(name) + " Quran Diary";
+      overallHeader.textContent = stats.percent + "% memorized";
 
       statsEl.innerHTML = `
         <div class="stat"><strong>${stats.percent}%</strong><span>Overall</span></div>
-        <div class="stat"><strong>${stats.memorizedAyahs}</strong><span>Ayahs memorized</span></div>
-        <div class="stat"><strong>${stats.completedSurahs}/114</strong><span>Surahs complete</span></div>
+        <div class="stat"><strong>${stats.memorizedAyahs}</strong><span>Ayahs</span></div>
+        <div class="stat"><strong>${stats.completedSurahs}/114</strong><span>Surahs</span></div>
       `;
 
       const fragment = document.createDocumentFragment();
-      SURAHS.forEach(([name], idx) => {
+      SURAHS.forEach(([sName], idx) => {
         const pct      = surahPercent(idx);
-        const color    = colorForPercent(pct);
+        const color    = tileColor(pct);
         const complete = pct === 100;
         const tile     = document.createElement("button");
         tile.className = "surah-tile";
-        tile.type = "button";
-        if (color) {
-          tile.style.background = color;
-          tile.style.color      = complete ? "#f6fff8" : "#1f3324";
-          tile.style.borderColor = "transparent";
-        }
-        tile.innerHTML = `
-          <div class="surah-top">
-            <div>
-              <div class="surah-name">${name}</div>
-              <div class="surah-num">Surah ${idx + 1}</div>
-            </div>
-          </div>
-          <div class="tile-actions">
-            <span style="color:${complete ? '#f6fff8' : 'inherit'}">${pct}%</span>
-          </div>
-        `;
+        tile.type      = "button";
+        tile.style.background  = color;
+        tile.style.borderColor = pct > 0 ? 'transparent' : '';
+        tile.style.color       = complete        ? '#f6fff8'
+                                : pct > 0        ? 'var(--tile-text-on-progress)'
+                                :                  'var(--text)';
+
+        const nameEl = document.createElement('div');
+        nameEl.className   = 'surah-name';
+        nameEl.textContent = sName;
+
+        const numEl = document.createElement('div');
+        numEl.className   = 'surah-num';
+        numEl.textContent = String(idx + 1);
+
+        const pctEl = document.createElement('div');
+        pctEl.className   = 'tile-pct';
+        pctEl.textContent = pct > 0 ? pct + '%' : '';
+        pctEl.style.color = complete ? '#f6fff8' : '';
+
+        tile.appendChild(nameEl);
+        tile.appendChild(numEl);
+        tile.appendChild(pctEl);
         tile.addEventListener("click", () => openSurahModal(idx));
         fragment.appendChild(tile);
       });
@@ -1008,162 +947,171 @@
       surahGrid.appendChild(fragment);
     }
 
-    // ── MODAL ─────────────────────────────────────────────────────────
+    /* ── HELPERS ──────────────────────────────────────────────── */
+    function getMemorizedSet(n)  { return new Set(state.memorized[String(n)] || []); }
+    function setMemorizedSet(n, s) {
+      state.memorized[String(n)] = [...s].sort((a, b) => a - b);
+      saveState();
+    }
+    function setSurahComplete(n, count, complete) {
+      const next = new Set();
+      if (complete) for (let i = 1; i <= count; i++) next.add(i);
+      setMemorizedSet(n, next);
+    }
+    function surahPercent(idx) {
+      return Math.round((getMemorizedSet(idx + 1).size / SURAHS[idx][1]) * 100);
+    }
+    function getGlobalStats() {
+      let memorizedAyahs = 0, completedSurahs = 0;
+      SURAHS.forEach(([, c], i) => {
+        const s = getMemorizedSet(i + 1).size;
+        memorizedAyahs += s;
+        if (s === c) completedSurahs++;
+      });
+      return { memorizedAyahs, completedSurahs, percent: Math.round((memorizedAyahs / TOTAL_AYAHS) * 1000) / 10 };
+    }
+    function tileColor(pct) {
+      const cs = getComputedStyle(document.documentElement);
+      const v  = n => cs.getPropertyValue(n).trim();
+      if (pct === 0)   return v('--tile-empty');
+      if (pct < 25)    return v('--tile-25');
+      if (pct < 50)    return v('--tile-50');
+      if (pct < 75)    return v('--tile-75');
+      if (pct < 100)   return v('--tile-99');
+      return v('--tile-100');
+    }
+
+    /* ── MODAL ────────────────────────────────────────────────── */
     function openSurahModal(index) {
       activeSurahIndex = index;
       const [name, ayahCount] = SURAHS[index];
       const pct = surahPercent(index);
-      modalTitle.textContent    = `${index + 1}. ${name}`;
-      modalPercent.textContent  = `${pct}% memorized`;
+      modalTitle.textContent      = (index + 1) + ". " + name;
+      modalPercent.textContent    = pct + "% memorized";
       markCompleteBtn.textContent = pct === 100 ? "Mark incomplete" : "Mark complete";
       ayahListEl.classList.add("hidden");
       modalFooter.classList.add("hidden");
-      ayahListEl.innerHTML = "";
+      ayahListEl.innerHTML        = "";
       diveInBtn.dataset.ayahCount = String(ayahCount);
       surahDialog.showModal();
     }
 
-    // ── BISMILLAH FIX ─────────────────────────────────────────────────
-    // Root cause of old bug: normalizeAyahsForDiveIn stripped the Bismillah
-    // entirely (ayahs.slice(1)) when the API returned it as ayah[0].
-    // Fix: we separate bismillah from ayah data. The API edition we now use
-    // (quran-uthmani / quran-indopak) does NOT prepend bismillah as ayah 0 —
-    // it's baked into ayah 1 text for Al-Fatihah only.
-    // We display it ourselves as a decorative header above ayah 1 for all
-    // surahs except Al-Fatihah (1) and At-Tawbah (9).
-
+    /* ── BISMILLAH / NORMALIZE ────────────────────────────────── */
     function normalizeAyahs(index, ayahs) {
-      const surahNumber    = index + 1;
-      const expectedCount  = SURAHS[index][1];
-      const basmalahPattern = /^\s*بِسْمِ\s+اللَّهِ\s+الرَّحْمَٰنِ\s+الرَّحِيمِ\s*$/;
+      const surahNumber = index + 1;
+      const expected    = SURAHS[index][1];
+      // Matches standalone Bismillah line or Bismillah prefix baked into ayah text
+      const bPat = /^\s*بِسْمِ\s+اللَّهِ[\s\S]{0,80}رَّحِيمِ\s*/;
 
-      // If API still returns bismillah as a leading standalone ayah, strip it
-      // (we show it ourselves via bismillah-header, so we don't double it)
-      if (
-        !NO_BISMILLAH.has(surahNumber) &&
-        ayahs.length === expectedCount + 1 &&
-        basmalahPattern.test(ayahs[0].text)
-      ) {
+      // API returns extra leading ayah
+      if (!NO_BISMILLAH.has(surahNumber) && ayahs.length === expected + 1 && bPat.test(ayahs[0].text)) {
         return ayahs.slice(1).map((a, i) => ({ number: i + 1, text: a.text }));
       }
 
-      return ayahs.map(a => ({ number: a.numberInSurah, text: a.text }));
+      const result = ayahs.map(a => ({ number: a.numberInSurah, text: a.text }));
+
+      // Bismillah baked into ayah 1 text — strip it
+      if (!NO_BISMILLAH.has(surahNumber) && result.length > 0 && bPat.test(result[0].text)) {
+        result[0] = { number: result[0].number, text: result[0].text.replace(bPat, '').trimStart() };
+      }
+
+      return result;
     }
 
     async function loadSurahText(index) {
-      const surahNumber = index + 1;
-      const cacheKey    = `${surahNumber}_${state.script}`;
-      if (surahCache[cacheKey]) return surahCache[cacheKey];
-
-      const edition  = API_EDITION[state.script] || 'quran-uthmani';
-      const response = await fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}/${edition}`);
-      if (!response.ok) throw new Error("Could not load surah");
-      const data = await response.json();
-      surahCache[cacheKey] = normalizeAyahs(index, data.data.ayahs);
-      return surahCache[cacheKey];
+      const n   = index + 1;
+      const key = n + "_" + state.script;
+      if (surahCache[key]) return surahCache[key];
+      const ed  = API_EDITION[state.script] || 'quran-uthmani';
+      const res = await fetch("https://api.alquran.cloud/v1/surah/" + n + "/" + ed);
+      if (!res.ok) throw new Error("API error");
+      const data = await res.json();
+      surahCache[key] = normalizeAyahs(index, data.data.ayahs);
+      return surahCache[key];
     }
 
     async function diveIn(index) {
       ayahListEl.classList.remove("hidden");
       modalFooter.classList.remove("hidden");
-      ayahListEl.innerHTML = `<p style='font-family:Georgia,serif;color:var(--text2);padding:.5rem'>Loading ayahs…</p>`;
+      ayahListEl.innerHTML = "<p style='font-family:Georgia,serif;color:var(--text2);padding:.5rem'>Loading ayahs\u2026</p>";
 
       try {
-        const ayahs     = await loadSurahText(index);
-        const surahNum  = index + 1;
+        const ayahs    = await loadSurahText(index);
+        const surahNum = index + 1;
         const memorized = getMemorizedSet(surahNum);
 
         ayahListEl.innerHTML = "";
 
-        // ── BISMILLAH HEADER ──
-        // Show for every surah except Al-Fatihah (1) and At-Tawbah (9)
+        // Bismillah header — no label, just text + divider
         if (!NO_BISMILLAH.has(surahNum)) {
-          const bDiv = document.createElement("div");
+          const bDiv  = document.createElement("div");
           bDiv.className = "bismillah-header";
-          bDiv.innerHTML = `
-            <div class="bismillah-text">${BISMILLAH_TEXT}</div>
-            <div class="bismillah-label">Bismillah — not counted as an ayah</div>
-          `;
+          const bText = document.createElement("div");
+          bText.className   = "bismillah-text";
+          bText.textContent = BISMILLAH_TEXT;
+          bDiv.appendChild(bText);
           ayahListEl.appendChild(bDiv);
         }
 
-        // ── AYAHS ──
         ayahs.forEach(({ number, text }) => {
           const row = document.createElement("label");
           row.className = "ayah-item";
-          // XSS: text comes from a trusted Islamic API, but we still set via textContent
-          const checked = memorized.has(number) ? "checked" : "";
-          row.innerHTML = `
-            <input type="checkbox" ${checked} data-ayah="${number}" />
-            <div style="flex:1;min-width:0;">
-              <div class="ayah-label">Ayah ${number}</div>
-              <p class="ayah-text"></p>
-            </div>
-          `;
-          // Set Arabic text via textContent to avoid XSS
+          row.innerHTML = "<input type='checkbox' " + (memorized.has(number) ? "checked" : "") + " data-ayah='" + number + "' /><div style='flex:1;min-width:0;'><div class='ayah-label'>Ayah " + number + "</div><p class='ayah-text'></p></div>";
           row.querySelector('.ayah-text').textContent = text;
-
-          row.querySelector("input").addEventListener("change", e => {
-            const ayahNo  = Number(e.target.dataset.ayah);
+          row.querySelector("input").addEventListener("change", function(e) {
+            const ayahNo = Number(e.target.dataset.ayah);
             const nextSet = getMemorizedSet(surahNum);
             e.target.checked ? nextSet.add(ayahNo) : nextSet.delete(ayahNo);
             setMemorizedSet(surahNum, nextSet);
             const pct = surahPercent(index);
-            modalPercent.textContent    = `${pct}% memorized`;
+            modalPercent.textContent    = pct + "% memorized";
             markCompleteBtn.textContent = pct === 100 ? "Mark incomplete" : "Mark complete";
             renderApp();
           });
           ayahListEl.appendChild(row);
         });
-
       } catch (err) {
-        ayahListEl.innerHTML = `<p style='font-family:Georgia,serif;color:#c0392b;padding:.5rem'>Could not load ayah text. Check your connection and try again.</p>`;
+        ayahListEl.innerHTML = "<p style='font-family:Georgia,serif;color:#c0392b;padding:.5rem'>Could not load. Check connection and try again.</p>";
       }
     }
 
-    // ── MODAL EVENT LISTENERS ─────────────────────────────────────────
+    /* ── MODAL LISTENERS ──────────────────────────────────────── */
     closeModalBtn.addEventListener("click", () => surahDialog.close());
-
-    surahDialog.addEventListener("click", e => {
+    surahDialog.addEventListener("click", function(e) {
       const r = surahDialog.getBoundingClientRect();
-      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) {
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)
         surahDialog.close();
-      }
     });
-
-    markCompleteBtn.addEventListener("click", () => {
+    markCompleteBtn.addEventListener("click", function() {
       if (activeSurahIndex === null) return;
-      const surahNum  = activeSurahIndex + 1;
-      const ayahCount = SURAHS[activeSurahIndex][1];
-      const complete  = surahPercent(activeSurahIndex) === 100;
-      setSurahComplete(surahNum, ayahCount, !complete);
+      const n = activeSurahIndex + 1;
+      const c = SURAHS[activeSurahIndex][1];
+      setSurahComplete(n, c, surahPercent(activeSurahIndex) !== 100);
       openSurahModal(activeSurahIndex);
       renderApp();
     });
-
-    diveInBtn.addEventListener("click", () => {
-      if (activeSurahIndex !== null) diveIn(activeSurahIndex);
-    });
-
-    prevSurahBtn.addEventListener("click", async () => {
+    diveInBtn.addEventListener("click", function() { if (activeSurahIndex !== null) diveIn(activeSurahIndex); });
+    prevSurahBtn.addEventListener("click", async function() {
       if (activeSurahIndex === null) return;
       activeSurahIndex = (activeSurahIndex + 113) % 114;
       openSurahModal(activeSurahIndex);
       await diveIn(activeSurahIndex);
     });
-
-    nextSurahBtn.addEventListener("click", async () => {
+    nextSurahBtn.addEventListener("click", async function() {
       if (activeSurahIndex === null) return;
       activeSurahIndex = (activeSurahIndex + 1) % 114;
       openSurahModal(activeSurahIndex);
       await diveIn(activeSurahIndex);
     });
 
-    // ── CLEAR DATA ────────────────────────────────────────────────────
-    clearDataBtn.addEventListener("click", () => {
+    /* ── THEME TOGGLE BUTTON ──────────────────────────────────── */
+    themeToggleBtn.addEventListener("click", cycleTheme);
+
+    /* ── CLEAR DATA ───────────────────────────────────────────── */
+    clearDataBtn.addEventListener("click", function() {
       if (!confirm("Clear your name and all memorization progress on this device?")) return;
       localStorage.removeItem(STORAGE_KEY);
-      state = { firstName: "", memorized: {}, script: "uthmani", theme: "parchment", landingSeen: false };
+      state = { firstName:"", memorized:{}, script:"uthmani", theme:"parchment", landingSeen:false, tutorialSeen:false };
       surahCache = {};
       applyTheme("parchment");
       applyScript("uthmani");
@@ -1172,22 +1120,18 @@
       initLanding();
     });
 
-    // ── BOOT ──────────────────────────────────────────────────────────
-    // Apply persisted theme and script immediately (before any render)
+    /* ── BOOT ─────────────────────────────────────────────────── */
     applyTheme(state.theme);
     applyScript(state.script);
 
-    // Landing page shows once per storage lifecycle
-    // (cleared when user clears data)
     if (state.landingSeen && state.firstName) {
-      initLanding();    // still init for preference state
+      initLanding();
       showApp();
     } else {
       initLanding();
-      // landingScreen is visible by default, no action needed
     }
   </script>
 
-  <!-- Version: 1.1.0 -->
+  <!-- Version: 1.2.0 -->
 </body>
 </html>
