@@ -53,19 +53,19 @@
       opacity: 1; transition: opacity 1.2s ease;
       pointer-events: none;
     }
-    #audhuOverlay.fade-out { opacity: 0; }
+    #audhuOverlay.fade-out { opacity: 0; transition: opacity 0.5s ease; }
     #audhuOverlay.done { display: none; }
     .audhu-text-uthmani {
       font-family: 'Scheherazade New', serif !important;
       font-size: clamp(1.5rem, 6vw, 2.5rem);
       direction: rtl; color: var(--accent); line-height: 2;
-      opacity: 0; animation: audhuFade 1.8s ease 0.3s forwards;
+      opacity: 0; animation: audhuFade 0.6s ease 0.1s forwards;
     }
     .audhu-text-indopak {
       font-family: 'Noto Nastaliq Urdu', serif !important;
       font-size: clamp(1.4rem, 5vw, 2.2rem);
       direction: rtl; color: var(--accent); line-height: 2.2;
-      opacity: 0; animation: audhuFade 1.8s ease 0.3s forwards;
+      opacity: 0; animation: audhuFade 0.6s ease 0.1s forwards;
     }
     @keyframes audhuFade { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 
@@ -1642,7 +1642,7 @@
   }
 
   /* ── AUDHUBILLAH FADE ── */
-  function showAudhu() {
+  function showAudhu(callback) {
     const script = state.script || 'uthmani';
     document.getElementById('audhuUthmani').style.display = script === 'uthmani' ? '' : 'none';
     document.getElementById('audhuIndopak').style.display = script === 'indopak' ? '' : 'none';
@@ -1650,10 +1650,14 @@
     audhuOverlay.style.opacity = '1';
     audhuOverlay.classList.remove('fade-out', 'done');
 
+    // Show for ~1s, then fade out over 0.5s, then invoke callback
     setTimeout(() => {
       audhuOverlay.classList.add('fade-out');
-      setTimeout(() => { audhuOverlay.classList.add('done'); }, 1300);
-    }, 2400);
+      setTimeout(() => {
+        audhuOverlay.classList.add('done');
+        if (callback) callback();
+      }, 500);
+    }, 950);
   }
 
   /* ── BOOT ── */
@@ -1680,16 +1684,15 @@
 
     applyTheme(state.theme);
     applyScript(state.script);
-    showAudhu();
 
     if (state.landingSeen && state.firstName) {
       initLanding();
-      setTimeout(showMainView, 1800); // show after audhu fades
+      showAudhu(() => showMainView());
     } else {
-      setTimeout(() => {
+      showAudhu(() => {
         landingScreen.classList.remove('hidden');
         initLanding();
-      }, 1800);
+      });
     }
   }
 
