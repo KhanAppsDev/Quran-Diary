@@ -44,30 +44,38 @@
     body { font-family: var(--font-latin); color: var(--text); background: var(--bg); min-height: 100vh; transition: background 0.3s, color 0.3s; -webkit-overflow-scrolling: touch; }
     .hidden { display: none !important; }
 
-    /* ── AUDHUBILLAH FADE ── */
+    /* ── AUDHUBILLAH FADE ── pure CSS, no JS timers needed */
+    /*
+      Timeline: 0-0.4s fade in | 0.4-1.4s hold | 1.4-1.9s fade out | 1.9s+ gone
+      Total: 1.9s. JS callback fires at 1950ms to be safe.
+    */
     #audhuOverlay {
       position: fixed; inset: 0; z-index: 9999;
       background: var(--bg);
       display: flex; align-items: center; justify-content: center;
       flex-direction: column; gap: 0.5rem;
-      opacity: 1; transition: opacity 1.2s ease;
-      pointer-events: none;
+      animation: audhuOverlayAnim 1.9s ease forwards;
+      pointer-events: auto;
     }
-    #audhuOverlay.fade-out { opacity: 0; transition: opacity 0.5s ease; }
-    #audhuOverlay.done { display: none; }
-    .audhu-text-uthmani {
-      font-family: 'Scheherazade New', serif !important;
+    #audhuOverlay.done { display: none !important; pointer-events: none; }
+    @keyframes audhuOverlayAnim {
+      0%   { opacity: 1; pointer-events: auto; }
+      84%  { opacity: 1; }
+      100% { opacity: 0; pointer-events: none; }
+    }
+    .audhu-text {
       font-size: clamp(1.5rem, 6vw, 2.5rem);
       direction: rtl; color: var(--accent); line-height: 2;
-      opacity: 0; animation: audhuFade 0.6s ease 0.1s forwards;
+      animation: audhuTextAnim 1.9s ease forwards;
     }
-    .audhu-text-indopak {
-      font-family: 'Noto Nastaliq Urdu', serif !important;
-      font-size: clamp(1.4rem, 5vw, 2.2rem);
-      direction: rtl; color: var(--accent); line-height: 2.2;
-      opacity: 0; animation: audhuFade 0.6s ease 0.1s forwards;
+    .audhu-text-uthmani { font-family: 'Scheherazade New', serif !important; }
+    .audhu-text-indopak { font-family: 'Noto Nastaliq Urdu', serif !important; font-size: clamp(1.4rem, 5vw, 2.2rem); line-height: 2.2; }
+    @keyframes audhuTextAnim {
+      0%   { opacity: 0; transform: translateY(8px); }
+      21%  { opacity: 1; transform: translateY(0); }
+      84%  { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-4px); }
     }
-    @keyframes audhuFade { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 
     /* ── LANDING ── */
     #landingScreen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem 1rem; position: relative; z-index: 1; }
@@ -418,8 +426,8 @@
 
   <!-- ── AUDHUBILLAH FADE ── -->
   <div id="audhuOverlay">
-    <span class="audhu-text-uthmani" id="audhuUthmani">أَعُوذُ بِٱللَّهِ مِنَ ٱلشَّيْطَٰنِ ٱلرَّجِيمِ</span>
-    <span class="audhu-text-indopak" id="audhuIndopak" style="display:none">أَعُوذُ بِاللَّهِ مِنَ الشَّيطَانِ الرَّجِيمِ</span>
+    <span class="audhu-text audhu-text-uthmani" id="audhuUthmani">أَعُوذُ بِٱللَّهِ مِنَ ٱلشَّيْطَٰنِ ٱلرَّجِيمِ</span>
+    <span class="audhu-text audhu-text-indopak" id="audhuIndopak" style="display:none">أَعُوذُ بِاللَّهِ مِنَ الشَّيطَانِ الرَّجِيمِ</span>
   </div>
 
   <!-- ── LANDING SCREEN ── -->
@@ -1641,23 +1649,17 @@
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  /* ── AUDHUBILLAH FADE ── */
+  /* ── AUDHUBILLAH FADE ── pure CSS animation, JS just hides after it ends */
   function showAudhu(callback) {
     const script = state.script || 'uthmani';
     document.getElementById('audhuUthmani').style.display = script === 'uthmani' ? '' : 'none';
     document.getElementById('audhuIndopak').style.display = script === 'indopak' ? '' : 'none';
-    audhuOverlay.style.display = 'flex';
-    audhuOverlay.style.opacity = '1';
-    audhuOverlay.classList.remove('fade-out', 'done');
-
-    // Show for ~1s, then fade out over 0.5s, then invoke callback
+    audhuOverlay.classList.remove('done');
+    // CSS animation runs for 1.9s total. Hide overlay and fire callback right after.
     setTimeout(() => {
-      audhuOverlay.classList.add('fade-out');
-      setTimeout(() => {
-        audhuOverlay.classList.add('done');
-        if (callback) callback();
-      }, 500);
-    }, 950);
+      audhuOverlay.classList.add('done');
+      if (callback) callback();
+    }, 1950);
   }
 
   /* ── BOOT ── */
