@@ -225,7 +225,7 @@
     }
     .surah-tile:active { transform: scale(0.952); }
     .surah-name-arabic { font-family: var(--font-arabic) !important; font-size: 0.9rem; font-weight: 400; line-height: 1.5; direction: rtl; color: inherit; }
-    .surah-name-trans  { font-family: var(--font-latin); font-size: 0.6rem; color: inherit; opacity: 0.7; line-height: 1.2; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+    .surah-name-trans  { font-family: var(--font-latin), 'Noto Naskh Arabic', 'Noto Sans Arabic', 'Noto Sans', sans-serif; font-size: 0.58rem; color: inherit; opacity: 0.7; line-height: 1.3; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; letter-spacing: -0.01em; }
     .surah-num  { font-family: var(--font-latin); opacity: 0.8; font-size: 0.68rem; }
     .tile-pct   { font-family: var(--font-latin); font-size: 0.72rem; font-weight: 700; margin-top: 0.25rem; }
 
@@ -565,7 +565,7 @@
       flex: 1;
       font-family: inherit !important;
       text-align: justify;
-      text-align-last: justify;
+      text-align-last: right; /* don't stretch last line - align to right (RTL start) */
       direction: rtl;
       overflow: visible;
       white-space: nowrap;
@@ -660,6 +660,61 @@
     .page-ayah-ref { font-family: var(--font-latin); font-size: 0.72rem; color: var(--text2); margin-bottom: 0.2rem; }
     .page-ayah-text { font-family: var(--font-arabic) !important; font-size: 1.15rem; line-height: 2.1; direction: rtl; text-align: right; color: var(--text); }
 
+
+
+    /* Ayah-end number marker — inline in RTL text flow */
+    .ayah-marker {
+      font-family: 'Scheherazade New', serif;
+      font-size: 0.8em;
+      color: #7a5c2e;
+      opacity: 0.75;
+      letter-spacing: 0;
+      display: inline;
+      unicode-bidi: embed;
+      direction: rtl;
+    }
+    [data-theme="dark"]  .ayah-marker { color: #c8a860; }
+    [data-theme="glass"] .ayah-marker { color: #6a4c1e; }
+    /* ── PAGE NAVIGATION ── */
+    .mushaf-swipe-wrap {
+      width: 100%;
+      overflow: hidden;
+      touch-action: pan-y; /* allow vertical scroll, detect horizontal swipe in JS */
+    }
+    .page-nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.6rem 0.5rem 0.2rem;
+      width: 100%;
+      max-width: 460px;
+      margin: 0 auto;
+    }
+    .page-nav-btn {
+      font-family: var(--font-latin);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      min-height: 42px;
+      min-width: 80px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      touch-action: manipulation;
+    }
+    .page-nav-btn:hover { background: var(--surface2); border-color: var(--accent); }
+    .page-nav-btn:disabled { opacity: 0.35; cursor: default; }
+    .page-nav-label {
+      font-family: var(--font-latin);
+      font-size: 0.82rem;
+      color: var(--text2);
+      text-align: center;
+      flex: 1;
+    }
   </style>
 </head>
 <body>
@@ -681,6 +736,13 @@
       <div class="landing-section">
         <label for="landingName">What's your first name?</label>
         <input id="landingName" type="text" maxlength="32" placeholder="e.g. Maryam" autocomplete="given-name" spellcheck="false" />
+      </div>
+
+      <div class="landing-section">
+        <label for="landingLangSelect">Translation language</label>
+        <select id="landingLangSelect" class="lang-select" style="width:100%">
+          <!-- populated by JS -->
+        </select>
       </div>
 
       <div>
@@ -783,7 +845,7 @@
     <header class="back-header">
       <button class="back-btn secondary" id="backToPageListBtn">← Pages</button>
       <span class="back-title" id="pageDetailTitle"></span>
-      <button class="primary" id="markPageCompleteBtn" style="padding:0.45rem 0.8rem;font-size:0.82rem;min-height:38px;">Mark Page Complete</button>
+      <button class="primary" id="markPageCompleteBtn" style="padding:0.45rem 0.8rem;font-size:0.82rem;min-height:38px;">Mark Complete</button>
     </header>
     <!-- Mushaf toolbar: line layout selector -->
     <div class="mushaf-wrap" id="mushafWrap">
@@ -791,20 +853,32 @@
         <div>
           <label for="mushafLayoutSelect">Layout: </label>
           <select id="mushafLayoutSelect" class="lang-select">
-            <option value="15">15-line (Madani/Standard)</option>
+            <option value="15">15-line (Madani)</option>
             <option value="13">13-line (IndoPak)</option>
           </select>
         </div>
         <div class="mushaf-legend">
-          <div class="mushaf-legend-item"><span class="legend-dot"></span> Memorized line</div>
+          <div class="mushaf-legend-item"><span class="legend-dot"></span> Memorized ayah</div>
         </div>
       </div>
-      <div class="mushaf-page" id="mushafPage">
-        <div style="font-family:Georgia,serif;color:var(--text2);text-align:center;padding:2rem;font-size:0.9rem;">Loading page…</div>
+
+      <!-- Swipeable mushaf page container -->
+      <div class="mushaf-swipe-wrap" id="mushafSwipeWrap">
+        <div class="mushaf-page" id="mushafPage">
+          <div style="font-family:Georgia,serif;color:var(--text2);text-align:center;padding:2rem;font-size:0.9rem;">Loading page…</div>
+        </div>
       </div>
+
+      <!-- Prev/Next page navigation -->
+      <div class="page-nav-bar">
+        <button class="page-nav-btn secondary" id="prevPageBtn" aria-label="Previous page">&#8592; Prev</button>
+        <span class="page-nav-label" id="pageNavLabel"></span>
+        <button class="page-nav-btn secondary" id="nextPageBtn" aria-label="Next page">Next &#8594;</button>
+      </div>
+
       <div class="mushaf-summary" id="mushafSummary"></div>
-      <div style="font-family:var(--font-latin);font-size:0.74rem;color:var(--text2);text-align:center;margin-top:0.5rem;opacity:0.7;">
-        Tap a line to toggle · drag across lines to select range
+      <div style="font-family:var(--font-latin);font-size:0.74rem;color:var(--text2);text-align:center;margin-top:0.3rem;opacity:0.7;">
+        Tap an ayah to toggle memorized · drag to multi-select · swipe to turn page
       </div>
     </div>
   </div>
@@ -978,6 +1052,91 @@
     { code: 'ru',  native: 'Русский',   sub: 'Russian',   edition: 'ru.kuliev' },
   ];
 
+  /* ── UI LOCALIZATION STRINGS ── */
+  const UI_STRINGS = {
+    en: { diveIn:'Read & Memorize', markComplete:'Mark complete', markIncomplete:'Mark incomplete',
+          close:'Close', prev:'← Prev', next:'Next →', translations:'🌐 Translations',
+          hideTranslations:'🌐 Hide translations', loading:'Loading…', noConnection:'Could not load. Check connection.',
+          memorizedPct:'% memorized', pageComplete:'Mark Complete', pageIncomplete:'Mark Incomplete',
+          dragHint:'Tap or drag to select · Double-tap for translation',
+          pageHint:'Tap an ayah to toggle memorized · drag to multi-select · swipe to turn page' },
+    ar: { diveIn:'اقرأ واحفظ', markComplete:'تحديد كمحفوظ', markIncomplete:'إلغاء التحديد',
+          close:'إغلاق', prev:'← السابق', next:'التالي →', translations:'🌐 الترجمة',
+          hideTranslations:'🌐 إخفاء الترجمة', loading:'جار التحميل…', noConnection:'تعذّر التحميل. تحقق من الاتصال.',
+          memorizedPct:'% محفوظ', pageComplete:'تحديد الصفحة', pageIncomplete:'إلغاء تحديد الصفحة',
+          dragHint:'اضغط أو اسحب للتحديد · اضغط مرتين للترجمة',
+          pageHint:'اضغط على آية لتحديدها · اسحب لتحديد متعدد · اسحب أفقيًا لتصفح الصفحات' },
+    fr: { diveIn:'Lire & Mémoriser', markComplete:'Marquer mémorisé', markIncomplete:'Démarquer',
+          close:'Fermer', prev:'← Préc.', next:'Suiv. →', translations:'🌐 Traductions',
+          hideTranslations:'🌐 Cacher les traductions', loading:'Chargement…', noConnection:'Impossible de charger. Vérifiez la connexion.',
+          memorizedPct:'% mémorisé', pageComplete:'Marquer complète', pageIncomplete:'Démarquer',
+          dragHint:'Appuyez ou glissez pour sélectionner · Double-appui pour traduction',
+          pageHint:'Appuyez pour mémoriser · glissez pour multi-sélectionner · balayez pour tourner la page' },
+    de: { diveIn:'Lesen & Auswendiglernen', markComplete:'Als gelernt markieren', markIncomplete:'Markierung aufheben',
+          close:'Schließen', prev:'← Zurück', next:'Weiter →', translations:'🌐 Übersetzungen',
+          hideTranslations:'🌐 Übersetzungen ausblenden', loading:'Laden…', noConnection:'Laden fehlgeschlagen. Verbindung prüfen.',
+          memorizedPct:'% auswendig', pageComplete:'Seite abschließen', pageIncomplete:'Markierung aufheben',
+          dragHint:'Tippen oder ziehen zum Auswählen · Doppeltippen für Übersetzung',
+          pageHint:'Tippen zum Markieren · ziehen für Mehrfachauswahl · wischen zum Blättern' },
+    es: { diveIn:'Leer y Memorizar', markComplete:'Marcar memorizado', markIncomplete:'Desmarcar',
+          close:'Cerrar', prev:'← Ant.', next:'Sig. →', translations:'🌐 Traducciones',
+          hideTranslations:'🌐 Ocultar traducciones', loading:'Cargando…', noConnection:'No se pudo cargar. Comprueba tu conexión.',
+          memorizedPct:'% memorizado', pageComplete:'Marcar completo', pageIncomplete:'Desmarcar',
+          dragHint:'Toca o arrastra para seleccionar · Doble toque para traducción',
+          pageHint:'Toca para memorizar · arrastra para selección múltiple · desliza para pasar página' },
+    tr: { diveIn:'Oku & Ezberle', markComplete:'Ezberlenmiş olarak işaretle', markIncomplete:'İşareti kaldır',
+          close:'Kapat', prev:'← Önceki', next:'Sonraki →', translations:'🌐 Çeviriler',
+          hideTranslations:'🌐 Çevirileri gizle', loading:'Yükleniyor…', noConnection:'Yüklenemedi. Bağlantını kontrol et.',
+          memorizedPct:'% ezberlendi', pageComplete:'Sayfayı tamamla', pageIncomplete:'İşareti kaldır',
+          dragHint:'Seçmek için dokun veya sürükle · Çeviri için çift dokun',
+          pageHint:'Ezberlemek için dokun · çoklu seçim için sürükle · sayfa çevirmek için kaydır' },
+    ur: { diveIn:'پڑھیں اور حفظ کریں', markComplete:'حفظ شدہ نشان کریں', markIncomplete:'نشان ہٹائیں',
+          close:'بند کریں', prev:'← پچھلا', next:'اگلا →', translations:'🌐 ترجمہ',
+          hideTranslations:'🌐 ترجمہ چھپائیں', loading:'لوڈ ہو رہا ہے…', noConnection:'لوڈ نہیں ہوا۔ کنکشن چیک کریں۔',
+          memorizedPct:'٪ حفظ', pageComplete:'صفحہ مکمل کریں', pageIncomplete:'نشان ہٹائیں',
+          dragHint:'منتخب کرنے کے لیے ٹچ یا ڈریگ کریں · ترجمے کے لیے دو بار ٹچ کریں',
+          pageHint:'حفظ کے لیے ٹچ کریں · ڈریگ کریں · صفحہ موڑنے کے لیے سوائپ کریں' },
+    id: { diveIn:'Baca & Hafalkan', markComplete:'Tandai dihafalkan', markIncomplete:'Hapus tanda',
+          close:'Tutup', prev:'← Sebelum', next:'Berikut →', translations:'🌐 Terjemahan',
+          hideTranslations:'🌐 Sembunyikan terjemahan', loading:'Memuat…', noConnection:'Gagal memuat. Periksa koneksi.',
+          memorizedPct:'% dihafal', pageComplete:'Tandai selesai', pageIncomplete:'Hapus tanda',
+          dragHint:'Ketuk atau seret untuk memilih · Ketuk dua kali untuk terjemahan',
+          pageHint:'Ketuk untuk menghafal · seret untuk pilih banyak · geser untuk ganti halaman' },
+    ru: { diveIn:'Читать и учить', markComplete:'Отметить выученным', markIncomplete:'Снять отметку',
+          close:'Закрыть', prev:'← Пред.', next:'След. →', translations:'🌐 Переводы',
+          hideTranslations:'🌐 Скрыть переводы', loading:'Загрузка…', noConnection:'Не удалось загрузить. Проверьте соединение.',
+          memorizedPct:'% выучено', pageComplete:'Отметить страницу', pageIncomplete:'Снять отметку',
+          dragHint:'Нажмите или перетащите для выбора · Двойное нажатие для перевода',
+          pageHint:'Нажмите для запоминания · перетащите для множественного выбора · проведите для смены страницы' },
+  };
+
+  function t(key) {
+    const lang = state.lang || 'en';
+    const strings = UI_STRINGS[lang] || UI_STRINGS.en;
+    return strings[key] || UI_STRINGS.en[key] || key;
+  }
+
+  function applyLocale() {
+    // Update all localizable UI elements
+    const diveIn = document.getElementById('diveInBtn');
+    const markComplete = document.getElementById('markCompleteBtn');
+    const closeModal = document.getElementById('closeModalBtn');
+    const prevSurah = document.getElementById('prevSurahBtn');
+    const nextSurah = document.getElementById('nextSurahBtn');
+    const toggleTrans = document.getElementById('toggleTransBtn');
+    const markPage = document.getElementById('markPageCompleteBtn');
+    const dragHints = document.querySelectorAll('.drag-hint');
+
+    if (diveIn) diveIn.textContent = t('diveIn');
+    if (markComplete) markComplete.textContent = t('markComplete');
+    if (closeModal) closeModal.textContent = t('close');
+    if (prevSurah) prevSurah.textContent = t('prev');
+    if (nextSurah) nextSurah.textContent = t('next');
+    if (toggleTrans) toggleTrans.textContent = translationsVisible ? t('hideTranslations') : t('translations');
+    if (markPage) markPage.textContent = activePage && isPageComplete(activePage) ? t('pageIncomplete') : t('pageComplete');
+    dragHints.forEach(el => { el.textContent = t('dragHint'); });
+  }
+
   /* Arabic surah names */
   const SURAHS_ARABIC = [
     "الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس",
@@ -999,7 +1158,12 @@
     en: ["The Opening","The Cow","Family of Imran","The Women","The Table Spread","The Cattle","The Heights","The Spoils of War","The Repentance","Jonah","Hud","Joseph","The Thunder","Abraham","The Rocky Tract","The Bee","The Night Journey","The Cave","Mary","Ta-Ha","The Prophets","The Pilgrimage","The Believers","The Light","The Criterion","The Poets","The Ant","The Story","The Spider","The Romans","Luqman","The Prostration","The Combined Forces","Sheba","Originator","Ya-Sin","Those Ranged in Ranks","Sad","The Troops","The Forgiver","Explained in Detail","The Consultation","The Ornaments of Gold","The Smoke","The Crouching","The Wind-Curved Sandhills","Muhammad","The Victory","The Rooms","Qaf","The Winnowing Winds","The Mount","The Star","The Moon","The Beneficent","The Event","The Iron","The Pleading Woman","The Exile","She That is to be Examined","The Ranks","The Friday Prayer","The Hypocrites","Mutual Disillusion","The Divorce","The Prohibition","The Sovereignty","The Pen","The Reality","The Ascending Stairways","Noah","The Jinn","The Enshrouded One","The Cloaked One","The Resurrection","Man","The Emissaries","The Announcement","Those Who Drag Forth","He Frowned","The Overthrowing","The Cleaving","The Defrauding","The Splitting Open","The Mansions of the Stars","The Night-Comer","The Most High","The Overwhelming","The Dawn","The City","The Sun","The Night","The Morning Hours","The Relief","The Fig","The Clot","The Power","The Clear Proof","The Earthquake","The Courser","The Calamity","Rivalry in World Increase","The Declining Day","The Traducer","The Elephant","Quraysh","Small Kindnesses","The Abundance","The Disbelievers","The Help","The Palm Fiber","The Sincerity","The Daybreak","Mankind"],
     fr: ["L'Ouverture","La Vache","La Famille d'Imran","Les Femmes","La Table Servie","Les Bestiaux","Les Limites","Le Butin","Le Repentir","Jonas","Hud","Joseph","Le Tonnerre","Ibrahim","Al-Hijr","Les Abeilles","Le Voyage Nocturne","La Caverne","Marie","Tâ-Hâ","Les Prophètes","Le Pèlerinage","Les Croyants","La Lumière","Le Discernement","Les Poètes","La Fourmi","Le Récit","L'Araignée","Les Romains","Luqmân","La Prosternation","Les Coalisés","Saba","Le Créateur","Yâ-Sîn","Les Rangées","Sâd","Les Groupes","Le Pardonneur","Expliqués en Détail","La Consultation","Les Ornements d'Or","La Fumée","L'Agenouillée","Les Dunes de Sable","Muhammad","La Victoire","Les Appartements","Qâf","Les Vents Dispersants","La Montagne","L'Étoile","La Lune","Le Tout Miséricordieux","L'Événement","Le Fer","La Femme qui Implore","L'Exode","Celle qui est Examinée","Le Rang","Le Vendredi","Les Hypocrites","La Déception Mutuelle","Le Divorce","L'Interdiction","La Royauté","Le Calame","La Réalité","Les Voies d'Élévation","Noé","Les Djinns","L'Enveloppé","Le Revêtu d'un Manteau","La Résurrection","L'Homme","Les Envoyés","La Nouvelle","Les Anges Qui Arrachent","Il S'est Renfrogné","L'Enroulement","La Déchirure","Les Fraudeurs","La Fissuration","Les Constellations","L'Astre Nocturne","Le Très-Haut","L'Enveloppante","L'Aube","La Cité","Le Soleil","La Nuit","La Matinée","L'Expansion","Le Figuier","Le Caillot","La Nuit du Destin","La Preuve","Le Séisme","Les Coursières","Le Fracas","La Rivalité","Le Temps","Le Calomniateur","L'Éléphant","Qoraich","Les Ustensiles","L'Abondance","Les Infidèles","Le Secours","Les Fibres","La Pureté","L'Aube Naissante","Les Hommes"],
     es: ["La Apertura","La Vaca","La Familia de Imran","Las Mujeres","La Mesa Servida","El Ganado","Las Alturas","El Botín","El Arrepentimiento","Jonás","Hud","José","El Trueno","Abraham","La Roca","Las Abejas","El Viaje Nocturno","La Caverna","María","Ta-Ha","Los Profetas","La Peregrinación","Los Creyentes","La Luz","El Criterio","Los Poetas","La Hormiga","El Relato","La Araña","Los Romanos","Luqman","La Postración","Los Confederados","Saba","El Creador","Ya-Sin","Los que Forman Filas","Sad","Los Grupos","El Perdonador","Explicados en Detalle","La Consulta","Los Adornos de Oro","El Humo","Los que se Arrodillan","Las Dunas","Muhammad","La Victoria","Las Habitaciones","Qaf","Los Vientos","El Monte","La Estrella","La Luna","El Compasivo","El Acontecimiento","El Hierro","La Mujer que Implora","El Exilio","La Examinada","El Rango","El Viernes","Los Hipócritas","La Desilusión Mutua","El Divorcio","La Prohibición","La Soberanía","La Pluma","La Realidad","Las Escaleras","Noé","Los Genios","El Envuelto","El Arropado","La Resurrección","El Hombre","Los Enviados","La Noticia","Los que Arrancan","Él Frunció el Ceño","El Enrollamiento","El Agrietamiento","Los Defraudadores","El Desgarramiento","Las Constelaciones","El Astro Nocturno","El Altísimo","La Abrumadora","El Amanecer","La Ciudad","El Sol","La Noche","Las Horas de la Mañana","La Expansión","El Higo","El Coágulo","La Noche de Poder","La Prueba Clara","El Terremoto","Los Corceles","La Calamidad","La Rivalidad","El Tiempo","El Difamador","El Elefante","Quraish","Los Utensilios","La Abundancia","Los Incrédulos","El Socorro","Las Fibras","La Pureza","El Alba","La Humanidad"],
-    de: null, tr: null, ur: null, id: null, ru: null, ar: null
+    de: ["Die Eröffnung","Die Kuh","Die Familie Imrans","Die Frauen","Der Tisch","Das Vieh","Die Höhen","Die Beute","Die Reue","Yunus","Hud","Yusuf","Der Donner","Ibrahim","Al-Hidschr","Die Bienen","Die Nachtreise","Die Höhle","Maria","Ta-Ha","Die Propheten","Die Pilgerfahrt","Die Gläubigen","Das Licht","Das Kriterium","Die Dichter","Die Ameise","Die Geschichte","Die Spinne","Die Römer","Luqman","Die Niederwerfung","Die Verbündeten","Saba","Der Schöpfer","Ya-Sin","Die Aufgereihten","Sad","Die Scharen","Der Vergebende","Ausführlich Erklärt","Die Beratung","Die Goldenen Verzierungen","Der Rauch","Die Kniende","Die Sanddünen","Muhammad","Der Sieg","Die Gemächer","Qaf","Die Zerstreuenden","Der Berg","Der Stern","Der Mond","Der Allerbarmende","Das Ereignis","Das Eisen","Die Bittende","Die Verbannung","Die Geprüfte","Die Reihen","Das Freitagsgebet","Die Heuchler","Die gegenseitige Täuschung","Die Scheidung","Das Verbot","Die Herrschaft","Die Feder","Die Wirklichkeit","Die Stufen","Nuh","Die Dschinn","Der Eingehüllte","Der Zugedeckte","Die Auferstehung","Der Mensch","Die Gesandten","Die Nachricht","Die Herausreißenden","Er Runzelte die Stirn","Das Zusammenrollen","Das Zerbersten","Die Betrüger","Das Aufreißen","Die Sternbilder","Der Nachtbesucher","Der Allerhöchste","Das Überwältigende","Die Morgenröte","Die Stadt","Die Sonne","Die Nacht","Der Vormittag","Die Weitung","Die Feige","Der Blutklumpen","Die Nacht der Bestimmung","Der klare Beweis","Das Erdbeben","Die Rennenden","Das Unheil","Die Rivalität","Die Zeit","Der Verleumder","Der Elefant","Quraisch","Die Hilfsleistungen","Der Überfluss","Die Ungläubigen","Die Hilfe","Die Palmfaser","Die Aufrichtigkeit","Der Morgengrauen","Die Menschen"],
+    tr: ["Fatiha","Bakara","Âl-i İmrân","Nisâ","Mâide","En'âm","A'râf","Enfâl","Tevbe","Yûnus","Hûd","Yûsuf","Ra'd","İbrâhîm","Hicr","Nahl","İsrâ","Kehf","Meryem","Tâhâ","Enbiyâ","Hac","Mü'minûn","Nûr","Furkân","Şuarâ","Neml","Kasas","Ankebût","Rûm","Lokmân","Secde","Ahzâb","Sebe","Fâtır","Yâsîn","Sâffât","Sâd","Zümer","Mü'min","Fussilet","Şûrâ","Zuhruf","Duhân","Câsiye","Ahkâf","Muhammed","Fetih","Hucurât","Kâf","Zâriyât","Tûr","Necm","Kamer","Rahmân","Vâkıa","Hadîd","Mücâdele","Haşr","Mümtehine","Saf","Cumâ","Münâfikûn","Teğâbun","Talâk","Tahrîm","Mülk","Kalem","Hâkka","Meâric","Nûh","Cin","Müzzemmil","Müddessir","Kıyâmet","İnsân","Mürselât","Nebe","Nâziât","Abese","Tekvîr","İnfitâr","Mutaffifîn","İnşikâk","Bürûc","Târık","A'lâ","Gâşiye","Fecr","Beled","Şems","Leyl","Duhâ","İnşirâh","Tîn","Alak","Kadir","Beyyine","Zilzâl","Âdiyât","Kâria","Tekâsür","Asr","Hümeze","Fîl","Kureyş","Mâûn","Kevser","Kâfirûn","Nasr","Mesed","İhlâs","Felak","Nâs"],
+    ur: ["الفاتحہ","البقرہ","آل عمران","النساء","المائدہ","الانعام","الاعراف","الانفال","التوبہ","یونس","ہود","یوسف","الرعد","ابراہیم","الحجر","النحل","الاسراء","الکہف","مریم","طہ","الانبیاء","الحج","المومنون","النور","الفرقان","الشعراء","النمل","القصص","العنکبوت","الروم","لقمان","السجدہ","الاحزاب","سبا","فاطر","یس","الصافات","ص","الزمر","غافر","فصلت","الشوری","الزخرف","الدخان","الجاثیہ","الاحقاف","محمد","الفتح","الحجرات","ق","الذاریات","الطور","النجم","القمر","الرحمن","الواقعہ","الحدید","المجادلہ","الحشر","الممتحنہ","الصف","الجمعہ","المنافقون","التغابن","الطلاق","التحریم","الملک","القلم","الحاقہ","المعارج","نوح","الجن","المزمل","المدثر","القیامہ","الانسان","المرسلات","النبا","النازعات","عبس","التکویر","الانفطار","المطففین","الانشقاق","البروج","الطارق","الاعلی","الغاشیہ","الفجر","البلد","الشمس","اللیل","الضحی","الانشراح","التین","العلق","القدر","البینہ","الزلزلہ","العادیات","القارعہ","التکاثر","العصر","الہمزہ","الفیل","قریش","الماعون","الکوثر","الکافرون","النصر","المسد","الاخلاص","الفلق","الناس"],
+    id: ["Al-Fatihah","Al-Baqarah","Ali Imran","An-Nisa","Al-Maidah","Al-An'am","Al-A'raf","Al-Anfal","At-Taubah","Yunus","Hud","Yusuf","Ar-Ra'd","Ibrahim","Al-Hijr","An-Nahl","Al-Isra","Al-Kahfi","Maryam","Ta Ha","Al-Anbiya","Al-Hajj","Al-Mu'minun","An-Nur","Al-Furqan","Asy-Syu'ara","An-Naml","Al-Qasas","Al-Ankabut","Ar-Rum","Luqman","As-Sajdah","Al-Ahzab","Saba","Fatir","Yasin","As-Saffat","Sad","Az-Zumar","Gafir","Fussilat","Asy-Syura","Az-Zukhruf","Ad-Dukhan","Al-Jasiyah","Al-Ahqaf","Muhammad","Al-Fath","Al-Hujurat","Qaf","Az-Zariyat","At-Tur","An-Najm","Al-Qamar","Ar-Rahman","Al-Waqi'ah","Al-Hadid","Al-Mujadilah","Al-Hasyr","Al-Mumtahanah","As-Saf","Al-Jumu'ah","Al-Munafiqun","At-Tagabun","At-Talaq","At-Tahrim","Al-Mulk","Al-Qalam","Al-Haqqah","Al-Ma'arij","Nuh","Al-Jin","Al-Muzzammil","Al-Muddassir","Al-Qiyamah","Al-Insan","Al-Mursalat","An-Naba","An-Nazi'at","Abasa","At-Takwir","Al-Infitar","Al-Mutaffifin","Al-Insyiqaq","Al-Buruj","At-Tariq","Al-A'la","Al-Gasyiyah","Al-Fajr","Al-Balad","Asy-Syams","Al-Lail","Ad-Duha","Al-Insyirah","At-Tin","Al-'Alaq","Al-Qadr","Al-Bayyinah","Az-Zalzalah","Al-'Adiyat","Al-Qari'ah","At-Takasur","Al-'Asr","Al-Humazah","Al-Fil","Quraisy","Al-Ma'un","Al-Kausar","Al-Kafirun","An-Nasr","Al-Masad","Al-Ikhlas","Al-Falaq","An-Nas"],
+    ru: ["Аль-Фатиха","Аль-Бакара","Аль Имран","Ан-Ниса","Аль-Маида","Аль-Анам","Аль-Аараф","Аль-Анфаль","Ат-Тауба","Юнус","Худ","Юсуф","Ар-Раад","Ибрагим","Аль-Хиджр","Ан-Нахль","Аль-Исра","Аль-Кахф","Марьям","Та-Ха","Аль-Анбия","Аль-Хадж","Аль-Муминун","Ан-Нур","Аль-Фуркан","Аш-Шуара","Ан-Намль","Аль-Касас","Аль-Анкабут","Ар-Рум","Лукман","Ас-Саджда","Аль-Ахзаб","Саба","Фатыр","Ясин","Ас-Саффат","Сад","Аз-Зумар","Гафир","Фуссылат","Аш-Шура","Аз-Зухруф","Ад-Духан","Аль-Джасия","Аль-Ахкаф","Мухаммад","Аль-Фатх","Аль-Худжурат","Каф","Аз-Зарийат","Ат-Тур","Ан-Наджм","Аль-Камар","Ар-Рахман","Аль-Вакыа","Аль-Хадид","Аль-Муджадала","Аль-Хашр","Аль-Мумтахана","Ас-Сафф","Аль-Джума","Аль-Мунафикун","Ат-Тагабун","Ат-Талак","Ат-Тахрим","Аль-Мульк","Аль-Калам","Аль-Хакка","Аль-Мааридж","Нух","Аль-Джинн","Аль-Муззаммиль","Аль-Муддассир","Аль-Кыяма","Аль-Инсан","Аль-Мурсалат","Ан-Наба","Ан-Назиат","Абаса","Ат-Такыйр","Аль-Инфитар","Аль-Мутаффифин","Аль-Иншикак","Аль-Бурудж","Ат-Тарик","Аль-Аала","Аль-Гашия","Аль-Фаджр","Аль-Балад","Аш-Шамс","Аль-Лайль","Ад-Духа","Аш-Шарх","Ат-Тин","Аль-Алак","Аль-Кадр","Аль-Баийина","Аз-Залзала","Аль-Адийат","Аль-Кариа","Ат-Такасур","Аль-Аср","Аль-Хумаза","Аль-Филь","Курайш","Аль-Маун","Аль-Каусар","Аль-Кафирун","Ан-Наср","Аль-Масад","Аль-Ихляс","Аль-Фалак","Ан-Нас"],
+    ar: null
   };
 
   const SURAHS = [
@@ -1145,6 +1309,25 @@
 
   /* ── LANG GRID ── */
   function buildLangSelects() {
+    // Include landing lang select if it exists
+    const landingLang = document.getElementById('landingLangSelect');
+    if (landingLang) {
+      landingLang.innerHTML = '';
+      LANG_OPTIONS.forEach(l => {
+        const opt = document.createElement('option');
+        opt.value = l.code;
+        opt.textContent = l.native + (l.code !== 'ar' ? '  (' + l.sub + ')' : '');
+        if (l.code === state.lang) opt.selected = true;
+        landingLang.appendChild(opt);
+      });
+      landingLang.addEventListener('change', () => {
+        state.lang = landingLang.value;
+        document.querySelectorAll('#langSelect,#settingsLangSelect,#landingLangSelect').forEach(s => { s.value = state.lang; });
+        transCache = {};
+        saveState();
+        renderSurahView && renderSurahView(); // update tiles if already on main view
+      });
+    }
     ['langSelect','settingsLangSelect'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -1158,10 +1341,13 @@
       });
       el.addEventListener('change', () => {
         state.lang = el.value;
-        // Sync both selects
-        document.querySelectorAll('#langSelect,#settingsLangSelect').forEach(s => { s.value = state.lang; });
+        // Sync all selects
+        document.querySelectorAll('#langSelect,#settingsLangSelect,#landingLangSelect').forEach(s => { s.value = state.lang; });
         transCache = {};
         saveState();
+        applyLocale();
+        // Re-render surah tiles if on main view
+        if (!appScreen.classList.contains('hidden')) renderSurahView();
       });
     });
   }
@@ -1266,6 +1452,7 @@
     pageListScreen.style.display = 'none';
     pageDetailScreen.style.display = 'none';
 
+    applyLocale();
     if (state.viewMode === 'page') {
       pageViewScreen.style.display = 'block';
       renderPageView();
@@ -1307,7 +1494,18 @@
 
       const transEl = document.createElement('div');
       transEl.className   = 'surah-name-trans';
-      transEl.textContent = surahTransName(idx);
+      const tname = surahTransName(idx);
+      transEl.textContent = tname;
+      // RTL scripts: Urdu, Arabic — set direction so they render correctly in the tile
+      if (['ur','ar'].includes(state.lang)) {
+        transEl.style.direction = 'rtl';
+        transEl.style.fontFamily = "'Scheherazade New', 'Noto Naskh Arabic', serif";
+        transEl.style.fontSize = '0.62rem';
+      } else {
+        transEl.style.direction = '';
+        transEl.style.fontFamily = '';
+        transEl.style.fontSize = '';
+      }
 
       const numEl = document.createElement('div');
       numEl.className   = 'surah-num';
@@ -1342,6 +1540,7 @@
     modalFooter.classList.add("hidden");
     ayahListEl.innerHTML = '<div class="drag-hint">Tap or drag to select · Double-tap for translation</div>';
     diveInBtn.dataset.ayahCount = String(ayahCount);
+    applyLocale();
     surahDialog.showModal();
   }
 
@@ -1685,10 +1884,44 @@
     return pages.every(pg => isPageComplete(pg));
   }
 
+  // Authoritative juz start pages — Madani Mushaf 15-line, 604 pages
+  // Source: surahquran.com, cross-checked with quran.com page metadata
+  const JUZ_START_PAGES = [
+    1,   // Juz 1  — Al-Fatiha 1:1
+    22,  // Juz 2  — Al-Baqarah 2:142
+    42,  // Juz 3  — Al-Baqarah 2:253
+    62,  // Juz 4  — Ali 'Imran 3:93
+    82,  // Juz 5  — An-Nisa 4:24
+    102, // Juz 6  — An-Nisa 4:148 (laa yuhibbu)
+    121, // Juz 7  — Al-Ma'idah 5:82
+    142, // Juz 8  — Al-An'am 6:111
+    162, // Juz 9  — Al-A'raf 7:88
+    182, // Juz 10 — Al-Anfal 8:41
+    201, // Juz 11 — At-Tawbah 9:93
+    222, // Juz 12 — Hud 11:6
+    242, // Juz 13 — Yusuf 12:53
+    262, // Juz 14 — Al-Hijr 15:1
+    282, // Juz 15 — Al-Isra 17:1
+    302, // Juz 16 — Al-Kahf 18:75
+    322, // Juz 17 — Al-Anbiya 21:1
+    342, // Juz 18 — Al-Mu'minun 23:1
+    362, // Juz 19 — Al-Furqan 25:21
+    382, // Juz 20 — An-Naml 27:56
+    402, // Juz 21 — Al-Ankabut 29:46
+    422, // Juz 22 — Al-Ahzab 33:31
+    442, // Juz 23 — Ya-Sin 36:28
+    462, // Juz 24 — Az-Zumar 39:32
+    482, // Juz 25 — Fussilat 41:47
+    502, // Juz 26 — Al-Ahqaf 46:1
+    522, // Juz 27 — Adh-Dhariyat 51:31
+    542, // Juz 28 — Al-Mujadila 58:1
+    562, // Juz 29 — Al-Mulk 67:1
+    582, // Juz 30 — An-Naba 78:1
+  ];
+
   function getJuzPages(juzNum) {
-    // Each juz has roughly 20 pages (604 total pages / 30 juz ≈ 20.1)
-    const start = (juzNum - 1) * 20 + 1;
-    const end   = juzNum === 30 ? 604 : juzNum * 20;
+    const start = JUZ_START_PAGES[juzNum - 1];
+    const end   = juzNum === 30 ? 604 : JUZ_START_PAGES[juzNum] - 1;
     const pages = [];
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
@@ -1762,7 +1995,9 @@
     pageDetailScreen.style.display = 'block';
     document.getElementById('pageDetailTitle').textContent = 'Page ' + pageNum;
     mushafLines = Number(document.getElementById('mushafLayoutSelect').value) || 15;
+    updatePageNavBar();
     await loadAndRenderMushafPage(pageNum);
+    updatePageNavBar(); // update again after load in case complete state changed
   }
 
   /* Multiple API strategies for fetching page data with line_number.
@@ -1961,34 +2196,44 @@
 
       const textSpan = document.createElement('span');
       textSpan.className = 'line-text';
-      // Words come in RTL order from the API — join with space
-      // In a real Mushaf, the line is fully justified RTL
-      textSpan.textContent = line.words.map(w => w.text).join(' ');
-      lineEl.appendChild(textSpan);
 
-      // Show ayah number at start of ayah (left side in RTL = visual right end of line)
-      // Only show when the line ends an ayah (last word is the last of that verseKey)
+      // Build the line text. In a Mushaf, ayah-end markers (﴾٣﴿) sit right
+      // at the end of the last word of that ayah, inline in the text flow.
+      // Because the line is RTL, "end" is the right side visually.
+      // We embed the marker directly into the text so it justifies naturally.
+      const words = line.words.map(w => w.text).join(' ');
       const lastWord = line.words[line.words.length - 1];
+      let showMarker = false;
+      let markerNum = '';
+
       if (lastWord) {
-        const [,ayahNum] = lastWord.verseKey.split(':');
-        if (!isSynthetic) {
-          // Check if this word's verseKey changes on next line (= line ends this ayah)
-          const nextLine = mushafPageData[idx + 1];
-          const nextVerseKey = nextLine && nextLine.words && nextLine.words[0] && nextLine.words[0].verseKey;
-          if (!nextVerseKey || nextVerseKey !== lastWord.verseKey) {
-            const endMark = document.createElement('span');
-            endMark.style.cssText = 'font-family:Scheherazade New,serif;font-size:0.75em;opacity:0.55;margin-right:0.15em;flex-shrink:0;direction:rtl;';
-            endMark.textContent = '﴾' + toArabicNumerals(ayahNum) + '﴿';
-            lineEl.appendChild(endMark);
-          }
+        const [, ayahNum] = lastWord.verseKey.split(':');
+        if (isSynthetic) {
+          showMarker = true;
+          markerNum = ayahNum;
         } else {
-          // Synthetic: always show ayah number
-          const endMark = document.createElement('span');
-          endMark.style.cssText = 'font-family:Scheherazade New,serif;font-size:0.75em;opacity:0.55;margin-right:0.2em;flex-shrink:0;';
-          endMark.textContent = '﴾' + toArabicNumerals(ayahNum) + '﴿';
-          lineEl.appendChild(endMark);
+          // Show marker only if this line is the last line of the ayah
+          const nextLine = mushafPageData[idx + 1];
+          const nextKey = nextLine && nextLine.words && nextLine.words[0] && nextLine.words[0].verseKey;
+          if (!nextKey || nextKey !== lastWord.verseKey) {
+            showMarker = true;
+            markerNum = ayahNum;
+          }
         }
       }
+
+      if (showMarker) {
+        // Marker inline: append as a <span> child inside line-text so it's part of the RTL flow
+        textSpan.textContent = words + ' ';
+        const mark = document.createElement('span');
+        mark.className = 'ayah-marker';
+        mark.textContent = '﴾' + toArabicNumerals(markerNum) + '﴿';
+        textSpan.appendChild(mark);
+      } else {
+        textSpan.textContent = words;
+      }
+
+      lineEl.appendChild(textSpan);
       pageEl.appendChild(lineEl);
     });
 
@@ -2085,7 +2330,7 @@
     document.addEventListener('mouseup', () => { dragging = false; dragMode = null; });
   }
 
-    document.getElementById('backToPageListBtn').addEventListener('click', () => {
+  document.getElementById('backToPageListBtn').addEventListener('click', () => {
     pageDetailScreen.style.display = 'none';
     pageListScreen.style.display = 'block';
     if (activeJuz) openJuz(activeJuz);
@@ -2095,15 +2340,65 @@
     if (!activePage || !mushafPageData) return;
     const complete = !isPageComplete(activePage);
     setPageComplete(activePage, complete);
-    // Toggle all ayah lines on this mushaf page
     mushafPageData.forEach(line => {
       if (line.type !== 'ayah') return;
       toggleMushafLine(line, complete);
     });
-    // Re-render the page to reflect new state
     renderMushafPage();
-    document.getElementById('markPageCompleteBtn').textContent = complete ? 'Mark Page Incomplete' : 'Mark Page Complete';
+    updatePageNavBar();
   });
+
+  /* ── PAGE NAVIGATION: Prev/Next buttons + swipe ── */
+  function getActiveJuzPages() {
+    if (!activeJuz) return [];
+    return getJuzPages(activeJuz);
+  }
+
+  function navigateToPage(pageNum) {
+    if (pageNum < 1 || pageNum > 604) return;
+    openPageDetail(pageNum);
+  }
+
+  function updatePageNavBar() {
+    const label = document.getElementById('pageNavLabel');
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+    const markBtn = document.getElementById('markPageCompleteBtn');
+    if (!activePage) return;
+    if (label) label.textContent = 'Page ' + activePage + ' of 604';
+    if (prevBtn) prevBtn.disabled = activePage <= 1;
+    if (nextBtn) nextBtn.disabled = activePage >= 604;
+    if (markBtn) markBtn.textContent = isPageComplete(activePage) ? 'Mark Incomplete' : 'Mark Complete';
+  }
+
+  document.getElementById('prevPageBtn').addEventListener('click', () => {
+    if (activePage > 1) navigateToPage(activePage - 1);
+  });
+  document.getElementById('nextPageBtn').addEventListener('click', () => {
+    if (activePage < 604) navigateToPage(activePage + 1);
+  });
+
+  /* ── SWIPE GESTURE for page turns ── */
+  (function() {
+    const wrap = document.getElementById('mushafSwipeWrap');
+    let startX = 0, startY = 0, startTime = 0;
+    wrap.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startTime = Date.now();
+    }, { passive: true });
+    wrap.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      const dt = Date.now() - startTime;
+      // Swipe: must be mostly horizontal, at least 60px, within 400ms
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && dt < 400) {
+        // In Arabic RTL: swipe LEFT = next page, swipe RIGHT = prev page
+        if (dx < 0 && activePage < 604) navigateToPage(activePage + 1);
+        if (dx > 0 && activePage > 1)   navigateToPage(activePage - 1);
+      }
+    }, { passive: true });
+  })();
 
   /* ── GEAR / SETTINGS ── */
   function openSettings() {
