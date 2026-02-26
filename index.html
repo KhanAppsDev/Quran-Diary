@@ -2,598 +2,429 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <title>Quran Diary</title>
 
-  <!--
-    FONT STRATEGY: font-display:block prevents any flash of local fonts.
-    Every Arabic element sets font-family explicitly — never inherited.
-    Scheherazade New = Uthmani Hafs | Noto Nastaliq Urdu = IndoPak
-  -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&family=Noto+Nastaliq+Urdu:wght@400;700&display=block" rel="stylesheet" />
 
   <style>
-    /* ─────────────────────────────────────────────────────────────────
-       THEME VARIABLES
-       parchment = default (:root)
-       dark      = [data-theme="dark"]
-       glass     = [data-theme="glass"]
-    ───────────────────────────────────────────────────────────────── */
     :root {
       --font-latin:   Georgia, 'Times New Roman', serif;
       --font-uthmani: 'Scheherazade New', serif;
       --font-indopak: 'Noto Nastaliq Urdu', serif;
-      --font-arabic:  var(--font-uthmani); /* overridden by applyScript() */
-
-      /* Parchment */
-      --bg:       #f5f0e8;
-      --bg2:      #ede8dc;
-      --surface:  #faf7f2;
-      --surface2: #f0ece3;
-      --text:     #2c2416;
-      --text2:    #6b5d42;
-      --line:     #d4c9b0;
-      --accent:   #7a5c2e;
-      --shadow:   0 6px 24px rgba(60,40,10,0.12);
-      --shadow-sm:0 2px 8px rgba(60,40,10,0.07);
-      --radius:   14px;
-      --radius-sm:10px;
-      --tile-empty: #ede8dc;
-      --tile-text-empty:       #6b5d42;
-      --tile-text-on-progress: #1f3324;
-      --tile-text-complete:    #f6fff8;
-      /* Tile progress colors */
-      --tile-25:  #f8e47f;
-      --tile-50:  #d9e88e;
-      --tile-75:  #9fd37c;
-      --tile-99:  #4ca867;
-      --tile-100: #0f5132;
+      --font-arabic:  var(--font-uthmani);
+      --bg:       #f5f0e8; --bg2: #ede8dc; --surface: #faf7f2; --surface2: #f0ece3;
+      --text:     #2c2416; --text2: #6b5d42; --line: #d4c9b0; --accent: #7a5c2e;
+      --shadow:   0 6px 24px rgba(60,40,10,0.12); --shadow-sm: 0 2px 8px rgba(60,40,10,0.07);
+      --radius:   14px; --radius-sm: 10px;
+      --tile-empty: #ede8dc; --tile-text-empty: #6b5d42; --tile-text-on-progress: #1f3324; --tile-text-complete: #f6fff8;
+      --tile-25: #f8e47f; --tile-50: #d9e88e; --tile-75: #9fd37c; --tile-99: #4ca867; --tile-100: #0f5132;
     }
-
     [data-theme="dark"] {
-      --bg:       #0f1117;
-      --bg2:      #181c24;
-      --surface:  #1e232e;
-      --surface2: #252b38;
-      --text:     #e8ecf4;
-      --text2:    #8b95ab;
-      --line:     #2e3547;
-      --accent:   #5b9bd5;
-      --shadow:   0 6px 24px rgba(0,0,0,0.4);
-      --shadow-sm:0 2px 8px rgba(0,0,0,0.3);
-      /* Dark tile colors — muted greens with LIGHT text */
-      --tile-empty:            #252b38;
-      --tile-text-empty:       #8b95ab;
-      --tile-text-on-progress: #c8ecd0;
-      --tile-text-complete:    #c8f0ce;
-      --tile-25:  #3a3818;
-      --tile-50:  #2a3d18;
-      --tile-75:  #1a3f22;
-      --tile-99:  #154d28;
-      --tile-100: #0d3a1c;
+      --bg: #0f1117; --bg2: #181c24; --surface: #1e232e; --surface2: #252b38;
+      --text: #e8ecf4; --text2: #8b95ab; --line: #2e3547; --accent: #5b9bd5;
+      --shadow: 0 6px 24px rgba(0,0,0,0.4); --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+      --tile-empty: #252b38; --tile-text-empty: #8b95ab; --tile-text-on-progress: #c8ecd0; --tile-text-complete: #c8f0ce;
+      --tile-25: #3a3818; --tile-50: #2a3d18; --tile-75: #1a3f22; --tile-99: #154d28; --tile-100: #0d3a1c;
     }
-
     [data-theme="glass"] {
-      --bg:       #eef2fa;
-      --bg2:      #e4eaf5;
-      --surface:  #f4f7fd;
-      --surface2: #eaeff8;
-      --text:     #1a2035;
-      --text2:    #4a5680;
-      --line:     #c8d0e8;
-      --accent:   #3a5fcb;
-      --shadow:   0 8px 32px rgba(30,50,120,0.14);
-      --shadow-sm:0 2px 12px rgba(30,50,120,0.08);
-      /* Glass tile colors — light backgrounds, dark text */
-      --tile-empty:            #dde5f5;
-      --tile-text-empty:       #4a5680;
-      --tile-text-on-progress: #1a2a18;
-      --tile-text-complete:    #f0fff4;
-      --tile-25:  #f5e882;
-      --tile-50:  #d8eea0;
-      --tile-75:  #8fd47a;
-      --tile-99:  #3da85e;
-      --tile-100: #0d5c30;
+      --bg: #eef2fa; --bg2: #e4eaf5; --surface: #f4f7fd; --surface2: #eaeff8;
+      --text: #1a2035; --text2: #4a5680; --line: #c8d0e8; --accent: #3a5fcb;
+      --shadow: 0 8px 32px rgba(30,50,120,0.14); --shadow-sm: 0 2px 12px rgba(30,50,120,0.08);
+      --tile-empty: #dde5f5; --tile-text-empty: #4a5680; --tile-text-on-progress: #1a2a18; --tile-text-complete: #f0fff4;
+      --tile-25: #f5e882; --tile-50: #d8eea0; --tile-75: #8fd47a; --tile-99: #3da85e; --tile-100: #0d5c30;
     }
 
-    /* ── RESET ───────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: var(--font-latin);
-      color: var(--text);
-      background: var(--bg);
-      min-height: 100vh;
-      transition: background 0.3s, color 0.3s;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-    }
-    [data-theme="glass"] body::before {
-      background:
-        radial-gradient(ellipse 80% 60% at 20% 20%, rgba(100,140,255,0.18) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 80% at 80% 80%, rgba(80,200,160,0.12) 0%, transparent 60%);
-    }
-    [data-theme="dark"] body::before {
-      background:
-        radial-gradient(ellipse 70% 50% at 10% 10%, rgba(91,155,213,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 70% at 90% 90%, rgba(76,175,130,0.06) 0%, transparent 60%);
-    }
-
+    body { font-family: var(--font-latin); color: var(--text); background: var(--bg); min-height: 100vh; transition: background 0.3s, color 0.3s; -webkit-overflow-scrolling: touch; }
     .hidden { display: none !important; }
 
-    /* ── LANDING SCREEN ──────────────────────────────────────────── */
-    #landingScreen {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem 1rem;
-      position: relative;
-      z-index: 1;
+    /* ── AUDHUBILLAH FADE ── */
+    #audhuOverlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 0.5rem;
+      opacity: 1; transition: opacity 1.2s ease;
+      pointer-events: none;
     }
+    #audhuOverlay.fade-out { opacity: 0; }
+    #audhuOverlay.done { display: none; }
+    .audhu-text-uthmani {
+      font-family: 'Scheherazade New', serif !important;
+      font-size: clamp(1.5rem, 6vw, 2.5rem);
+      direction: rtl; color: var(--accent); line-height: 2;
+      opacity: 0; animation: audhuFade 1.8s ease 0.3s forwards;
+    }
+    .audhu-text-indopak {
+      font-family: 'Noto Nastaliq Urdu', serif !important;
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      direction: rtl; color: var(--accent); line-height: 2.2;
+      opacity: 0; animation: audhuFade 1.8s ease 0.3s forwards;
+    }
+    @keyframes audhuFade { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── LANDING ── */
+    #landingScreen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem 1rem; position: relative; z-index: 1; }
     .landing-card {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      padding: 2.2rem 2rem;
-      width: min(100%, 460px);
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: var(--surface); border: 1px solid var(--line); border-radius: 20px;
+      box-shadow: var(--shadow); padding: 2.2rem 2rem; width: min(100%, 480px);
+      display: flex; flex-direction: column; gap: 1.4rem;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     }
-
-    /* Greeting — EXPLICIT font, responds to script toggle */
-    .salaam {
-      font-family: var(--font-arabic) !important;
-      font-size: clamp(1.9rem, 7vw, 2.7rem);
-      font-weight: 400;
-      line-height: 1.5;
-      text-align: center;
-      color: var(--accent);
-      direction: rtl;
-      unicode-bidi: isolate;
-    }
-    .salaam-sub {
-      font-family: var(--font-latin);
-      font-size: 0.85rem;
-      color: var(--text2);
-      text-align: center;
-      margin-top: 0.3rem;
-      font-style: italic;
-    }
-
-    /* Name input */
+    .salaam { font-family: var(--font-arabic) !important; font-size: clamp(1.9rem,7vw,2.7rem); font-weight: 400; line-height: 1.5; text-align: center; color: var(--accent); direction: rtl; }
+    .salaam-sub { font-family: var(--font-latin); font-size: 0.85rem; color: var(--text2); text-align: center; margin-top: 0.3rem; font-style: italic; }
     .landing-section { display: flex; flex-direction: column; gap: 0.6rem; }
-    .landing-section label {
-      font-family: var(--font-latin);
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--text2);
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
-    }
+    .landing-section label { font-family: var(--font-latin); font-size: 0.88rem; font-weight: 600; color: var(--text2); letter-spacing: 0.4px; text-transform: uppercase; }
     .landing-section input {
-      font-family: var(--font-latin);
-      font-size: 1.05rem;
-      padding: 0.85rem 1rem;
-      border: 1.5px solid var(--line);
-      border-radius: var(--radius-sm);
-      background: var(--surface2);
-      color: var(--text);
-      width: 100%;
-      outline: none;
+      font-family: var(--font-latin); font-size: 1.05rem; padding: 0.85rem 1rem;
+      border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+      background: var(--surface2); color: var(--text); width: 100%; outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .landing-section input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
-    }
+    .landing-section input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
 
-    /* Ta'awwudh shown once above script buttons — EXPLICIT font each */
     .tawwudh-display { text-align: center; padding: 0.4rem 0.4rem 0.15rem; }
-    .tawwudh-text-uthmani {
-      font-family: 'Scheherazade New', serif !important;
-      font-size: 1.25rem;
-      direction: rtl;
-      line-height: 1.9;
-      color: var(--accent);
-      display: block;
-    }
-    .tawwudh-text-indopak {
-      font-family: 'Noto Nastaliq Urdu', serif !important;
-      font-size: 1.15rem;
-      direction: rtl;
-      line-height: 2.1;
-      color: var(--accent);
-      display: none;
-    }
+    .tawwudh-text-uthmani { font-family: 'Scheherazade New', serif !important; font-size: 1.25rem; direction: rtl; line-height: 1.9; color: var(--accent); display: none; }
+    .tawwudh-text-indopak { font-family: 'Noto Nastaliq Urdu', serif !important; font-size: 1.15rem; direction: rtl; line-height: 2.1; color: var(--accent); display: none; }
+    .tawwudh-text-uthmani.active, .tawwudh-text-indopak.active { display: block; }
 
-    .choice-label {
-      font-family: var(--font-latin);
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--text2);
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      text-align: center;
-      margin-bottom: 0.5rem;
-    }
+    .choice-label { font-family: var(--font-latin); font-size: 0.78rem; font-weight: 600; color: var(--text2); letter-spacing: 0.5px; text-transform: uppercase; text-align: center; margin-bottom: 0.5rem; }
     .script-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
     .script-btn {
-      font-family: var(--font-latin);
-      border: 1.5px solid var(--line);
-      border-radius: var(--radius-sm);
-      padding: 0.7rem 0.5rem;
-      background: var(--surface2);
-      color: var(--text2);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.9rem;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      min-height: 44px;
-      transition: border-color 0.18s, background 0.18s, color 0.18s, box-shadow 0.18s;
+      font-family: var(--font-latin); border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+      padding: 0.7rem 0.5rem; background: var(--surface2); color: var(--text2); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 600;
+      min-height: 44px; transition: border-color 0.18s, background 0.18s, color 0.18s, box-shadow 0.18s;
     }
     .script-btn:hover { border-color: var(--accent); background: var(--bg2); color: var(--text); }
-    .script-btn.selected {
-      border-color: var(--accent);
-      background: color-mix(in srgb, var(--accent) 12%, var(--surface));
-      color: var(--accent);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
-    }
+    .script-btn.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
 
-    /* Theme buttons */
+    /* Language selector grid */
+    .lang-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .lang-btn {
+      border: 1.5px solid var(--line); border-radius: var(--radius-sm); padding: 0.6rem 0.3rem;
+      background: var(--surface2); color: var(--text2); cursor: pointer;
+      font-family: var(--font-latin); font-size: 0.82rem; font-weight: 600; text-align: center;
+      min-height: 44px; transition: border-color 0.18s, background 0.18s, color 0.18s, box-shadow 0.18s;
+    }
+    .lang-btn:hover { border-color: var(--accent); background: var(--bg2); color: var(--text); }
+    .lang-btn.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
+    .lang-btn .lang-native { font-size: 1rem; display: block; }
+    .lang-btn .lang-sub { font-size: 0.65rem; opacity: 0.6; display: block; }
+
     .theme-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
-    .theme-btn {
-      border: 1.5px solid var(--line);
-      border-radius: var(--radius-sm);
-      padding: 0.7rem 0.3rem;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.4rem;
-      transition: border-color 0.18s, box-shadow 0.18s;
-      background: transparent;
-      min-height: 66px;
-    }
-    .theme-btn.selected {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
-    }
+    .theme-btn { border: 1.5px solid var(--line); border-radius: var(--radius-sm); padding: 0.7rem 0.3rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; transition: border-color 0.18s, box-shadow 0.18s; background: transparent; min-height: 66px; }
+    .theme-btn.selected { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
     .theme-swatch { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.08); flex-shrink: 0; }
     .theme-swatch.parchment { background: linear-gradient(135deg, #f5f0e8 40%, #7a5c2e 100%); }
     .theme-swatch.dark      { background: linear-gradient(135deg, #0f1117 40%, #5b9bd5 100%); }
     .theme-swatch.glass     { background: linear-gradient(135deg, rgba(200,215,255,0.8) 0%, rgba(80,200,160,0.5) 100%); border: 2px solid rgba(100,140,255,0.3); }
     .theme-name { font-family: var(--font-latin); font-size: 0.72rem; font-weight: 600; color: var(--text2); letter-spacing: 0.3px; text-align: center; }
 
-    /* Enter button */
-    .enter-btn {
-      font-family: var(--font-latin);
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius-sm);
-      padding: 1rem;
-      width: 100%;
-      cursor: pointer;
-      min-height: 48px;
-      transition: opacity 0.2s, transform 0.1s;
+    /* View mode selector */
+    .view-mode-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+    .view-mode-btn {
+      border: 1.5px solid var(--line); border-radius: var(--radius-sm); padding: 0.8rem 0.5rem;
+      background: var(--surface2); color: var(--text2); cursor: pointer;
+      font-family: var(--font-latin); font-size: 0.88rem; font-weight: 600; text-align: center;
+      min-height: 52px; transition: border-color 0.18s, background 0.18s, color 0.18s, box-shadow 0.18s;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem;
     }
-    .enter-btn:hover  { opacity: 0.88; }
+    .view-mode-btn .vm-icon { font-size: 1.4rem; }
+    .view-mode-btn:hover { border-color: var(--accent); background: var(--bg2); color: var(--text); }
+    .view-mode-btn.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
+
+    .enter-btn {
+      font-family: var(--font-latin); font-size: 1rem; font-weight: 700; letter-spacing: 0.5px;
+      background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm);
+      padding: 1rem; width: 100%; cursor: pointer; min-height: 48px; transition: opacity 0.2s, transform 0.1s;
+    }
+    .enter-btn:hover { opacity: 0.88; }
     .enter-btn:active { transform: scale(0.985); }
 
-    /* ── TUTORIAL OVERLAY ────────────────────────────────────────── */
+    /* ── TUTORIAL ── */
     #tutorialOverlay {
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      background: rgba(0,0,0,0.58);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      opacity: 0;
-      transition: opacity 0.5s ease;
-      pointer-events: none;
+      position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.58);
+      display: flex; align-items: center; justify-content: center; padding: 1rem;
+      opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
     }
     #tutorialOverlay.visible { opacity: 1; pointer-events: auto; }
-
-    .tutorial-card {
-      /* Fully opaque on all themes — glass surface var is now solid */
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      padding: 2rem 1.7rem 1.5rem;
-      width: min(100%, 400px);
-      max-height: 90vh;
-      overflow-y: auto;
-      position: relative;
-      -webkit-overflow-scrolling: touch;
-    }
-    .tutorial-skip {
-      position: absolute;
-      top: 0.9rem;
-      right: 0.9rem;
-      font-family: var(--font-latin);
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--text2);
-      background: var(--surface2);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 0.3rem 0.7rem;
-      cursor: pointer;
-      min-height: 32px;
-      transition: color 0.15s, background 0.15s;
-    }
+    .tutorial-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 2rem 1.7rem 1.5rem; width: min(100%, 400px); max-height: 90vh; overflow-y: auto; position: relative; -webkit-overflow-scrolling: touch; }
+    .tutorial-skip { position: absolute; top: 0.9rem; right: 0.9rem; font-family: var(--font-latin); font-size: 0.78rem; font-weight: 600; color: var(--text2); background: var(--surface2); border: 1px solid var(--line); border-radius: 8px; padding: 0.3rem 0.7rem; cursor: pointer; min-height: 32px; transition: color 0.15s, background 0.15s; }
     .tutorial-skip:hover { color: var(--text); background: var(--bg2); }
-
-    /* Fixed-height step wrapper so nav buttons never shift position */
-    .tutorial-steps-wrap {
-      min-height: 230px;
-      margin-bottom: 0.5rem;
-    }
+    .tutorial-steps-wrap { min-height: 230px; margin-bottom: 0.5rem; }
     .tutorial-step { display: none; }
-    .tutorial-step.active {
-      display: block;
-      animation: tutFade 0.18s ease;
-    }
-    @keyframes tutFade {
-      from { opacity: 0; transform: translateY(3px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    .tutorial-step.active { display: block; animation: tutFade 0.18s ease; }
+    @keyframes tutFade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
     .tutorial-icon  { font-size: 2.2rem; text-align: center; margin-bottom: 0.75rem; }
     .tutorial-title { font-family: var(--font-latin); font-size: 1.1rem; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 0.5rem; line-height: 1.3; }
     .tutorial-body  { font-family: var(--font-latin); font-size: 0.9rem; color: var(--text2); line-height: 1.65; text-align: center; margin-bottom: 0.5rem; }
     .tutorial-body em { color: var(--accent); font-style: normal; font-weight: 600; }
-
-    .tutorial-hadith {
-      background: var(--bg2);
-      border-left: 3px solid var(--accent);
-      border-radius: 0 8px 8px 0;
-      padding: 0.75rem 0.9rem;
-      margin: 0.75rem 0;
-      text-align: left;
-    }
-    .tutorial-hadith p    { font-family: var(--font-latin); font-size: 0.84rem; color: var(--text); line-height: 1.65; font-style: italic; }
+    .tutorial-hadith { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 0.75rem 0.9rem; margin: 0.75rem 0; text-align: left; }
+    .tutorial-hadith p { font-family: var(--font-latin); font-size: 0.84rem; color: var(--text); line-height: 1.65; font-style: italic; }
     .tutorial-hadith cite { font-family: var(--font-latin); font-size: 0.74rem; color: var(--text2); display: block; margin-top: 0.4rem; font-style: normal; }
-
-    /* Dots: explicit opaque colors so they're visible in all themes */
     .tutorial-dots { display: flex; justify-content: center; gap: 0.45rem; margin-bottom: 1rem; }
     .tutorial-dot  { width: 8px; height: 8px; border-radius: 50%; background: var(--line); border: 1.5px solid var(--line); transition: background 0.2s, border-color 0.2s; }
     .tutorial-dot.active { background: var(--accent); border-color: var(--accent); }
-    /* Force dots visible on glass (line is very light there) */
     [data-theme="glass"] .tutorial-dot { background: #c0cce8; border-color: #a0b0d8; }
     [data-theme="glass"] .tutorial-dot.active { background: var(--accent); border-color: var(--accent); }
-
     .tutorial-nav { display: flex; gap: 0.6rem; justify-content: center; }
     .tutorial-nav button { font-family: var(--font-latin); font-size: 0.9rem; font-weight: 600; padding: 0.65rem 1.4rem; border-radius: var(--radius-sm); cursor: pointer; min-height: 44px; border: none; transition: opacity 0.15s; }
     .tutorial-nav button:hover { opacity: 0.85; }
     .tut-btn-primary   { background: var(--accent); color: #fff; }
     .tut-btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--line) !important; }
 
-    /* ── APP SCREEN ──────────────────────────────────────────────── */
+    /* ── APP HEADER ── */
     #appScreen { position: relative; z-index: 1; }
-
     .app-header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      position: sticky; top: 0; z-index: 10;
       background: color-mix(in srgb, var(--bg) 92%, transparent);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--line);
-      padding: 0.8rem 1rem;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line); padding: 0.8rem 1rem;
     }
     .title-row { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; }
-    h1 {
-      font-family: var(--font-latin);
-      font-size: 1.05rem;
-      font-weight: 700;
-      letter-spacing: 0.2px;
-      color: var(--text);
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    h1 { font-family: var(--font-latin); font-size: 1.05rem; font-weight: 700; color: var(--text); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .overall { font-family: var(--font-latin); font-size: 0.82rem; color: var(--text2); white-space: nowrap; }
 
-    /* Circular theme toggle in header */
-    #themeToggleBtn {
-      width: 36px;
-      height: 36px;
-      min-height: 36px;
-      border-radius: 50%;
-      border: 1.5px solid var(--line);
-      background: var(--surface2);
-      color: var(--text2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      flex-shrink: 0;
-      font-size: 1rem;
-      padding: 0;
-      transition: background 0.18s, border-color 0.18s, color 0.18s;
+    /* Gear icon button */
+    #gearBtn {
+      width: 36px; height: 36px; min-height: 36px; border-radius: 50%;
+      border: 1.5px solid var(--line); background: var(--surface2); color: var(--text2);
+      display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+      font-size: 1.1rem; padding: 0; transition: background 0.18s, border-color 0.18s, color 0.18s;
     }
-    #themeToggleBtn:hover { background: var(--bg2); border-color: var(--accent); color: var(--accent); }
+    #gearBtn:hover { background: var(--bg2); border-color: var(--accent); color: var(--accent); }
 
     .container { max-width: 1400px; margin: 0 auto; padding: 1rem; }
-
-    /* Stats */
     .stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0.65rem; margin-bottom: 1rem; }
     .stat  { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 0.68rem; text-align: center; backdrop-filter: blur(6px); }
     .stat strong { font-family: var(--font-latin); display: block; font-size: 1rem; margin-bottom: 0.15rem; color: var(--text); }
     .stat span   { font-family: var(--font-latin); color: var(--text2); font-size: 0.78rem; }
 
-    /* ─────────────────────────────────────────────────────────────────
-       SURAH GRID — COLUMN COUNT SETTINGS
-       114 = 2 × 3 × 19 — valid column counts: 1, 2, 3, 6, 19, 38, 57, 114
-       ┌──────────────────────────────────────────────────────────────┐
-       │  ← TWEAK ZONE: change the repeat(N) values below            │
-       │  Mobile portrait  (≤600px):          3 columns              │
-       │  Tablet / mid     (601–1199px):       6 columns              │
-       │  Wide desktop     (≥1200px):         19 columns              │
-       │  Landscape phone  (h≤500, landscape): 6 columns             │
-       └──────────────────────────────────────────────────────────────┘
-    ───────────────────────────────────────────────────────────────── */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr)); /* ← TABLET DEFAULT */
-      gap: 0.55rem;
-      margin-bottom: 1.25rem;
-    }
-
-    /* Surah tile */
+    /* ── SURAH GRID ── */
+    .grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.55rem; margin-bottom: 1.25rem; }
     .surah-tile {
-      background: var(--tile-empty);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
-      padding: 0.5rem 0.35rem;
-      min-height: 68px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      text-align: center;
-      box-shadow: var(--shadow-sm);
-      will-change: transform;
-      transition: transform 120ms ease;
-      cursor: pointer;
+      background: var(--tile-empty); border: 1px solid var(--line); border-radius: var(--radius-sm);
+      padding: 0.5rem 0.35rem; min-height: 78px;
+      display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center;
+      box-shadow: var(--shadow-sm); will-change: transform; transition: transform 120ms ease; cursor: pointer;
     }
     .surah-tile:active { transform: scale(0.952); }
-    .surah-name { font-family: var(--font-latin); font-size: 0.78rem; font-weight: 600; line-height: 1.2; }
+    .surah-name-arabic { font-family: var(--font-arabic) !important; font-size: 0.9rem; font-weight: 400; line-height: 1.5; direction: rtl; color: inherit; }
+    .surah-name-trans  { font-family: var(--font-latin); font-size: 0.6rem; color: inherit; opacity: 0.7; line-height: 1.2; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
     .surah-num  { font-family: var(--font-latin); opacity: 0.8; font-size: 0.68rem; }
     .tile-pct   { font-family: var(--font-latin); font-size: 0.72rem; font-weight: 700; margin-top: 0.25rem; }
 
-    .clear-wrap { padding-bottom: 0.9rem; }
+    @media (min-width: 1200px) {
+      .grid { grid-template-columns: repeat(19, minmax(0, 1fr)); gap: 0.38rem; }
+      .surah-tile { min-height: 70px; padding: 0.3rem 0.22rem; }
+      .surah-name-arabic { font-size: 0.78rem; }
+      .surah-num  { font-size: 0.58rem; }
+      .tile-pct   { font-size: 0.62rem; }
+      .surah-name-trans { font-size: 0.52rem; }
+    }
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.45rem; }
+      .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .stats .stat:last-child { grid-column: 1/-1; }
+      .landing-card { padding: 1.4rem 1rem; gap: 1.2rem; }
+      .salaam { font-size: clamp(1.7rem, 8vw, 2.2rem); }
+    }
+    @media (max-width: 380px) { .salaam { font-size: 1.55rem; } .surah-name-arabic { font-size: 0.82rem; } }
+    @media (max-height: 500px) and (orientation: landscape) {
+      .grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      #landingScreen { padding: 0.75rem 1rem; justify-content: flex-start; }
+      .landing-card  { gap: 0.9rem; padding: 1rem; }
+      .salaam        { font-size: 1.5rem; }
+    }
+    @media (max-width: 900px) { .landing-card { padding: 1.8rem 1.4rem; } }
 
-    /* ── DIALOG ──────────────────────────────────────────────────── */
+    .clear-wrap { padding-bottom: 0.9rem; display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+
+    /* ── DIALOGS ── */
     dialog {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      width: min(96vw, 680px);
-      max-height: 88vh;
-      box-shadow: var(--shadow);
-      padding: 0;
-      background: var(--surface);
-      color: var(--text);
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      margin: 0;
+      border: 1px solid var(--line); border-radius: var(--radius); width: min(96vw, 680px);
+      max-height: 88vh; box-shadow: var(--shadow); padding: 0; background: var(--surface); color: var(--text);
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0;
     }
     dialog::backdrop { background: rgba(0,0,0,0.52); }
-
-    .modal-header { position: sticky; top: 0; background: var(--surface); z-index: 1; border-bottom: 1px solid var(--line); padding: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
-    .modal-header strong { font-family: var(--font-latin); color: var(--text); }
-
-    /* Centered actions */
+    .modal-header { position: sticky; top: 0; background: var(--surface); z-index: 1; border-bottom: 1px solid var(--line); padding: 0.85rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+    .modal-header-titles { display: flex; flex-direction: column; gap: 0.1rem; }
+    .modal-title-arabic { font-family: var(--font-arabic) !important; font-size: 1.3rem; direction: rtl; color: var(--accent); line-height: 1.6; }
+    .modal-title-latin  { font-family: var(--font-latin); font-size: 0.85rem; color: var(--text2); }
     .modal-actions { display: flex; gap: 0.6rem; padding: 0.85rem; border-bottom: 1px solid var(--line); justify-content: center; align-items: center; flex-wrap: wrap; }
     #modalPercent  { font-family: var(--font-latin); font-size: 0.85rem; color: var(--text2); width: 100%; text-align: center; margin-top: 0.1rem; }
 
     .ayah-list {
-      max-height: 58vh;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 0.5rem 0.85rem 0.9rem;
-      background: var(--bg2);
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      scroll-behavior: smooth;
+      max-height: 58vh; overflow-y: auto; overflow-x: hidden; padding: 0.5rem 0.85rem 0.9rem;
+      background: var(--bg2); -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+      user-select: none; -webkit-user-select: none;
     }
 
-    /* Bismillah header — no label, just the text + divider */
     .bismillah-header { text-align: center; padding: 0.85rem 0.5rem 0.55rem; margin-top: 0.45rem; border-bottom: 1px solid var(--line); margin-bottom: 0.1rem; }
-    .bismillah-text { font-family: var(--font-arabic) !important; font-size: 1.3rem; line-height: 2; direction: rtl; text-align: center; color: var(--text); unicode-bidi: isolate; }
+    .bismillah-text { font-family: var(--font-arabic) !important; font-size: 1.3rem; line-height: 2; direction: rtl; text-align: center; color: var(--text); }
 
-    /* Ayah rows */
-    .ayah-item { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 0.55rem; margin-top: 0.4rem; background: var(--surface); display: flex; gap: 0.6rem; align-items: flex-start; }
-    .ayah-item input[type="checkbox"] { width: auto; margin-top: 0.25rem; min-width: 18px; min-height: 18px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
-    .ayah-label { font-family: var(--font-latin); color: var(--text2); font-size: 0.75rem; margin-bottom: 0.2rem; }
-    /* EXPLICIT font on all Arabic — immune to local overrides */
-    .ayah-text  { font-family: var(--font-arabic) !important; margin: 0; font-size: 1.12rem; line-height: 2; direction: rtl; text-align: right; color: var(--text); unicode-bidi: isolate; }
+    /* Drag-select ayahs */
+    .ayah-item {
+      border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 0.55rem 0.7rem;
+      margin-top: 0.4rem; background: var(--surface); cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      position: relative;
+    }
+    .ayah-item.memorized   { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); border-color: var(--accent); }
+    .ayah-item.drag-hover  { background: color-mix(in srgb, var(--accent) 20%, var(--surface)); border-color: var(--accent); }
+    .ayah-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
+    .ayah-label { font-family: var(--font-latin); color: var(--text2); font-size: 0.75rem; }
+    .ayah-check { font-size: 0.75rem; color: var(--accent); font-weight: 700; }
+    .ayah-text  { font-family: var(--font-arabic) !important; margin: 0; font-size: 1.12rem; line-height: 2; direction: rtl; text-align: right; color: var(--text); }
+    .ayah-translation {
+      font-family: var(--font-latin); font-size: 0.82rem; color: var(--text2);
+      line-height: 1.55; margin-top: 0.4rem; padding-top: 0.4rem;
+      border-top: 1px dashed var(--line); display: none;
+    }
+    .ayah-translation.visible { display: block; }
 
-    .modal-footer { border-top: 1px solid var(--line); padding: 0.75rem; display: flex; justify-content: space-between; gap: 0.5rem; position: sticky; bottom: 0; background: var(--surface); }
+    .drag-hint { font-family: var(--font-latin); font-size: 0.76rem; color: var(--text2); text-align: center; padding: 0.5rem 0 0.1rem; opacity: 0.7; }
 
-    /* ── BUTTONS ─────────────────────────────────────────────────── */
+    .modal-footer { border-top: 1px solid var(--line); padding: 0.75rem; display: flex; justify-content: space-between; gap: 0.5rem; position: sticky; bottom: 0; background: var(--surface); flex-wrap: wrap; }
+    .toggle-trans-btn { font-family: var(--font-latin); font-size: 0.82rem; padding: 0.5rem 0.8rem; }
+
     button { border: 0; border-radius: var(--radius-sm); padding: 0.72rem 0.9rem; font-family: var(--font-latin); font-weight: 600; font-size: 0.95rem; cursor: pointer; min-height: 44px; transition: opacity 0.15s; }
     button:hover { opacity: 0.85; }
     .primary   { background: var(--accent); color: #fff; }
     .secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--line); }
     .danger    { background: color-mix(in srgb, #c0392b 12%, var(--surface)); color: #c0392b; border: 1px solid color-mix(in srgb, #c0392b 20%, var(--line)); }
 
-    /* ─────────────────────────────────────────────────────────────────
-       RESPONSIVE — SURAH GRID BREAKPOINTS
-       ← EASY TWEAK: change repeat(N) in each block below
-    ───────────────────────────────────────────────────────────────── */
-
-    /* Wide desktop ≥1200px: 19 columns */
-    @media (min-width: 1200px) {
-      .grid { grid-template-columns: repeat(19, minmax(0, 1fr)); gap: 0.38rem; } /* ← TWEAK: 19 */
-      .surah-tile { min-height: 56px; padding: 0.3rem 0.22rem; }
-      .surah-name { font-size: 0.65rem; }
-      .surah-num  { font-size: 0.58rem; }
-      .tile-pct   { font-size: 0.62rem; }
+    /* ── JUZ / PAGE VIEW ── */
+    #pageViewScreen { display: none; position: relative; z-index: 1; }
+    .juz-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.7rem; padding: 1rem; max-width: 900px; margin: 0 auto; }
+    @media (max-width: 600px) { .juz-grid { grid-template-columns: repeat(3, 1fr); } }
+    .juz-tile {
+      background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--radius);
+      padding: 1rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+      cursor: pointer; transition: transform 0.12s, border-color 0.15s, background 0.15s;
+      text-align: center; box-shadow: var(--shadow-sm);
     }
+    .juz-tile:hover { transform: scale(1.03); border-color: var(--accent); }
+    .juz-tile.complete { background: var(--tile-100); border-color: transparent; }
+    .juz-tile.complete .juz-label, .juz-tile.complete .juz-num { color: var(--tile-text-complete); }
+    .juz-num   { font-family: var(--font-latin); font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+    .juz-label { font-family: var(--font-latin); font-size: 0.75rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.4px; }
+    .juz-pct   { font-family: var(--font-latin); font-size: 0.72rem; color: var(--text2); }
 
-    /* Mobile portrait ≤600px: 3 columns */
-    @media (max-width: 600px) {
-      .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.45rem; } /* ← TWEAK: 3 */
-      .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
-      .stats .stat:last-child { grid-column: 1/-1; }
-      .landing-card { padding: 1.4rem 1rem; gap: 1.2rem; }
-      .salaam { font-size: clamp(1.7rem, 8vw, 2.2rem); }
+    #pageListScreen { display: none; position: relative; z-index: 1; }
+    .page-thumbnails { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.6rem; padding: 1rem; max-width: 900px; margin: 0 auto; }
+    @media (max-width: 600px) { .page-thumbnails { grid-template-columns: repeat(3, 1fr); } }
+    .page-thumb {
+      background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+      padding: 0.9rem 0.4rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+      cursor: pointer; transition: transform 0.12s, border-color 0.15s; box-shadow: var(--shadow-sm);
+      text-align: center;
     }
+    .page-thumb:hover { transform: scale(1.04); border-color: var(--accent); }
+    .page-thumb.complete { background: var(--tile-100); border-color: transparent; }
+    .page-thumb.complete .page-num, .page-thumb.complete .page-sub { color: var(--tile-text-complete); }
+    .page-num { font-family: var(--font-latin); font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+    .page-sub { font-family: var(--font-latin); font-size: 0.68rem; color: var(--text2); }
 
-    /* Very small ≤380px */
-    @media (max-width: 380px) {
-      .salaam { font-size: 1.55rem; }
-      .surah-name { font-size: 0.72rem; }
+    #pageDetailScreen { display: none; position: relative; z-index: 1; }
+    .page-ayah-list { padding: 0.5rem 1rem 1rem; max-width: 700px; margin: 0 auto; user-select: none; -webkit-user-select: none; }
+    .page-ayah-item {
+      border: 1px solid var(--line); border-radius: var(--radius-sm);
+      padding: 0.65rem 0.9rem; margin-top: 0.45rem; background: var(--surface);
+      cursor: pointer; transition: background 0.15s, border-color 0.15s;
     }
+    .page-ayah-item.memorized { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); border-color: var(--accent); }
+    .page-ayah-item.drag-hover { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); border-color: var(--accent); }
+    .page-ayah-ref { font-family: var(--font-latin); font-size: 0.72rem; color: var(--text2); margin-bottom: 0.2rem; }
+    .page-ayah-text { font-family: var(--font-arabic) !important; font-size: 1.15rem; line-height: 2.1; direction: rtl; text-align: right; color: var(--text); }
 
-    /* Landscape phone h≤500: 6 columns */
-    @media (max-height: 500px) and (orientation: landscape) {
-      .grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } /* ← TWEAK: 6 */
-      #landingScreen { padding: 0.75rem 1rem; justify-content: flex-start; }
-      .landing-card  { gap: 0.9rem; padding: 1rem; }
-      .salaam        { font-size: 1.5rem; }
+    .back-header {
+      position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 92%, transparent);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
+      padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.7rem;
     }
+    .back-btn { padding: 0.45rem 0.8rem; font-size: 0.88rem; background: var(--surface2); color: var(--text); border: 1px solid var(--line); min-height: 38px; }
+    .back-title { font-family: var(--font-latin); font-size: 1rem; font-weight: 700; color: var(--text); flex: 1; }
 
-    @media (max-width: 900px) {
-      .landing-card { padding: 1.8rem 1.4rem; }
+    /* ── SETTINGS PANEL ── */
+    #settingsPanel {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.55); display: flex; align-items: flex-end; justify-content: center;
+      opacity: 0; transition: opacity 0.3s; pointer-events: none;
     }
+    #settingsPanel.open { opacity: 1; pointer-events: auto; }
+    .settings-sheet {
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: 20px 20px 0 0; width: min(100%, 500px);
+      padding: 1.5rem 1.5rem 2rem; display: flex; flex-direction: column; gap: 1.2rem;
+      max-height: 85vh; overflow-y: auto;
+      transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    #settingsPanel.open .settings-sheet { transform: translateY(0); }
+    .settings-title { font-family: var(--font-latin); font-size: 1.05rem; font-weight: 700; color: var(--text); text-align: center; }
+    .settings-section { display: flex; flex-direction: column; gap: 0.5rem; }
+    .settings-label { font-family: var(--font-latin); font-size: 0.78rem; font-weight: 600; color: var(--text2); letter-spacing: 0.5px; text-transform: uppercase; }
+
+    /* ── FEEDBACK DIALOG ── */
+    #feedbackDialog { width: min(96vw, 500px); }
+    .feedback-form { padding: 1.2rem; display: flex; flex-direction: column; gap: 0.9rem; }
+    .feedback-form textarea {
+      font-family: var(--font-latin); font-size: 0.95rem; padding: 0.8rem;
+      border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+      background: var(--surface2); color: var(--text); width: 100%;
+      resize: vertical; min-height: 100px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .feedback-form textarea:focus { border-color: var(--accent); }
+    .feedback-form input[type="email"] {
+      font-family: var(--font-latin); font-size: 0.95rem; padding: 0.75rem 1rem;
+      border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+      background: var(--surface2); color: var(--text); width: 100%; outline: none;
+      transition: border-color 0.2s;
+    }
+    .feedback-form input[type="email"]:focus { border-color: var(--accent); }
+    .feedback-form label { font-family: var(--font-latin); font-size: 0.82rem; color: var(--text2); display: block; margin-bottom: 0.2rem; }
+
+    /* ── FOOTER / ACKNOWLEDGMENTS ── */
+    .app-footer {
+      border-top: 1px solid var(--line); padding: 1.2rem 1rem;
+      text-align: center; background: var(--surface2);
+    }
+    .ack-text { font-family: var(--font-latin); font-size: 0.75rem; color: var(--text2); line-height: 1.7; }
+    .ack-text a { color: var(--accent); text-decoration: none; }
+    .ack-text a:hover { text-decoration: underline; }
+    .footer-divider { margin: 0 0.4rem; opacity: 0.4; }
+
+    /* Feedback FAB */
+    #feedbackFab {
+      position: fixed; bottom: 1.5rem; right: 1.2rem; z-index: 200;
+      background: var(--accent); color: #fff; border: none; border-radius: 28px;
+      padding: 0.7rem 1.2rem; font-size: 0.88rem; font-weight: 700; font-family: var(--font-latin);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2); cursor: pointer; min-height: 44px;
+      display: flex; align-items: center; gap: 0.4rem; transition: opacity 0.15s, transform 0.15s;
+    }
+    #feedbackFab:hover { opacity: 0.9; transform: scale(1.04); }
+    #feedbackFab.hidden { display: none; }
   </style>
 </head>
 <body>
 
-  <!-- ── LANDING SCREEN ── -->
-  <section id="landingScreen">
-    <div class="landing-card">
+  <!-- ── AUDHUBILLAH FADE ── -->
+  <div id="audhuOverlay">
+    <span class="audhu-text-uthmani" id="audhuUthmani">أَعُوذُ بِٱللَّهِ مِنَ ٱلشَّيْطَٰنِ ٱلرَّجِيمِ</span>
+    <span class="audhu-text-indopak" id="audhuIndopak" style="display:none">أَعُوذُ بِاللَّهِ مِنَ الشَّيطَانِ الرَّجِيمِ</span>
+  </div>
 
+  <!-- ── LANDING SCREEN ── -->
+  <section id="landingScreen" class="hidden">
+    <div class="landing-card">
       <div>
         <div class="salaam">ٱلسَّلَامُ عَلَيْكُمْ</div>
         <div class="salaam-sub">Peace be upon you</div>
@@ -601,14 +432,12 @@
 
       <div class="landing-section">
         <label for="landingName">What's your first name?</label>
-        <input id="landingName" type="text" maxlength="32"
-          placeholder="e.g. Maryam" autocomplete="given-name" spellcheck="false" />
+        <input id="landingName" type="text" maxlength="32" placeholder="e.g. Maryam" autocomplete="given-name" spellcheck="false" />
       </div>
 
-      <!-- Ta'awwudh once above the two buttons -->
       <div>
         <div class="tawwudh-display">
-          <span class="tawwudh-text-uthmani" id="tawwudhUthmani">أَعُوذُ بِٱللَّهِ مِنَ ٱلشَّيْطَٰنِ ٱلرَّجِيمِ</span>
+          <span class="tawwudh-text-uthmani active" id="tawwudhUthmani">أَعُوذُ بِٱللَّهِ مِنَ ٱلشَّيْطَٰنِ ٱلرَّجِيمِ</span>
           <span class="tawwudh-text-indopak" id="tawwudhIndopak">أَعُوذُ بِاللَّهِ مِنَ الشَّيطَانِ الرَّجِيمِ</span>
         </div>
         <div class="choice-label">Choose your script</div>
@@ -619,19 +448,35 @@
       </div>
 
       <div>
+        <div class="choice-label">Translation language</div>
+        <div class="lang-grid" id="langGrid">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <div>
+        <div class="choice-label">View mode</div>
+        <div class="view-mode-options">
+          <button class="view-mode-btn selected" data-view="surah" type="button" aria-pressed="true">
+            <span class="vm-icon">📖</span>Surah View
+          </button>
+          <button class="view-mode-btn" data-view="page" type="button" aria-pressed="false">
+            <span class="vm-icon">📄</span>Page View
+          </button>
+        </div>
+      </div>
+
+      <div>
         <div class="choice-label">Theme</div>
         <div class="theme-options">
           <button class="theme-btn selected" data-theme-choice="parchment" type="button" aria-pressed="true">
-            <span class="theme-swatch parchment"></span>
-            <span class="theme-name">Parchment</span>
+            <span class="theme-swatch parchment"></span><span class="theme-name">Parchment</span>
           </button>
           <button class="theme-btn" data-theme-choice="dark" type="button" aria-pressed="false">
-            <span class="theme-swatch dark"></span>
-            <span class="theme-name">Dark</span>
+            <span class="theme-swatch dark"></span><span class="theme-name">Dark</span>
           </button>
           <button class="theme-btn" data-theme-choice="glass" type="button" aria-pressed="false">
-            <span class="theme-swatch glass"></span>
-            <span class="theme-name">Glass</span>
+            <span class="theme-swatch glass"></span><span class="theme-name">Glass</span>
           </button>
         </div>
       </div>
@@ -640,13 +485,13 @@
     </div>
   </section>
 
-  <!-- ── APP SCREEN ── -->
+  <!-- ── SURAH APP SCREEN ── -->
   <main id="appScreen" class="hidden">
     <header class="app-header">
       <div class="title-row">
         <h1 id="appTitle"></h1>
         <div id="overallHeader" class="overall"></div>
-        <button id="themeToggleBtn" title="Cycle theme" aria-label="Cycle theme">☀</button>
+        <button id="gearBtn" title="Settings" aria-label="Settings">⚙️</button>
       </div>
     </header>
     <div class="container">
@@ -656,71 +501,191 @@
         <button id="clearDataBtn" class="danger">Clear app data</button>
       </div>
     </div>
+    <footer class="app-footer">
+      <div class="ack-text">
+        Arabic text from <a href="https://quran.com" target="_blank" rel="noopener">Quran.com</a> &amp; <a href="https://api.alquran.cloud" target="_blank" rel="noopener">AlQuran Cloud API</a>
+        <span class="footer-divider">·</span>
+        Translations via <a href="https://quran.com" target="_blank" rel="noopener">Quran.com</a>
+        <span class="footer-divider">·</span>
+        Tajweed &amp; Quranic learning resources: <a href="https://www.tarteel.ai" target="_blank" rel="noopener">Tarteel.ai</a>
+        <span class="footer-divider">·</span>
+        Fonts by <a href="https://fonts.google.com" target="_blank" rel="noopener">Google Fonts</a>
+        (Scheherazade New, Noto Nastaliq Urdu)
+        <span class="footer-divider">·</span>
+        Built with ❤️ for the community
+      </div>
+    </footer>
   </main>
 
-  <!-- ── SURAH DIALOG ── -->
+  <!-- ── PAGE VIEW: JUZ GRID ── -->
+  <main id="pageViewScreen">
+    <header class="app-header">
+      <div class="title-row">
+        <h1 id="pageViewTitle"></h1>
+        <button id="gearBtn2" title="Settings" aria-label="Settings">⚙️</button>
+      </div>
+    </header>
+    <div class="container">
+      <section class="stats" id="stats2"></section>
+      <div style="font-family:var(--font-latin);font-size:0.85rem;color:var(--text2);text-align:center;padding:0.5rem 0 0.8rem;">Tap a Juz to explore its pages</div>
+      <div class="juz-grid" id="juzGrid"></div>
+    </div>
+    <footer class="app-footer">
+      <div class="ack-text">
+        Arabic text from <a href="https://quran.com" target="_blank" rel="noopener">Quran.com</a> &amp; <a href="https://api.alquran.cloud" target="_blank" rel="noopener">AlQuran Cloud API</a>
+        <span class="footer-divider">·</span>
+        Tajweed resources: <a href="https://www.tarteel.ai" target="_blank" rel="noopener">Tarteel.ai</a>
+      </div>
+    </footer>
+  </main>
+
+  <!-- ── PAGE VIEW: PAGE THUMBNAILS ── -->
+  <div id="pageListScreen">
+    <header class="back-header">
+      <button class="back-btn secondary" id="backToJuzBtn">← Juz</button>
+      <span class="back-title" id="pageListTitle"></span>
+      <button class="primary" id="markJuzCompleteBtn" style="padding:0.45rem 0.8rem;font-size:0.82rem;min-height:38px;">Mark Juz Complete</button>
+    </header>
+    <div class="page-thumbnails" id="pageThumbs"></div>
+  </div>
+
+  <!-- ── PAGE VIEW: PAGE DETAIL ── -->
+  <div id="pageDetailScreen">
+    <header class="back-header">
+      <button class="back-btn secondary" id="backToPageListBtn">← Pages</button>
+      <span class="back-title" id="pageDetailTitle"></span>
+      <button class="primary" id="markPageCompleteBtn" style="padding:0.45rem 0.8rem;font-size:0.82rem;min-height:38px;">Mark Page Complete</button>
+    </header>
+    <div class="page-ayah-list" id="pageAyahList">
+      <div class="drag-hint">Tap or drag to highlight memorized ayahs</div>
+    </div>
+  </div>
+
+  <!-- ── SURAH MODAL ── -->
   <dialog id="surahDialog">
     <div class="modal-header">
-      <strong id="modalTitle">Surah</strong>
-      <button id="closeModalBtn" class="secondary" style="padding:.45rem .7rem">Close</button>
+      <div class="modal-header-titles">
+        <div class="modal-title-arabic" id="modalTitleArabic"></div>
+        <div class="modal-title-latin"  id="modalTitleLatin"></div>
+      </div>
+      <button id="closeModalBtn" class="secondary" style="padding:.45rem .7rem;flex-shrink:0">Close</button>
     </div>
     <div class="modal-actions">
       <button id="diveInBtn" class="primary">Dive in</button>
       <button id="markCompleteBtn" class="secondary">Mark complete</button>
       <div id="modalPercent"></div>
     </div>
-    <div id="ayahList" class="ayah-list hidden"></div>
+    <div id="ayahList" class="ayah-list hidden">
+      <div class="drag-hint">Tap or drag to select · Double-tap for translation</div>
+    </div>
     <div id="modalFooter" class="modal-footer hidden">
-      <button id="prevSurahBtn" class="secondary">← Previous</button>
+      <button id="prevSurahBtn" class="secondary">← Prev</button>
+      <button id="toggleTransBtn" class="secondary toggle-trans-btn">🌐 Translations</button>
       <button id="nextSurahBtn" class="secondary">Next →</button>
     </div>
   </dialog>
 
-  <!-- ── TUTORIAL OVERLAY ── -->
+  <!-- ── FEEDBACK DIALOG ── -->
+  <dialog id="feedbackDialog">
+    <div class="modal-header">
+      <strong style="font-family:var(--font-latin)">Share Feedback</strong>
+      <button id="closeFeedbackBtn" class="secondary" style="padding:.45rem .7rem">Close</button>
+    </div>
+    <div class="feedback-form">
+      <div>
+        <label for="feedbackEmail">Your email (optional)</label>
+        <input type="email" id="feedbackEmail" placeholder="you@example.com" />
+      </div>
+      <div>
+        <label for="feedbackText">Your feedback</label>
+        <textarea id="feedbackText" placeholder="What would make this app better for you?"></textarea>
+      </div>
+      <button class="primary" id="submitFeedbackBtn">Send Feedback</button>
+      <div id="feedbackSuccess" class="hidden" style="font-family:var(--font-latin);font-size:0.88rem;color:#2e7d32;text-align:center;padding:0.4rem;">
+        جَزَاكَ ٱللَّهُ خَيْرًا — Thank you for your feedback!
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ── SETTINGS PANEL ── -->
+  <div id="settingsPanel">
+    <div class="settings-sheet">
+      <div class="settings-title">⚙️ Settings</div>
+
+      <div class="settings-section">
+        <div class="settings-label">Arabic script</div>
+        <div class="script-options" id="settingsScriptOptions">
+          <button class="script-btn selected" data-script="uthmani" type="button">Uthmani</button>
+          <button class="script-btn" data-script="indopak" type="button">IndoPak</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Translation language</div>
+        <div class="lang-grid" id="settingsLangGrid"></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">View mode</div>
+        <div class="view-mode-options" id="settingsViewMode">
+          <button class="view-mode-btn selected" data-view="surah" type="button">
+            <span class="vm-icon">📖</span>Surah View
+          </button>
+          <button class="view-mode-btn" data-view="page" type="button">
+            <span class="vm-icon">📄</span>Page View
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Theme</div>
+        <div class="theme-options" id="settingsThemeOptions">
+          <button class="theme-btn selected" data-theme-choice="parchment" type="button">
+            <span class="theme-swatch parchment"></span><span class="theme-name">Parchment</span>
+          </button>
+          <button class="theme-btn" data-theme-choice="dark" type="button">
+            <span class="theme-swatch dark"></span><span class="theme-name">Dark</span>
+          </button>
+          <button class="theme-btn" data-theme-choice="glass" type="button">
+            <span class="theme-swatch glass"></span><span class="theme-name">Glass</span>
+          </button>
+        </div>
+      </div>
+
+      <button class="secondary" id="settingsCloseBtn" style="margin-top:0.3rem">Done</button>
+    </div>
+  </div>
+
+  <!-- ── TUTORIAL ── -->
   <div id="tutorialOverlay" role="dialog" aria-modal="true" aria-label="Welcome tutorial">
     <div class="tutorial-card">
       <button class="tutorial-skip" id="tutSkipBtn" type="button">Skip</button>
-
       <div class="tutorial-steps-wrap">
         <div class="tutorial-step active" id="tutStep1">
-        <div class="tutorial-icon">📖</div>
-        <div class="tutorial-title">Welcome to your Quran Diary</div>
-        <div class="tutorial-hadith">
-          <p>"It will be said to the companion of the Quran: Recite and ascend as you recited in the world! Verily, your rank is determined by the last verse you recite."</p>
-          <cite>— Prophet Muhammad ﷺ &nbsp;·&nbsp; Sunan al-Tirmidhī 2914 &nbsp;·&nbsp; Sahih</cite>
+          <div class="tutorial-icon">📖</div>
+          <div class="tutorial-title">Welcome to your Quran Diary</div>
+          <div class="tutorial-hadith">
+            <p>"It will be said to the companion of the Quran: Recite and ascend as you recited in the world! Verily, your rank is determined by the last verse you recite."</p>
+            <cite>— Prophet Muhammad ﷺ · Sunan al-Tirmidhī 2914 · Sahih</cite>
+          </div>
+          <div class="tutorial-body">May this app be an aid on your journey of ascension.</div>
         </div>
-        <div class="tutorial-body">May this app be an aid on your journey of ascension. Every ayah you mark brings you one step closer.</div>
-      </div>
-
-      <div class="tutorial-step" id="tutStep2">
-        <div class="tutorial-icon">🟩</div>
-        <div class="tutorial-title">Your 114 Surahs</div>
-        <div class="tutorial-body">
-          Each tile is one surah. Tap any tile to open it.<br/><br/>
-          Colors track your progress — from pale when unstarted, to deep green when fully memorized.
+        <div class="tutorial-step" id="tutStep2">
+          <div class="tutorial-icon">🟩</div>
+          <div class="tutorial-title">Your 114 Surahs</div>
+          <div class="tutorial-body">Each tile is one surah. Tap any tile to open it.<br/><br/>Colors track your progress — from pale when unstarted, to deep green when fully memorized.</div>
         </div>
-      </div>
-
-      <div class="tutorial-step" id="tutStep3">
-        <div class="tutorial-icon">✅</div>
-        <div class="tutorial-title">Mark Complete or Dive In</div>
-        <div class="tutorial-body">
-          <em>Mark complete</em> — marks every ayah at once.<br/><br/>
-          <em>Dive in</em> — see each ayah individually. Check only what you truly know by heart.
+        <div class="tutorial-step" id="tutStep3">
+          <div class="tutorial-icon">☝️</div>
+          <div class="tutorial-title">Drag to Select Ayahs</div>
+          <div class="tutorial-body"><em>Tap</em> a single ayah to toggle it.<br/><br/><em>Drag</em> across multiple ayahs to select them all at once.<br/><br/><em>Double-tap</em> any ayah to see its translation.</div>
+        </div>
+        <div class="tutorial-step" id="tutStep4">
+          <div class="tutorial-icon">⚙️</div>
+          <div class="tutorial-title">Return to Settings Anytime</div>
+          <div class="tutorial-body">Tap the <em>gear icon ⚙️</em> in the top-right to change your script, language, theme, or switch between Surah and Page view.</div>
         </div>
       </div>
-
-      <div class="tutorial-step" id="tutStep4">
-        <div class="tutorial-icon">☀</div>
-        <div class="tutorial-title">Change your theme anytime</div>
-        <div class="tutorial-body">
-          Tap the <em>circle icon</em> in the top-right header to cycle through<br/>
-          Parchment · Dark · Glass.
-        </div>
-      </div>
-
-      </div><!-- end tutorial-steps-wrap -->
-
       <div class="tutorial-dots" id="tutDots">
         <div class="tutorial-dot active"></div>
         <div class="tutorial-dot"></div>
@@ -734,492 +699,1003 @@
     </div>
   </div>
 
+  <!-- Feedback FAB -->
+  <button id="feedbackFab" class="hidden">💬 Feedback</button>
+
   <script>
-    'use strict';
+  'use strict';
 
-    const TOTAL_AYAHS = 6236;
-    const STORAGE_KEY = "quranDiary.v2";
-    const THEMES      = ["parchment", "dark", "glass"];
-    const THEME_ICONS = { parchment: "📜", dark: "☾", glass: "◈" };
+  /* ── DATA ────────────────────────────────────────────────────── */
+  const TOTAL_AYAHS = 6236;
+  const STORAGE_KEY = "quranDiary.v3";
+  const THEMES      = ["parchment", "dark", "glass"];
+  const API_EDITION = { uthmani: 'quran-uthmani', indopak: 'quran-indopak' };
+  const FONT_VAR    = { uthmani: "'Scheherazade New', serif", indopak: "'Noto Nastaliq Urdu', serif" };
+  const NO_BISMILLAH   = new Set([1, 9]);
+  const BISMILLAH_TEXT = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ";
 
-    const API_EDITION = { uthmani: 'quran-uthmani', indopak: 'quran-indopak' };
-    const FONT_VAR    = {
-      uthmani: "'Scheherazade New', serif",
-      indopak: "'Noto Nastaliq Urdu', serif"
-    };
+  /* Translation editions for alquran.cloud */
+  const LANG_OPTIONS = [
+    { code: 'en',  native: 'English',   sub: 'English',   edition: 'en.sahih' },
+    { code: 'ar',  native: 'عربي',      sub: 'Arabic',    edition: '' }, /* no translation for arabic */
+    { code: 'fr',  native: 'Français',  sub: 'French',    edition: 'fr.hamidullah' },
+    { code: 'de',  native: 'Deutsch',   sub: 'German',    edition: 'de.aburida' },
+    { code: 'es',  native: 'Español',   sub: 'Spanish',   edition: 'es.asad' },
+    { code: 'tr',  native: 'Türkçe',    sub: 'Turkish',   edition: 'tr.ates' },
+    { code: 'ur',  native: 'اردو',      sub: 'Urdu',      edition: 'ur.ahmedali' },
+    { code: 'id',  native: 'Indonesia', sub: 'Indonesian',edition: 'id.indonesian' },
+    { code: 'ru',  native: 'Русский',   sub: 'Russian',   edition: 'ru.kuliev' },
+  ];
 
-    const SURAHS = [
-      ["Al-Fatihah",7],["Al-Baqarah",286],["Ali 'Imran",200],["An-Nisa",176],["Al-Ma'idah",120],["Al-An'am",165],["Al-A'raf",206],["Al-Anfal",75],["At-Tawbah",129],["Yunus",109],["Hud",123],["Yusuf",111],["Ar-Ra'd",43],["Ibrahim",52],["Al-Hijr",99],["An-Nahl",128],["Al-Isra",111],["Al-Kahf",110],["Maryam",98],["Ta-Ha",135],["Al-Anbiya",112],["Al-Hajj",78],["Al-Mu'minun",118],["An-Nur",64],["Al-Furqan",77],["Ash-Shu'ara",227],["An-Naml",93],["Al-Qasas",88],["Al-Ankabut",69],["Ar-Rum",60],["Luqman",34],["As-Sajdah",30],["Al-Ahzab",73],["Saba",54],["Fatir",45],["Ya-Sin",83],["As-Saffat",182],["Sad",88],["Az-Zumar",75],["Ghafir",85],["Fussilat",54],["Ash-Shura",53],["Az-Zukhruf",89],["Ad-Dukhan",59],["Al-Jathiyah",37],["Al-Ahqaf",35],["Muhammad",38],["Al-Fath",29],["Al-Hujurat",18],["Qaf",45],["Adh-Dhariyat",60],["At-Tur",49],["An-Najm",62],["Al-Qamar",55],["Ar-Rahman",78],["Al-Waqi'ah",96],["Al-Hadid",29],["Al-Mujadila",22],["Al-Hashr",24],["Al-Mumtahanah",13],["As-Saff",14],["Al-Jumu'ah",11],["Al-Munafiqun",11],["At-Taghabun",18],["At-Talaq",12],["At-Tahrim",12],["Al-Mulk",30],["Al-Qalam",52],["Al-Haqqah",52],["Al-Ma'arij",44],["Nuh",28],["Al-Jinn",28],["Al-Muzzammil",20],["Al-Muddaththir",56],["Al-Qiyamah",40],["Al-Insan",31],["Al-Mursalat",50],["An-Naba",40],["An-Nazi'at",46],["Abasa",42],["At-Takwir",29],["Al-Infitar",19],["Al-Mutaffifin",36],["Al-Inshiqaq",25],["Al-Buruj",22],["At-Tariq",17],["Al-A'la",19],["Al-Ghashiyah",26],["Al-Fajr",30],["Al-Balad",20],["Ash-Shams",15],["Al-Layl",21],["Ad-Duha",11],["Ash-Sharh",8],["At-Tin",8],["Al-'Alaq",19],["Al-Qadr",5],["Al-Bayyinah",8],["Az-Zalzalah",8],["Al-'Adiyat",11],["Al-Qari'ah",11],["At-Takathur",8],["Al-'Asr",3],["Al-Humazah",9],["Al-Fil",5],["Quraysh",4],["Al-Ma'un",7],["Al-Kawthar",3],["Al-Kafirun",6],["An-Nasr",3],["Al-Masad",5],["Al-Ikhlas",4],["Al-Falaq",5],["An-Nas",6]
-    ];
+  /* Arabic surah names */
+  const SURAHS_ARABIC = [
+    "الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس",
+    "هود","يوسف","الرعد","إبراهيم","الحجر","النحل","الإسراء","الكهف","مريم","طه",
+    "الأنبياء","الحج","المؤمنون","النور","الفرقان","الشعراء","النمل","القصص","العنكبوت","الروم",
+    "لقمان","السجدة","الأحزاب","سبأ","فاطر","يس","الصافات","ص","الزمر","غافر",
+    "فصلت","الشورى","الزخرف","الدخان","الجاثية","الأحقاف","محمد","الفتح","الحجرات","ق",
+    "الذاريات","الطور","النجم","القمر","الرحمن","الواقعة","الحديد","المجادلة","الحشر","الممتحنة",
+    "الصف","الجمعة","المنافقون","التغابن","الطلاق","التحريم","الملك","القلم","الحاقة","المعارج",
+    "نوح","الجن","المزمل","المدثر","القيامة","الإنسان","المرسلات","النبأ","النازعات","عبس",
+    "التكوير","الانفطار","المطففين","الانشقاق","البروج","الطارق","الأعلى","الغاشية","الفجر","البلد",
+    "الشمس","الليل","الضحى","الشرح","التين","العلق","القدر","البينة","الزلزلة","العاديات",
+    "القارعة","التكاثر","العصر","الهمزة","الفيل","قريش","الماعون","الكوثر","الكافرون","النصر",
+    "المسد","الإخلاص","الفلق","الناس"
+  ];
 
-    const NO_BISMILLAH   = new Set([1, 9]);
-    const BISMILLAH_TEXT = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ";
+  /* Translated surah names per language */
+  const SURAHS_TRANS = {
+    en: ["The Opening","The Cow","Family of Imran","The Women","The Table Spread","The Cattle","The Heights","The Spoils of War","The Repentance","Jonah","Hud","Joseph","The Thunder","Abraham","The Rocky Tract","The Bee","The Night Journey","The Cave","Mary","Ta-Ha","The Prophets","The Pilgrimage","The Believers","The Light","The Criterion","The Poets","The Ant","The Story","The Spider","The Romans","Luqman","The Prostration","The Combined Forces","Sheba","Originator","Ya-Sin","Those Ranged in Ranks","Sad","The Troops","The Forgiver","Explained in Detail","The Consultation","The Ornaments of Gold","The Smoke","The Crouching","The Wind-Curved Sandhills","Muhammad","The Victory","The Rooms","Qaf","The Winnowing Winds","The Mount","The Star","The Moon","The Beneficent","The Event","The Iron","The Pleading Woman","The Exile","She That is to be Examined","The Ranks","The Friday Prayer","The Hypocrites","Mutual Disillusion","The Divorce","The Prohibition","The Sovereignty","The Pen","The Reality","The Ascending Stairways","Noah","The Jinn","The Enshrouded One","The Cloaked One","The Resurrection","Man","The Emissaries","The Announcement","Those Who Drag Forth","He Frowned","The Overthrowing","The Cleaving","The Defrauding","The Splitting Open","The Mansions of the Stars","The Night-Comer","The Most High","The Overwhelming","The Dawn","The City","The Sun","The Night","The Morning Hours","The Relief","The Fig","The Clot","The Power","The Clear Proof","The Earthquake","The Courser","The Calamity","Rivalry in World Increase","The Declining Day","The Traducer","The Elephant","Quraysh","Small Kindnesses","The Abundance","The Disbelievers","The Help","The Palm Fiber","The Sincerity","The Daybreak","Mankind"],
+    fr: ["L'Ouverture","La Vache","La Famille d'Imran","Les Femmes","La Table Servie","Les Bestiaux","Les Limites","Le Butin","Le Repentir","Jonas","Hud","Joseph","Le Tonnerre","Ibrahim","Al-Hijr","Les Abeilles","Le Voyage Nocturne","La Caverne","Marie","Tâ-Hâ","Les Prophètes","Le Pèlerinage","Les Croyants","La Lumière","Le Discernement","Les Poètes","La Fourmi","Le Récit","L'Araignée","Les Romains","Luqmân","La Prosternation","Les Coalisés","Saba","Le Créateur","Yâ-Sîn","Les Rangées","Sâd","Les Groupes","Le Pardonneur","Expliqués en Détail","La Consultation","Les Ornements d'Or","La Fumée","L'Agenouillée","Les Dunes de Sable","Muhammad","La Victoire","Les Appartements","Qâf","Les Vents Dispersants","La Montagne","L'Étoile","La Lune","Le Tout Miséricordieux","L'Événement","Le Fer","La Femme qui Implore","L'Exode","Celle qui est Examinée","Le Rang","Le Vendredi","Les Hypocrites","La Déception Mutuelle","Le Divorce","L'Interdiction","La Royauté","Le Calame","La Réalité","Les Voies d'Élévation","Noé","Les Djinns","L'Enveloppé","Le Revêtu d'un Manteau","La Résurrection","L'Homme","Les Envoyés","La Nouvelle","Les Anges Qui Arrachent","Il S'est Renfrogné","L'Enroulement","La Déchirure","Les Fraudeurs","La Fissuration","Les Constellations","L'Astre Nocturne","Le Très-Haut","L'Enveloppante","L'Aube","La Cité","Le Soleil","La Nuit","La Matinée","L'Expansion","Le Figuier","Le Caillot","La Nuit du Destin","La Preuve","Le Séisme","Les Coursières","Le Fracas","La Rivalité","Le Temps","Le Calomniateur","L'Éléphant","Qoraich","Les Ustensiles","L'Abondance","Les Infidèles","Le Secours","Les Fibres","La Pureté","L'Aube Naissante","Les Hommes"],
+    es: ["La Apertura","La Vaca","La Familia de Imran","Las Mujeres","La Mesa Servida","El Ganado","Las Alturas","El Botín","El Arrepentimiento","Jonás","Hud","José","El Trueno","Abraham","La Roca","Las Abejas","El Viaje Nocturno","La Caverna","María","Ta-Ha","Los Profetas","La Peregrinación","Los Creyentes","La Luz","El Criterio","Los Poetas","La Hormiga","El Relato","La Araña","Los Romanos","Luqman","La Postración","Los Confederados","Saba","El Creador","Ya-Sin","Los que Forman Filas","Sad","Los Grupos","El Perdonador","Explicados en Detalle","La Consulta","Los Adornos de Oro","El Humo","Los que se Arrodillan","Las Dunas","Muhammad","La Victoria","Las Habitaciones","Qaf","Los Vientos","El Monte","La Estrella","La Luna","El Compasivo","El Acontecimiento","El Hierro","La Mujer que Implora","El Exilio","La Examinada","El Rango","El Viernes","Los Hipócritas","La Desilusión Mutua","El Divorcio","La Prohibición","La Soberanía","La Pluma","La Realidad","Las Escaleras","Noé","Los Genios","El Envuelto","El Arropado","La Resurrección","El Hombre","Los Enviados","La Noticia","Los que Arrancan","Él Frunció el Ceño","El Enrollamiento","El Agrietamiento","Los Defraudadores","El Desgarramiento","Las Constelaciones","El Astro Nocturno","El Altísimo","La Abrumadora","El Amanecer","La Ciudad","El Sol","La Noche","Las Horas de la Mañana","La Expansión","El Higo","El Coágulo","La Noche de Poder","La Prueba Clara","El Terremoto","Los Corceles","La Calamidad","La Rivalidad","El Tiempo","El Difamador","El Elefante","Quraish","Los Utensilios","La Abundancia","Los Incrédulos","El Socorro","Las Fibras","La Pureza","El Alba","La Humanidad"],
+    de: null, tr: null, ur: null, id: null, ru: null, ar: null
+  };
 
-    /* ── DOM REFS ────────────────────────────────────────────── */
-    const landingScreen   = document.getElementById("landingScreen");
-    const landingName     = document.getElementById("landingName");
-    const landingEnterBtn = document.getElementById("landingEnterBtn");
-    const appScreen       = document.getElementById("appScreen");
-    const appTitle        = document.getElementById("appTitle");
-    const overallHeader   = document.getElementById("overallHeader");
-    const statsEl         = document.getElementById("stats");
-    const surahGrid       = document.getElementById("surahGrid");
-    const clearDataBtn    = document.getElementById("clearDataBtn");
-    const themeToggleBtn  = document.getElementById("themeToggleBtn");
-    const surahDialog     = document.getElementById("surahDialog");
-    const modalTitle      = document.getElementById("modalTitle");
-    const modalPercent    = document.getElementById("modalPercent");
-    const closeModalBtn   = document.getElementById("closeModalBtn");
-    const diveInBtn       = document.getElementById("diveInBtn");
-    const markCompleteBtn = document.getElementById("markCompleteBtn");
-    const ayahListEl      = document.getElementById("ayahList");
-    const modalFooter     = document.getElementById("modalFooter");
-    const prevSurahBtn    = document.getElementById("prevSurahBtn");
-    const nextSurahBtn    = document.getElementById("nextSurahBtn");
-    const tutorialOverlay = document.getElementById("tutorialOverlay");
-    const tutSkipBtn      = document.getElementById("tutSkipBtn");
-    const tutNextBtn      = document.getElementById("tutNextBtn");
-    const tutBackBtn      = document.getElementById("tutBackBtn");
+  const SURAHS = [
+    ["Al-Fatihah",7],["Al-Baqarah",286],["Ali 'Imran",200],["An-Nisa",176],["Al-Ma'idah",120],["Al-An'am",165],["Al-A'raf",206],["Al-Anfal",75],["At-Tawbah",129],["Yunus",109],["Hud",123],["Yusuf",111],["Ar-Ra'd",43],["Ibrahim",52],["Al-Hijr",99],["An-Nahl",128],["Al-Isra",111],["Al-Kahf",110],["Maryam",98],["Ta-Ha",135],["Al-Anbiya",112],["Al-Hajj",78],["Al-Mu'minun",118],["An-Nur",64],["Al-Furqan",77],["Ash-Shu'ara",227],["An-Naml",93],["Al-Qasas",88],["Al-Ankabut",69],["Ar-Rum",60],["Luqman",34],["As-Sajdah",30],["Al-Ahzab",73],["Saba",54],["Fatir",45],["Ya-Sin",83],["As-Saffat",182],["Sad",88],["Az-Zumar",75],["Ghafir",85],["Fussilat",54],["Ash-Shura",53],["Az-Zukhruf",89],["Ad-Dukhan",59],["Al-Jathiyah",37],["Al-Ahqaf",35],["Muhammad",38],["Al-Fath",29],["Al-Hujurat",18],["Qaf",45],["Adh-Dhariyat",60],["At-Tur",49],["An-Najm",62],["Al-Qamar",55],["Ar-Rahman",78],["Al-Waqi'ah",96],["Al-Hadid",29],["Al-Mujadila",22],["Al-Hashr",24],["Al-Mumtahanah",13],["As-Saff",14],["Al-Jumu'ah",11],["Al-Munafiqun",11],["At-Taghabun",18],["At-Talaq",12],["At-Tahrim",12],["Al-Mulk",30],["Al-Qalam",52],["Al-Haqqah",52],["Al-Ma'arij",44],["Nuh",28],["Al-Jinn",28],["Al-Muzzammil",20],["Al-Muddaththir",56],["Al-Qiyamah",40],["Al-Insan",31],["Al-Mursalat",50],["An-Naba",40],["An-Nazi'at",46],["Abasa",42],["At-Takwir",29],["Al-Infitar",19],["Al-Mutaffifin",36],["Al-Inshiqaq",25],["Al-Buruj",22],["At-Tariq",17],["Al-A'la",19],["Al-Ghashiyah",26],["Al-Fajr",30],["Al-Balad",20],["Ash-Shams",15],["Al-Layl",21],["Ad-Duha",11],["Ash-Sharh",8],["At-Tin",8],["Al-'Alaq",19],["Al-Qadr",5],["Al-Bayyinah",8],["Az-Zalzalah",8],["Al-'Adiyat",11],["Al-Qari'ah",11],["At-Takathur",8],["Al-'Asr",3],["Al-Humazah",9],["Al-Fil",5],["Quraysh",4],["Al-Ma'un",7],["Al-Kawthar",3],["Al-Kafirun",6],["An-Nasr",3],["Al-Masad",5],["Al-Ikhlas",4],["Al-Falaq",5],["An-Nas",6]
+  ];
 
-    /* ── STATE ───────────────────────────────────────────────── */
-    let state = loadState();
-    let activeSurahIndex = null;
-    let surahCache = {};
+  /* Juz data: [startSurah(1-based), startAyah, endSurah(1-based), endAyah] */
+  const JUZ_DATA = [
+    [1,1,2,141],[2,142,2,252],[2,253,3,92],[3,93,4,23],[4,24,4,147],
+    [4,148,5,81],[5,82,6,110],[6,111,7,87],[7,88,8,40],[8,41,9,92],
+    [9,93,11,5],[11,6,12,52],[12,53,14,52],[15,1,16,128],[17,1,18,74],
+    [18,75,20,135],[21,1,22,78],[23,1,25,20],[25,21,27,55],[27,56,29,45],
+    [29,46,33,30],[33,31,36,27],[36,28,39,31],[39,32,41,46],[42,1,45,37],
+    [46,1,51,30],[51,31,57,29],[58,1,66,12],[67,1,77,50],[78,1,114,6]
+  ];
 
-    function loadState() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { firstName:"", memorized:{}, script:"uthmani", theme:"parchment", landingSeen:false, tutorialSeen:false };
+  /* ─────────────────────────────────────────────────────────────
+     STORAGE: IndexedDB with localStorage fallback
+     Fixes PWA / Add-to-home-screen data loss on iOS
+  ───────────────────────────────────────────────────────────── */
+  let _idbReady = false;
+  let _idb = null;
+
+  function openIDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open('QuranDiary', 1);
+      req.onupgradeneeded = e => {
+        e.target.result.createObjectStore('kv');
+      };
+      req.onsuccess = e => { _idb = e.target.result; _idbReady = true; resolve(_idb); };
+      req.onerror   = () => reject(req.error);
+    });
+  }
+
+  async function storageSave(data) {
+    const json = JSON.stringify(data);
+    // Always write to localStorage as fallback
+    try { localStorage.setItem(STORAGE_KEY, json); } catch(e) {}
+    // Write to IndexedDB (survives PWA mode)
+    if (_idbReady && _idb) {
       try {
-        const p = JSON.parse(raw);
-        return {
-          firstName:    p.firstName    || "",
-          memorized:    p.memorized    || {},
-          script:       p.script       || "uthmani",
-          theme:        p.theme        || "parchment",
-          landingSeen:  p.landingSeen  || false,
-          tutorialSeen: p.tutorialSeen || false
-        };
-      } catch {
-        return { firstName:"", memorized:{}, script:"uthmani", theme:"parchment", landingSeen:false, tutorialSeen:false };
-      }
-    }
-    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-
-    /* ── THEME ───────────────────────────────────────────────── */
-    function applyTheme(theme) {
-      const html = document.documentElement;
-      html.removeAttribute("data-theme");
-      if (theme === "dark")  html.setAttribute("data-theme", "dark");
-      if (theme === "glass") html.setAttribute("data-theme", "glass");
-      themeToggleBtn.textContent = THEME_ICONS[theme] || "☀";
-    }
-    function cycleTheme() {
-      const idx   = THEMES.indexOf(state.theme);
-      state.theme = THEMES[(idx + 1) % THEMES.length];
-      applyTheme(state.theme);
-      selectThemeBtn(state.theme);
-      saveState();
-      // Re-render tiles so their inline background/color reflects the new theme vars
-      if (!appScreen.classList.contains('hidden')) renderApp();
-    }
-
-    /* ── SCRIPT / FONT ───────────────────────────────────────── */
-    function applyScript(script) {
-      document.documentElement.style.setProperty('--font-arabic', FONT_VAR[script] || FONT_VAR.uthmani);
-      document.getElementById('tawwudhUthmani').style.display = script === 'uthmani' ? 'block' : 'none';
-      document.getElementById('tawwudhIndopak').style.display = script === 'indopak' ? 'block' : 'none';
-    }
-
-    /* ── POSSESSIVE NAME ─────────────────────────────────────── */
-    function possessive(name) {
-      return name.endsWith('s') ? name + "'" : name + "'s";
-    }
-
-    /* ── LANDING ─────────────────────────────────────────────── */
-    function initLanding() {
-      applyTheme(state.theme);
-      applyScript(state.script);
-      selectScriptBtn(state.script);
-      selectThemeBtn(state.theme);
-      if (state.firstName) landingName.value = state.firstName;
-    }
-    function selectScriptBtn(script) {
-      document.querySelectorAll('.script-btn').forEach(btn => {
-        const on = btn.dataset.script === script;
-        btn.classList.toggle('selected', on);
-        btn.setAttribute('aria-pressed', String(on));
-      });
-    }
-    function selectThemeBtn(theme) {
-      document.querySelectorAll('.theme-btn').forEach(btn => {
-        const on = btn.dataset.themeChoice === theme;
-        btn.classList.toggle('selected', on);
-        btn.setAttribute('aria-pressed', String(on));
-      });
-    }
-
-    document.querySelectorAll('.script-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        state.script = btn.dataset.script;
-        applyScript(state.script);
-        selectScriptBtn(state.script);
-        surahCache = {};
-      });
-    });
-    document.querySelectorAll('.theme-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        state.theme = btn.dataset.themeChoice;
-        applyTheme(state.theme);
-        selectThemeBtn(state.theme);
-      });
-    });
-
-    landingName.addEventListener('keydown', e => { if (e.key === 'Enter') landingEnterBtn.click(); });
-    landingEnterBtn.addEventListener('click', () => {
-      const name = landingName.value.trim();
-      if (!name) {
-        landingName.focus();
-        landingName.style.borderColor = '#c0392b';
-        setTimeout(() => { landingName.style.borderColor = ''; }, 1200);
-        return;
-      }
-      state.firstName   = name;
-      state.landingSeen = true;
-      saveState();
-      showApp();
-    });
-
-    /* ── TUTORIAL ─────────────────────────────────────────────── */
-    const TUT_TOTAL = 4;
-    let tutStep     = 0;
-
-    function showTutorial() {
-      tutStep = 0;
-      renderTutStep();
-      tutorialOverlay.classList.add('visible');
-    }
-    function hideTutorial() {
-      tutorialOverlay.classList.remove('visible');
-      state.tutorialSeen = true;
-      saveState();
-    }
-    function renderTutStep() {
-      document.querySelectorAll('.tutorial-step').forEach((el, i) => el.classList.toggle('active', i === tutStep));
-      document.querySelectorAll('.tutorial-dot') .forEach((el, i) => el.classList.toggle('active', i === tutStep));
-      tutBackBtn.style.display = tutStep === 0 ? 'none' : '';
-      tutNextBtn.textContent   = tutStep === TUT_TOTAL - 1 ? 'Got it ✓' : 'Next';
-    }
-    tutNextBtn.addEventListener('click', () => {
-      tutStep < TUT_TOTAL - 1 ? (tutStep++, renderTutStep()) : hideTutorial();
-    });
-    tutBackBtn.addEventListener('click', () => { if (tutStep > 0) { tutStep--; renderTutStep(); } });
-    tutSkipBtn.addEventListener('click', hideTutorial);
-
-    // Click anywhere on the card (not a button) to advance
-    document.querySelector('.tutorial-card').addEventListener('click', function(e) {
-      // Don't fire if they clicked a button
-      if (e.target.closest('button')) return;
-      tutStep < TUT_TOTAL - 1 ? (tutStep++, renderTutStep()) : hideTutorial();
-    });
-
-    // Click outside the card (on the backdrop) to skip/close
-    tutorialOverlay.addEventListener('click', function(e) {
-      if (e.target === tutorialOverlay) hideTutorial();
-    });
-
-    /* ── APP ──────────────────────────────────────────────────── */
-    function showApp() {
-      landingScreen.classList.add('hidden');
-      appScreen.classList.remove('hidden');
-      renderApp();
-      if (!state.tutorialSeen) setTimeout(showTutorial, 320);
-    }
-
-    function renderApp() {
-      const name  = state.firstName.trim();
-      const stats = getGlobalStats();
-      appTitle.textContent      = possessive(name) + " Quran Diary";
-      overallHeader.textContent = stats.percent + "% memorized";
-
-      statsEl.innerHTML = `
-        <div class="stat"><strong>${stats.percent}%</strong><span>Overall</span></div>
-        <div class="stat"><strong>${stats.memorizedAyahs}</strong><span>Ayahs</span></div>
-        <div class="stat"><strong>${stats.completedSurahs}/114</strong><span>Surahs</span></div>
-      `;
-
-      const fragment = document.createDocumentFragment();
-      SURAHS.forEach(([sName], idx) => {
-        const pct      = surahPercent(idx);
-        const color    = tileColor(pct);
-        const complete = pct === 100;
-        const tile     = document.createElement("button");
-        tile.className = "surah-tile";
-        tile.type      = "button";
-        tile.style.background  = color;
-        tile.style.borderColor = pct > 0 ? 'transparent' : '';
-        // Use theme-appropriate text color via CSS vars (resolved at paint time)
-        if (complete) {
-          tile.style.color = 'var(--tile-text-complete)';
-        } else if (pct > 0) {
-          tile.style.color = 'var(--tile-text-on-progress)';
-        } else {
-          tile.style.color = 'var(--tile-text-empty)';
-        }
-
-        const nameEl = document.createElement('div');
-        nameEl.className   = 'surah-name';
-        nameEl.textContent = sName;
-
-        const numEl = document.createElement('div');
-        numEl.className   = 'surah-num';
-        numEl.textContent = String(idx + 1);
-
-        const pctEl = document.createElement('div');
-        pctEl.className   = 'tile-pct';
-        pctEl.textContent = pct > 0 ? pct + '%' : '';
-        if (complete) pctEl.style.color = 'var(--tile-text-complete)';
-
-        tile.appendChild(nameEl);
-        tile.appendChild(numEl);
-        tile.appendChild(pctEl);
-        tile.addEventListener("click", () => openSurahModal(idx));
-        fragment.appendChild(tile);
-      });
-
-      surahGrid.innerHTML = "";
-      surahGrid.appendChild(fragment);
-    }
-
-    /* ── HELPERS ──────────────────────────────────────────────── */
-    function getMemorizedSet(n)  { return new Set(state.memorized[String(n)] || []); }
-    function setMemorizedSet(n, s) {
-      state.memorized[String(n)] = [...s].sort((a, b) => a - b);
-      saveState();
-    }
-    function setSurahComplete(n, count, complete) {
-      const next = new Set();
-      if (complete) for (let i = 1; i <= count; i++) next.add(i);
-      setMemorizedSet(n, next);
-    }
-    function surahPercent(idx) {
-      return Math.round((getMemorizedSet(idx + 1).size / SURAHS[idx][1]) * 100);
-    }
-    function getGlobalStats() {
-      let memorizedAyahs = 0, completedSurahs = 0;
-      SURAHS.forEach(([, c], i) => {
-        const s = getMemorizedSet(i + 1).size;
-        memorizedAyahs += s;
-        if (s === c) completedSurahs++;
-      });
-      return { memorizedAyahs, completedSurahs, percent: Math.round((memorizedAyahs / TOTAL_AYAHS) * 1000) / 10 };
-    }
-    function tileColor(pct) {
-      const cs = getComputedStyle(document.documentElement);
-      const v  = n => cs.getPropertyValue(n).trim();
-      if (pct === 0)   return v('--tile-empty');
-      if (pct < 25)    return v('--tile-25');
-      if (pct < 50)    return v('--tile-50');
-      if (pct < 75)    return v('--tile-75');
-      if (pct < 100)   return v('--tile-99');
-      return v('--tile-100');
-    }
-
-    /* ── MODAL ────────────────────────────────────────────────── */
-    function openSurahModal(index) {
-      activeSurahIndex = index;
-      const [name, ayahCount] = SURAHS[index];
-      const pct = surahPercent(index);
-      modalTitle.textContent      = (index + 1) + ". " + name;
-      modalPercent.textContent    = pct + "% memorized";
-      markCompleteBtn.textContent = pct === 100 ? "Mark incomplete" : "Mark complete";
-      ayahListEl.classList.add("hidden");
-      modalFooter.classList.add("hidden");
-      ayahListEl.innerHTML        = "";
-      diveInBtn.dataset.ayahCount = String(ayahCount);
-      surahDialog.showModal();
-    }
-
-    /* ── BISMILLAH / NORMALIZE ────────────────────────────────── */
-    // Root cause of old bug: the regex used standard Arabic diacritics (U+064B-U+065F)
-    // but the quran-uthmani API uses Quranic annotation marks (e.g. U+06E1 small sukun,
-    // U+0671 alef wasla) that fall outside the regex's character class.
-    // Fix: work purely with base consonants (strip everything that isn't a letter).
-
-    function _bismConsonants(text) {
-      // Returns {cons: string, poss: number[]} — consonant chars and their original indices
-      const LETTER = /[\u0621-\u063A\u0641-\u064A\u0671]/;
-      const cons = [], poss = [];
-      for (let i = 0; i < text.length; i++) {
-        if (LETTER.test(text[i])) { cons.push(text[i]); poss.push(i); }
-      }
-      return { cons: cons.join(''), poss };
-    }
-
-    function _hasBismillah(text) {
-      // Detects bismillah by base consonants only — immune to diacritic variants
-      const { cons } = _bismConsonants(text);
-      // Must start with بسم and contain رحيم within first 25 consonants
-      return cons.startsWith('\u0628\u0633\u0645') &&
-             cons.substring(0, 25).includes('\u0631\u062D\u064A\u0645');
-    }
-
-    function _stripBismillah(text) {
-      // Finds the م of الرحيم and returns everything after it
-      const { cons, poss } = _bismConsonants(text);
-      let rahimEnd = -1;
-      // Try ٱلرحيم (wasla alef) first, then الرحيم (plain alef)
-      for (const pat of ['\u0671\u0644\u0631\u062D\u064A\u0645', '\u0627\u0644\u0631\u062D\u064A\u0645']) {
-        const i = cons.indexOf(pat);
-        if (i >= 0) { rahimEnd = poss[i + 5]; break; }
-      }
-      // Fallback: find رحيم consonants anywhere in first 25
-      if (rahimEnd < 0) {
-        const ri = cons.substring(0, 25).indexOf('\u0631\u062D\u064A\u0645');
-        if (ri >= 0) rahimEnd = poss[ri + 3];
-      }
-      if (rahimEnd < 0) return text;
-      // Skip everything that isn't an Arabic base letter (diacritics, verse markers, spaces)
-      return text.slice(rahimEnd + 1).replace(/^[^\u0621-\u063A\u0641-\u064A]+/, '').trim();
-    }
-
-    function normalizeAyahs(index, ayahs) {
-      const surahNumber = index + 1;
-      const expected    = SURAHS[index][1];
-
-      // Surahs 1 and 9 never get bismillah treatment
-      if (NO_BISMILLAH.has(surahNumber)) {
-        return ayahs.map(a => ({ number: a.numberInSurah, text: a.text }));
-      }
-
-      // Case A: API returned bismillah as a separate leading ayah (count = expected + 1)
-      if (ayahs.length === expected + 1 && _hasBismillah(ayahs[0].text)) {
-        return ayahs.slice(1).map((a, i) => ({ number: i + 1, text: a.text }));
-      }
-
-      // Case B: Bismillah baked into ayah 1 text (normal case for quran-uthmani edition)
-      const result = ayahs.map(a => ({ number: a.numberInSurah, text: a.text }));
-      if (result.length > 0 && _hasBismillah(result[0].text)) {
-        const stripped = _stripBismillah(result[0].text);
-        result[0] = { number: result[0].number, text: stripped };
-      }
-
-      return result;
-    }
-
-    async function loadSurahText(index) {
-      const n   = index + 1;
-      const key = n + "_" + state.script;
-      if (surahCache[key]) return surahCache[key];
-      const ed  = API_EDITION[state.script] || 'quran-uthmani';
-      const res = await fetch("https://api.alquran.cloud/v1/surah/" + n + "/" + ed);
-      if (!res.ok) throw new Error("API error");
-      const data = await res.json();
-      surahCache[key] = normalizeAyahs(index, data.data.ayahs);
-      return surahCache[key];
-    }
-
-    async function diveIn(index) {
-      ayahListEl.classList.remove("hidden");
-      modalFooter.classList.remove("hidden");
-      ayahListEl.innerHTML = "<p style='font-family:Georgia,serif;color:var(--text2);padding:.5rem'>Loading ayahs\u2026</p>";
-
-      try {
-        const ayahs    = await loadSurahText(index);
-        const surahNum = index + 1;
-        const memorized = getMemorizedSet(surahNum);
-
-        ayahListEl.innerHTML = "";
-
-        // Bismillah header — no label, just text + divider
-        if (!NO_BISMILLAH.has(surahNum)) {
-          const bDiv  = document.createElement("div");
-          bDiv.className = "bismillah-header";
-          const bText = document.createElement("div");
-          bText.className   = "bismillah-text";
-          bText.textContent = BISMILLAH_TEXT;
-          bDiv.appendChild(bText);
-          ayahListEl.appendChild(bDiv);
-        }
-
-        ayahs.forEach(({ number, text }) => {
-          const row = document.createElement("label");
-          row.className = "ayah-item";
-          row.innerHTML = "<input type='checkbox' " + (memorized.has(number) ? "checked" : "") + " data-ayah='" + number + "' /><div style='flex:1;min-width:0;'><div class='ayah-label'>Ayah " + number + "</div><p class='ayah-text'></p></div>";
-          row.querySelector('.ayah-text').textContent = text;
-          row.querySelector("input").addEventListener("change", function(e) {
-            const ayahNo = Number(e.target.dataset.ayah);
-            const nextSet = getMemorizedSet(surahNum);
-            e.target.checked ? nextSet.add(ayahNo) : nextSet.delete(ayahNo);
-            setMemorizedSet(surahNum, nextSet);
-            const pct = surahPercent(index);
-            modalPercent.textContent    = pct + "% memorized";
-            markCompleteBtn.textContent = pct === 100 ? "Mark incomplete" : "Mark complete";
-            renderApp();
-          });
-          ayahListEl.appendChild(row);
+        await new Promise((res, rej) => {
+          const tx  = _idb.transaction('kv', 'readwrite');
+          const req = tx.objectStore('kv').put(json, STORAGE_KEY);
+          req.onsuccess = res; req.onerror = rej;
         });
-      } catch (err) {
-        ayahListEl.innerHTML = "<p style='font-family:Georgia,serif;color:#c0392b;padding:.5rem'>Could not load. Check connection and try again.</p>";
-      }
+      } catch(e) {}
     }
+  }
 
-    /* ── MODAL LISTENERS ──────────────────────────────────────── */
-    closeModalBtn.addEventListener("click", () => surahDialog.close());
-    surahDialog.addEventListener("click", function(e) {
-      const r = surahDialog.getBoundingClientRect();
-      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom)
-        surahDialog.close();
-    });
-    markCompleteBtn.addEventListener("click", function() {
-      if (activeSurahIndex === null) return;
-      const n = activeSurahIndex + 1;
-      const c = SURAHS[activeSurahIndex][1];
-      setSurahComplete(n, c, surahPercent(activeSurahIndex) !== 100);
-      openSurahModal(activeSurahIndex);
-      renderApp();
-    });
-    diveInBtn.addEventListener("click", function() { if (activeSurahIndex !== null) diveIn(activeSurahIndex); });
-    prevSurahBtn.addEventListener("click", async function() {
-      if (activeSurahIndex === null) return;
-      activeSurahIndex = (activeSurahIndex + 113) % 114;
-      openSurahModal(activeSurahIndex);
-      await diveIn(activeSurahIndex);
-    });
-    nextSurahBtn.addEventListener("click", async function() {
-      if (activeSurahIndex === null) return;
-      activeSurahIndex = (activeSurahIndex + 1) % 114;
-      openSurahModal(activeSurahIndex);
-      await diveIn(activeSurahIndex);
-    });
+  async function storageLoad() {
+    // Try IndexedDB first
+    if (_idbReady && _idb) {
+      try {
+        const val = await new Promise((res, rej) => {
+          const tx  = _idb.transaction('kv', 'readonly');
+          const req = tx.objectStore('kv').get(STORAGE_KEY);
+          req.onsuccess = () => res(req.result);
+          req.onerror   = () => rej(req.error);
+        });
+        if (val) return JSON.parse(val);
+      } catch(e) {}
+    }
+    // Fallback to localStorage
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { try { return JSON.parse(raw); } catch(e) {} }
+    return null;
+  }
 
-    /* ── THEME TOGGLE BUTTON ──────────────────────────────────── */
-    themeToggleBtn.addEventListener("click", cycleTheme);
+  /* ── STATE ── */
+  const DEFAULT_STATE = {
+    firstName:'', memorized:{}, pageMemorized:{},
+    script:'uthmani', theme:'parchment', lang:'en', viewMode:'surah',
+    landingSeen:false, tutorialSeen:false
+  };
+  let state = { ...DEFAULT_STATE };
+  let activeSurahIndex = null;
+  let surahCache = {};
+  let transCache  = {};
+  let activeJuz   = null;
+  let activePage  = null;
+  let pageCache   = {};
+  let translationsVisible = false;
 
-    /* ── CLEAR DATA ───────────────────────────────────────────── */
-    clearDataBtn.addEventListener("click", function() {
-      if (!confirm("Clear your name and all memorization progress on this device?")) return;
-      localStorage.removeItem(STORAGE_KEY);
-      state = { firstName:"", memorized:{}, script:"uthmani", theme:"parchment", landingSeen:false, tutorialSeen:false };
-      surahCache = {};
-      applyTheme("parchment");
-      applyScript("uthmani");
-      appScreen.classList.add('hidden');
-      landingScreen.classList.remove('hidden');
-      initLanding();
+  function saveState() { storageSave(state); }
+
+  /* ── DOM REFS ── */
+  const landingScreen    = document.getElementById("landingScreen");
+  const landingName      = document.getElementById("landingName");
+  const landingEnterBtn  = document.getElementById("landingEnterBtn");
+  const appScreen        = document.getElementById("appScreen");
+  const pageViewScreen   = document.getElementById("pageViewScreen");
+  const pageListScreen   = document.getElementById("pageListScreen");
+  const pageDetailScreen = document.getElementById("pageDetailScreen");
+  const appTitle         = document.getElementById("appTitle");
+  const pageViewTitle    = document.getElementById("pageViewTitle");
+  const overallHeader    = document.getElementById("overallHeader");
+  const statsEl          = document.getElementById("stats");
+  const surahGrid        = document.getElementById("surahGrid");
+  const clearDataBtn     = document.getElementById("clearDataBtn");
+  const gearBtn          = document.getElementById("gearBtn");
+  const gearBtn2         = document.getElementById("gearBtn2");
+  const surahDialog      = document.getElementById("surahDialog");
+  const modalTitleArabic = document.getElementById("modalTitleArabic");
+  const modalTitleLatin  = document.getElementById("modalTitleLatin");
+  const modalPercent     = document.getElementById("modalPercent");
+  const closeModalBtn    = document.getElementById("closeModalBtn");
+  const diveInBtn        = document.getElementById("diveInBtn");
+  const markCompleteBtn  = document.getElementById("markCompleteBtn");
+  const ayahListEl       = document.getElementById("ayahList");
+  const modalFooter      = document.getElementById("modalFooter");
+  const prevSurahBtn     = document.getElementById("prevSurahBtn");
+  const nextSurahBtn     = document.getElementById("nextSurahBtn");
+  const toggleTransBtn   = document.getElementById("toggleTransBtn");
+  const tutorialOverlay  = document.getElementById("tutorialOverlay");
+  const tutSkipBtn       = document.getElementById("tutSkipBtn");
+  const tutNextBtn       = document.getElementById("tutNextBtn");
+  const tutBackBtn       = document.getElementById("tutBackBtn");
+  const settingsPanel    = document.getElementById("settingsPanel");
+  const feedbackDialog   = document.getElementById("feedbackDialog");
+  const feedbackFab      = document.getElementById("feedbackFab");
+  const audhuOverlay     = document.getElementById("audhuOverlay");
+
+  /* ── THEME ── */
+  function applyTheme(theme) {
+    const html = document.documentElement;
+    html.removeAttribute("data-theme");
+    if (theme === "dark")  html.setAttribute("data-theme", "dark");
+    if (theme === "glass") html.setAttribute("data-theme", "glass");
+    document.querySelectorAll('.theme-btn').forEach(b => {
+      b.classList.toggle('selected', b.dataset.themeChoice === theme);
     });
+  }
+  function applyScript(script) {
+    document.documentElement.style.setProperty('--font-arabic', FONT_VAR[script] || FONT_VAR.uthmani);
+    // Landing
+    const lu = document.getElementById('tawwudhUthmani'), li = document.getElementById('tawwudhIndopak');
+    if (lu) { lu.classList.toggle('active', script === 'uthmani'); li.classList.toggle('active', script === 'indopak'); }
+    // All script buttons
+    document.querySelectorAll('.script-btn').forEach(b => b.classList.toggle('selected', b.dataset.script === script));
+    surahCache = {}; transCache = {}; pageCache = {};
+  }
 
-    /* ── BOOT ─────────────────────────────────────────────────── */
+  /* ── LANG GRID ── */
+  function buildLangGrid(containerId) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = '';
+    LANG_OPTIONS.forEach(l => {
+      const btn = document.createElement('button');
+      btn.className = 'lang-btn' + (l.code === state.lang ? ' selected' : '');
+      btn.dataset.lang = l.code;
+      btn.type = 'button';
+      btn.innerHTML = `<span class="lang-native">${l.native}</span>`;
+      btn.addEventListener('click', () => {
+        state.lang = l.code;
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('selected', b.dataset.lang === l.code));
+        transCache = {};
+        saveState();
+      });
+      el.appendChild(btn);
+    });
+  }
+
+  /* ── VIEW MODE ── */
+  function applyViewMode(mode) {
+    document.querySelectorAll('.view-mode-btn').forEach(b => b.classList.toggle('selected', b.dataset.view === mode));
+  }
+
+  /* ── POSSESSIVE ── */
+  function possessive(name) { return name.endsWith('s') ? name + "'" : name + "'s"; }
+
+  /* ── SURAH NAME DISPLAY ── */
+  function surahTransName(idx) {
+    const trans = SURAHS_TRANS[state.lang];
+    if (trans && trans[idx]) return trans[idx];
+    return SURAHS[idx][0]; // fallback to transliteration
+  }
+
+  /* ── HELPERS ── */
+  function getMemorizedSet(n)  { return new Set(state.memorized[String(n)] || []); }
+  function setMemorizedSet(n, s) { state.memorized[String(n)] = [...s].sort((a,b)=>a-b); saveState(); }
+  function setSurahComplete(n, count, complete) {
+    const next = new Set();
+    if (complete) for (let i = 1; i <= count; i++) next.add(i);
+    setMemorizedSet(n, next);
+  }
+  function surahPercent(idx) {
+    return Math.round((getMemorizedSet(idx + 1).size / SURAHS[idx][1]) * 100);
+  }
+  function getGlobalStats() {
+    let memorizedAyahs = 0, completedSurahs = 0;
+    SURAHS.forEach(([,c],i) => {
+      const s = getMemorizedSet(i+1).size;
+      memorizedAyahs += s;
+      if (s === c) completedSurahs++;
+    });
+    return { memorizedAyahs, completedSurahs, percent: Math.round((memorizedAyahs / TOTAL_AYAHS) * 1000) / 10 };
+  }
+  function tileColor(pct) {
+    const cs = getComputedStyle(document.documentElement);
+    const v  = n => cs.getPropertyValue(n).trim();
+    if (pct === 0)   return v('--tile-empty');
+    if (pct < 25)    return v('--tile-25');
+    if (pct < 50)    return v('--tile-50');
+    if (pct < 75)    return v('--tile-75');
+    if (pct < 100)   return v('--tile-99');
+    return v('--tile-100');
+  }
+
+  /* ── LANDING ── */
+  function initLanding() {
     applyTheme(state.theme);
     applyScript(state.script);
+    applyViewMode(state.viewMode);
+    buildLangGrid('langGrid');
+    buildLangGrid('settingsLangGrid');
+    if (state.firstName) landingName.value = state.firstName;
+  }
+
+  document.querySelectorAll('.script-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.script = btn.dataset.script;
+      applyScript(state.script);
+      saveState();
+    });
+  });
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.theme = btn.dataset.themeChoice;
+      applyTheme(state.theme);
+      saveState();
+      if (!appScreen.classList.contains('hidden')) renderSurahView();
+    });
+  });
+  document.querySelectorAll('.view-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.viewMode = btn.dataset.view;
+      applyViewMode(state.viewMode);
+      saveState();
+    });
+  });
+
+  landingName.addEventListener('keydown', e => { if (e.key === 'Enter') landingEnterBtn.click(); });
+  landingEnterBtn.addEventListener('click', () => {
+    const name = landingName.value.trim();
+    if (!name) {
+      landingName.focus(); landingName.style.borderColor = '#c0392b';
+      setTimeout(() => { landingName.style.borderColor = ''; }, 1200);
+      return;
+    }
+    state.firstName   = name;
+    state.landingSeen = true;
+    saveState();
+    showMainView();
+  });
+
+  /* ── SHOW MAIN VIEW ── */
+  function showMainView() {
+    landingScreen.classList.add('hidden');
+    appScreen.classList.add('hidden');
+    pageViewScreen.style.display = 'none';
+    pageListScreen.style.display = 'none';
+    pageDetailScreen.style.display = 'none';
+
+    if (state.viewMode === 'page') {
+      pageViewScreen.style.display = 'block';
+      renderPageView();
+      feedbackFab.classList.remove('hidden');
+    } else {
+      appScreen.classList.remove('hidden');
+      renderSurahView();
+      feedbackFab.classList.remove('hidden');
+      if (!state.tutorialSeen) setTimeout(showTutorial, 320);
+    }
+  }
+
+  /* ── SURAH VIEW ── */
+  function renderSurahView() {
+    const name  = state.firstName.trim();
+    const stats = getGlobalStats();
+    appTitle.textContent      = possessive(name) + " Quran Diary";
+    overallHeader.textContent = stats.percent + "% memorized";
+    statsEl.innerHTML = `
+      <div class="stat"><strong>${stats.percent}%</strong><span>Overall</span></div>
+      <div class="stat"><strong>${stats.memorizedAyahs}</strong><span>Ayahs</span></div>
+      <div class="stat"><strong>${stats.completedSurahs}/114</strong><span>Surahs</span></div>
+    `;
+    const fragment = document.createDocumentFragment();
+    SURAHS.forEach(([,], idx) => {
+      const pct      = surahPercent(idx);
+      const color    = tileColor(pct);
+      const complete = pct === 100;
+      const tile     = document.createElement("button");
+      tile.className = "surah-tile";
+      tile.type      = "button";
+      tile.style.background  = color;
+      tile.style.borderColor = pct > 0 ? 'transparent' : '';
+      tile.style.color       = complete ? 'var(--tile-text-complete)' : pct > 0 ? 'var(--tile-text-on-progress)' : 'var(--tile-text-empty)';
+
+      const arabicEl = document.createElement('div');
+      arabicEl.className   = 'surah-name-arabic';
+      arabicEl.textContent = SURAHS_ARABIC[idx];
+
+      const transEl = document.createElement('div');
+      transEl.className   = 'surah-name-trans';
+      transEl.textContent = surahTransName(idx);
+
+      const numEl = document.createElement('div');
+      numEl.className   = 'surah-num';
+      numEl.textContent = String(idx + 1);
+
+      const pctEl = document.createElement('div');
+      pctEl.className   = 'tile-pct';
+      pctEl.textContent = pct > 0 ? pct + '%' : '';
+      if (complete) pctEl.style.color = 'var(--tile-text-complete)';
+
+      tile.appendChild(arabicEl);
+      tile.appendChild(transEl);
+      tile.appendChild(numEl);
+      tile.appendChild(pctEl);
+      tile.addEventListener("click", () => openSurahModal(idx));
+      fragment.appendChild(tile);
+    });
+    surahGrid.innerHTML = "";
+    surahGrid.appendChild(fragment);
+  }
+
+  /* ── SURAH MODAL ── */
+  function openSurahModal(index) {
+    activeSurahIndex = index;
+    const [, ayahCount] = SURAHS[index];
+    const pct = surahPercent(index);
+    modalTitleArabic.textContent = SURAHS_ARABIC[index];
+    modalTitleLatin.textContent  = (index + 1) + ". " + SURAHS[index][0];
+    modalPercent.textContent    = pct + "% memorized";
+    markCompleteBtn.textContent = pct === 100 ? "Mark incomplete" : "Mark complete";
+    ayahListEl.classList.add("hidden");
+    modalFooter.classList.add("hidden");
+    ayahListEl.innerHTML = '<div class="drag-hint">Tap or drag to select · Double-tap for translation</div>';
+    diveInBtn.dataset.ayahCount = String(ayahCount);
+    surahDialog.showModal();
+  }
+
+  /* ── BISMILLAH / NORMALIZE ── */
+  function _bismConsonants(text) {
+    const LETTER = /[\u0621-\u063A\u0641-\u064A\u0671]/;
+    const cons = [], poss = [];
+    for (let i = 0; i < text.length; i++) {
+      if (LETTER.test(text[i])) { cons.push(text[i]); poss.push(i); }
+    }
+    return { cons: cons.join(''), poss };
+  }
+  function _hasBismillah(text) {
+    const { cons } = _bismConsonants(text);
+    return cons.startsWith('\u0628\u0633\u0645') && cons.substring(0,25).includes('\u0631\u062D\u064A\u0645');
+  }
+  function _stripBismillah(text) {
+    const { cons, poss } = _bismConsonants(text);
+    let rahimEnd = -1;
+    for (const pat of ['\u0671\u0644\u0631\u062D\u064A\u0645', '\u0627\u0644\u0631\u062D\u064A\u0645']) {
+      const i = cons.indexOf(pat);
+      if (i >= 0) { rahimEnd = poss[i + 5]; break; }
+    }
+    if (rahimEnd < 0) {
+      const ri = cons.substring(0,25).indexOf('\u0631\u062D\u064A\u0645');
+      if (ri >= 0) rahimEnd = poss[ri + 3];
+    }
+    if (rahimEnd < 0) return text;
+    return text.slice(rahimEnd + 1).replace(/^[^\u0621-\u063A\u0641-\u064A]+/, '').trim();
+  }
+  function normalizeAyahs(index, ayahs) {
+    const surahNumber = index + 1;
+    const expected    = SURAHS[index][1];
+    if (NO_BISMILLAH.has(surahNumber)) return ayahs.map(a => ({ number: a.numberInSurah, text: a.text }));
+    if (ayahs.length === expected + 1 && _hasBismillah(ayahs[0].text)) return ayahs.slice(1).map((a,i) => ({ number: i+1, text: a.text }));
+    const result = ayahs.map(a => ({ number: a.numberInSurah, text: a.text }));
+    if (result.length > 0 && _hasBismillah(result[0].text)) {
+      const stripped = _stripBismillah(result[0].text);
+      result[0] = { number: result[0].number, text: stripped };
+    }
+    return result;
+  }
+
+  async function loadSurahText(index) {
+    const n   = index + 1;
+    const key = n + "_" + state.script;
+    if (surahCache[key]) return surahCache[key];
+    const ed  = API_EDITION[state.script] || 'quran-uthmani';
+    const res = await fetch("https://api.alquran.cloud/v1/surah/" + n + "/" + ed);
+    if (!res.ok) throw new Error("API error");
+    const data = await res.json();
+    surahCache[key] = normalizeAyahs(index, data.data.ayahs);
+    return surahCache[key];
+  }
+
+  async function loadTranslation(index) {
+    const langInfo = LANG_OPTIONS.find(l => l.code === state.lang);
+    if (!langInfo || !langInfo.edition) return null; // no translation for this lang
+    const n   = index + 1;
+    const key = n + "_trans_" + state.lang;
+    if (transCache[key]) return transCache[key];
+    try {
+      const res  = await fetch("https://api.alquran.cloud/v1/surah/" + n + "/" + langInfo.edition);
+      if (!res.ok) return null;
+      const data = await res.json();
+      transCache[key] = data.data.ayahs.map(a => ({ number: a.numberInSurah, text: a.text }));
+      return transCache[key];
+    } catch(e) { return null; }
+  }
+
+  /* ── DRAG-SELECT LOGIC ── */
+  function setupDragSelect(container, getItems, onToggle) {
+    let dragging = false;
+    let dragMode = null; // 'add' or 'remove'
+    let lastTap = {};
+
+    function getItemFromPoint(x, y) {
+      const items = container.querySelectorAll('[data-ayah]');
+      for (const el of items) {
+        const r = el.getBoundingClientRect();
+        if (y >= r.top && y <= r.bottom && x >= r.left && x <= r.right) return el;
+      }
+      return null;
+    }
+
+    container.addEventListener('touchstart', e => {
+      const touch = e.touches[0];
+      const el    = getItemFromPoint(touch.clientX, touch.clientY);
+      if (!el) return;
+      const ayahNo = Number(el.dataset.ayah);
+      const surahNo = Number(el.dataset.surah);
+
+      // Double tap detection
+      const now = Date.now();
+      const key = surahNo + '_' + ayahNo;
+      if (lastTap.key === key && now - lastTap.time < 400) {
+        // Double tap -> toggle translation
+        const transEl = el.querySelector('.ayah-translation');
+        if (transEl) transEl.classList.toggle('visible');
+        lastTap = {};
+        e.preventDefault();
+        return;
+      }
+      lastTap = { key, time: now };
+
+      dragging = true;
+      const memorized = getItems(surahNo);
+      dragMode = memorized.has(ayahNo) ? 'remove' : 'add';
+      dragMode === 'add' ? memorized.add(ayahNo) : memorized.delete(ayahNo);
+      onToggle(surahNo, memorized, el);
+    }, { passive: false });
+
+    container.addEventListener('touchmove', e => {
+      if (!dragging) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      const el    = getItemFromPoint(touch.clientX, touch.clientY);
+      if (!el) return;
+      const ayahNo  = Number(el.dataset.ayah);
+      const surahNo = Number(el.dataset.surah);
+      const memorized = getItems(surahNo);
+      const currently = memorized.has(ayahNo);
+      if ((dragMode === 'add' && !currently) || (dragMode === 'remove' && currently)) {
+        dragMode === 'add' ? memorized.add(ayahNo) : memorized.delete(ayahNo);
+        onToggle(surahNo, memorized, el);
+      }
+    }, { passive: false });
+
+    container.addEventListener('touchend', () => { dragging = false; dragMode = null; });
+    container.addEventListener('touchcancel', () => { dragging = false; dragMode = null; });
+
+    // Mouse drag
+    container.addEventListener('mousedown', e => {
+      const el = e.target.closest('[data-ayah]');
+      if (!el) return;
+      const ayahNo  = Number(el.dataset.ayah);
+      const surahNo = Number(el.dataset.surah);
+      const memorized = getItems(surahNo);
+      dragMode = memorized.has(ayahNo) ? 'remove' : 'add';
+      dragMode === 'add' ? memorized.add(ayahNo) : memorized.delete(ayahNo);
+      onToggle(surahNo, memorized, el);
+      dragging = true;
+    });
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const item = el && el.closest('[data-ayah]');
+      if (!item || !container.contains(item)) return;
+      const ayahNo  = Number(item.dataset.ayah);
+      const surahNo = Number(item.dataset.surah);
+      const memorized = getItems(surahNo);
+      const currently = memorized.has(ayahNo);
+      if ((dragMode === 'add' && !currently) || (dragMode === 'remove' && currently)) {
+        dragMode === 'add' ? memorized.add(ayahNo) : memorized.delete(ayahNo);
+        onToggle(surahNo, memorized, item);
+      }
+    });
+    document.addEventListener('mouseup', () => { dragging = false; dragMode = null; });
+  }
+
+  /* ── DIVE IN (SURAH MODAL AYAHS) ── */
+  async function diveIn(index) {
+    ayahListEl.classList.remove("hidden");
+    modalFooter.classList.remove("hidden");
+    translationsVisible = false;
+    toggleTransBtn.textContent = '🌐 Translations';
+    ayahListEl.innerHTML = "<p style='font-family:Georgia,serif;color:var(--text2);padding:.5rem'>Loading ayahs…</p>";
+
+    try {
+      const [ayahs, trans] = await Promise.all([
+        loadSurahText(index),
+        loadTranslation(index)
+      ]);
+      const surahNum  = index + 1;
+      const memorized = getMemorizedSet(surahNum);
+      ayahListEl.innerHTML = '<div class="drag-hint">Tap or drag to select · Double-tap for translation</div>';
+
+      if (!NO_BISMILLAH.has(surahNum)) {
+        const bDiv  = document.createElement("div");
+        bDiv.className = "bismillah-header";
+        const bText = document.createElement("div");
+        bText.className   = "bismillah-text";
+        bText.textContent = BISMILLAH_TEXT;
+        bDiv.appendChild(bText);
+        ayahListEl.appendChild(bDiv);
+      }
+
+      ayahs.forEach(({ number, text }) => {
+        const transTxt = trans ? (trans.find(t => t.number === number) || {}).text : null;
+        const item = document.createElement("div");
+        item.className = "ayah-item" + (memorized.has(number) ? ' memorized' : '');
+        item.dataset.ayah  = String(number);
+        item.dataset.surah = String(surahNum);
+        item.innerHTML = `
+          <div class="ayah-item-header">
+            <span class="ayah-label">Ayah ${number}</span>
+            <span class="ayah-check">${memorized.has(number) ? '✓' : ''}</span>
+          </div>
+          <p class="ayah-text"></p>
+          ${transTxt ? '<div class="ayah-translation">' + escHtml(transTxt) + '</div>' : ''}
+        `;
+        item.querySelector('.ayah-text').textContent = text;
+        ayahListEl.appendChild(item);
+      });
+
+      // Drag-select
+      setupDragSelect(ayahListEl,
+        (sNo) => getMemorizedSet(sNo),
+        (sNo, newSet, el) => {
+          setMemorizedSet(sNo, newSet);
+          // Update UI for ALL items in this surah
+          ayahListEl.querySelectorAll('[data-ayah]').forEach(it => {
+            const aNo = Number(it.dataset.ayah);
+            it.classList.toggle('memorized', newSet.has(aNo));
+            const chk = it.querySelector('.ayah-check');
+            if (chk) chk.textContent = newSet.has(aNo) ? '✓' : '';
+          });
+          const pct = surahPercent(index);
+          modalPercent.textContent    = pct + "% memorized";
+          markCompleteBtn.textContent = pct === 100 ? "Mark incomplete" : "Mark complete";
+          renderSurahView();
+        }
+      );
+
+    } catch(err) {
+      ayahListEl.innerHTML = "<p style='font-family:Georgia,serif;color:#c0392b;padding:.5rem'>Could not load. Check connection and try again.</p>";
+    }
+  }
+
+  /* ── TOGGLE ALL TRANSLATIONS ── */
+  toggleTransBtn.addEventListener('click', () => {
+    translationsVisible = !translationsVisible;
+    toggleTransBtn.textContent = translationsVisible ? '🌐 Hide translations' : '🌐 Translations';
+    ayahListEl.querySelectorAll('.ayah-translation').forEach(el => {
+      el.classList.toggle('visible', translationsVisible);
+    });
+  });
+
+  /* ── MODAL LISTENERS ── */
+  closeModalBtn.addEventListener("click", () => surahDialog.close());
+  surahDialog.addEventListener("click", function(e) {
+    const r = surahDialog.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) surahDialog.close();
+  });
+  markCompleteBtn.addEventListener("click", function() {
+    if (activeSurahIndex === null) return;
+    const n = activeSurahIndex + 1;
+    const c = SURAHS[activeSurahIndex][1];
+    setSurahComplete(n, c, surahPercent(activeSurahIndex) !== 100);
+    openSurahModal(activeSurahIndex);
+    renderSurahView();
+  });
+  diveInBtn.addEventListener("click", function() { if (activeSurahIndex !== null) diveIn(activeSurahIndex); });
+  prevSurahBtn.addEventListener("click", async function() {
+    if (activeSurahIndex === null) return;
+    activeSurahIndex = (activeSurahIndex + 113) % 114;
+    openSurahModal(activeSurahIndex);
+    await diveIn(activeSurahIndex);
+  });
+  nextSurahBtn.addEventListener("click", async function() {
+    if (activeSurahIndex === null) return;
+    activeSurahIndex = (activeSurahIndex + 1) % 114;
+    openSurahModal(activeSurahIndex);
+    await diveIn(activeSurahIndex);
+  });
+
+  /* ── PAGE VIEW ── */
+  function renderPageView() {
+    const name = state.firstName.trim();
+    const stats = getGlobalStats();
+    pageViewTitle.textContent = possessive(name) + " Quran Diary";
+    const stats2 = document.getElementById('stats2');
+    if (stats2) stats2.innerHTML = `
+      <div class="stat"><strong>${stats.percent}%</strong><span>Overall</span></div>
+      <div class="stat"><strong>${stats.memorizedAyahs}</strong><span>Ayahs</span></div>
+      <div class="stat"><strong>${stats.completedSurahs}/114</strong><span>Surahs</span></div>
+    `;
+    const grid = document.getElementById('juzGrid');
+    grid.innerHTML = '';
+    JUZ_DATA.forEach((juz, idx) => {
+      const juzNum = idx + 1;
+      const complete = isJuzComplete(juzNum);
+      const tile = document.createElement('div');
+      tile.className = 'juz-tile' + (complete ? ' complete' : '');
+      tile.innerHTML = `<div class="juz-num">${juzNum}</div><div class="juz-label">Juz ${juzNum}</div>`;
+      tile.addEventListener('click', () => openJuz(juzNum));
+      grid.appendChild(tile);
+    });
+  }
+
+  function isJuzComplete(juzNum) {
+    const pages = getJuzPages(juzNum);
+    return pages.every(pg => isPageComplete(pg));
+  }
+
+  function getJuzPages(juzNum) {
+    // Each juz has roughly 20 pages (604 total pages / 30 juz ≈ 20.1)
+    const start = (juzNum - 1) * 20 + 1;
+    const end   = juzNum === 30 ? 604 : juzNum * 20;
+    const pages = [];
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  }
+
+  function isPageComplete(pageNum) {
+    return !!(state.pageMemorized && state.pageMemorized[String(pageNum)]);
+  }
+  function setPageComplete(pageNum, val) {
+    if (!state.pageMemorized) state.pageMemorized = {};
+    state.pageMemorized[String(pageNum)] = val;
+    saveState();
+  }
+
+  function openJuz(juzNum) {
+    activeJuz = juzNum;
+    pageViewScreen.style.display = 'none';
+    pageListScreen.style.display = 'block';
+    pageDetailScreen.style.display = 'none';
+
+    document.getElementById('pageListTitle').textContent = 'Juz ' + juzNum;
+    const pages = getJuzPages(juzNum);
+    const thumbs = document.getElementById('pageThumbs');
+    thumbs.innerHTML = '';
+    pages.forEach(pg => {
+      const complete = isPageComplete(pg);
+      const th = document.createElement('div');
+      th.className = 'page-thumb' + (complete ? ' complete' : '');
+      th.innerHTML = `<div class="page-num">${pg}</div><div class="page-sub">Page ${pg}</div>`;
+      th.addEventListener('click', () => openPageDetail(pg));
+      thumbs.appendChild(th);
+    });
+  }
+
+  document.getElementById('backToJuzBtn').addEventListener('click', () => {
+    pageListScreen.style.display = 'none';
+    pageViewScreen.style.display = 'block';
+    renderPageView();
+  });
+
+  document.getElementById('markJuzCompleteBtn').addEventListener('click', () => {
+    if (!activeJuz) return;
+    const pages = getJuzPages(activeJuz);
+    const allComplete = pages.every(p => isPageComplete(p));
+    pages.forEach(p => setPageComplete(p, !allComplete));
+    openJuz(activeJuz);
+  });
+
+  /* ── PAGE DETAIL ── */
+  async function openPageDetail(pageNum) {
+    activePage = pageNum;
+    pageListScreen.style.display = 'none';
+    pageDetailScreen.style.display = 'block';
+    document.getElementById('pageDetailTitle').textContent = 'Page ' + pageNum;
+    const listEl = document.getElementById('pageAyahList');
+    listEl.innerHTML = '<div class="drag-hint">Tap or drag to highlight memorized ayahs</div><p style="font-family:Georgia,serif;color:var(--text2);padding:.5rem">Loading…</p>';
+
+    // Find ayahs for this page using alquran.cloud page endpoint
+    try {
+      const cacheKey = 'page_' + pageNum + '_' + state.script;
+      let ayahs;
+      if (pageCache[cacheKey]) {
+        ayahs = pageCache[cacheKey];
+      } else {
+        const ed  = API_EDITION[state.script] || 'quran-uthmani';
+        const res = await fetch(`https://api.alquran.cloud/v1/page/${pageNum}/${ed}`);
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
+        ayahs = data.data.ayahs.map(a => ({ surah: a.surah.number, number: a.numberInSurah, text: a.text }));
+        pageCache[cacheKey] = ayahs;
+      }
+
+      listEl.innerHTML = '<div class="drag-hint">Tap or drag to highlight memorized ayahs</div>';
+
+      // Group by surah for display
+      let currentSurah = null;
+      ayahs.forEach(({ surah, number, text }) => {
+        if (surah !== currentSurah) {
+          currentSurah = surah;
+          const hdr = document.createElement('div');
+          hdr.style.cssText = 'font-family:var(--font-arabic);direction:rtl;text-align:center;font-size:1.1rem;color:var(--accent);padding:0.6rem 0.3rem 0.2rem;';
+          hdr.textContent = SURAHS_ARABIC[surah - 1];
+          listEl.appendChild(hdr);
+        }
+        const memorized = getMemorizedSet(surah);
+        const item = document.createElement('div');
+        item.className = 'page-ayah-item' + (memorized.has(number) ? ' memorized' : '');
+        item.dataset.ayah  = String(number);
+        item.dataset.surah = String(surah);
+        const ref = document.createElement('div');
+        ref.className   = 'page-ayah-ref';
+        ref.textContent = `${SURAHS[surah-1][0]} · Ayah ${number}`;
+        const txt = document.createElement('div');
+        txt.className   = 'page-ayah-text';
+        txt.textContent = text;
+        item.appendChild(ref);
+        item.appendChild(txt);
+        listEl.appendChild(item);
+      });
+
+      setupDragSelect(listEl,
+        (sNo) => getMemorizedSet(sNo),
+        (sNo, newSet, el) => {
+          setMemorizedSet(sNo, newSet);
+          listEl.querySelectorAll(`[data-surah="${sNo}"][data-ayah]`).forEach(it => {
+            const aNo = Number(it.dataset.ayah);
+            it.classList.toggle('memorized', newSet.has(aNo));
+          });
+        }
+      );
+    } catch(err) {
+      listEl.innerHTML = '<p style="font-family:Georgia,serif;color:#c0392b;padding:.5rem">Could not load page. Check connection.</p>';
+    }
+  }
+
+  document.getElementById('backToPageListBtn').addEventListener('click', () => {
+    pageDetailScreen.style.display = 'none';
+    pageListScreen.style.display = 'block';
+    if (activeJuz) openJuz(activeJuz);
+  });
+
+  document.getElementById('markPageCompleteBtn').addEventListener('click', () => {
+    if (!activePage) return;
+    const complete = !isPageComplete(activePage);
+    setPageComplete(activePage, complete);
+    // Also mark/unmark each ayah on this page
+    const listEl = document.getElementById('pageAyahList');
+    listEl.querySelectorAll('[data-ayah]').forEach(el => {
+      const surahNo = Number(el.dataset.surah);
+      const ayahNo  = Number(el.dataset.ayah);
+      const mem = getMemorizedSet(surahNo);
+      complete ? mem.add(ayahNo) : mem.delete(ayahNo);
+      setMemorizedSet(surahNo, mem);
+      el.classList.toggle('memorized', complete);
+    });
+    document.getElementById('markPageCompleteBtn').textContent = complete ? 'Mark Page Incomplete' : 'Mark Page Complete';
+  });
+
+  /* ── GEAR / SETTINGS ── */
+  function openSettings() {
+    buildLangGrid('settingsLangGrid');
+    applyViewMode(state.viewMode);
+    settingsPanel.classList.add('open');
+  }
+  function closeSettings() {
+    settingsPanel.classList.remove('open');
+    // Re-render current view with new settings
+    if (state.viewMode === 'page') {
+      if (pageDetailScreen.style.display !== 'none') { /* keep current */ }
+      else if (pageListScreen.style.display !== 'none') { if (activeJuz) openJuz(activeJuz); }
+      else { renderPageView(); }
+    } else {
+      renderSurahView();
+    }
+  }
+  gearBtn.addEventListener('click', openSettings);
+  gearBtn2.addEventListener('click', openSettings);
+  document.getElementById('settingsCloseBtn').addEventListener('click', closeSettings);
+  settingsPanel.addEventListener('click', e => { if (e.target === settingsPanel) closeSettings(); });
+
+  // Settings scripts/themes
+  document.querySelectorAll('#settingsScriptOptions .script-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.script = btn.dataset.script;
+      applyScript(state.script);
+      saveState();
+    });
+  });
+  document.querySelectorAll('#settingsThemeOptions .theme-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.theme = btn.dataset.themeChoice;
+      applyTheme(state.theme);
+      saveState();
+    });
+  });
+  document.querySelectorAll('#settingsViewMode .view-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.viewMode = btn.dataset.view;
+      applyViewMode(state.viewMode);
+      saveState();
+      closeSettings();
+      // Switch view
+      appScreen.classList.add('hidden');
+      pageViewScreen.style.display = 'none';
+      pageListScreen.style.display = 'none';
+      pageDetailScreen.style.display = 'none';
+      if (state.viewMode === 'page') {
+        pageViewScreen.style.display = 'block';
+        renderPageView();
+      } else {
+        appScreen.classList.remove('hidden');
+        renderSurahView();
+      }
+    });
+  });
+
+  /* ── CLEAR DATA ── */
+  clearDataBtn.addEventListener("click", function() {
+    if (!confirm("Clear your name and all memorization progress on this device?")) return;
+    state = { ...DEFAULT_STATE };
+    surahCache = {}; transCache = {}; pageCache = {};
+    saveState();
+    applyTheme("parchment");
+    applyScript("uthmani");
+    appScreen.classList.add('hidden');
+    pageViewScreen.style.display = 'none';
+    pageListScreen.style.display = 'none';
+    pageDetailScreen.style.display = 'none';
+    feedbackFab.classList.add('hidden');
+    landingScreen.classList.remove('hidden');
+    initLanding();
+  });
+
+  /* ── TUTORIAL ── */
+  const TUT_TOTAL = 4;
+  let tutStep = 0;
+  function showTutorial() { tutStep = 0; renderTutStep(); tutorialOverlay.classList.add('visible'); }
+  function hideTutorial()  { tutorialOverlay.classList.remove('visible'); state.tutorialSeen = true; saveState(); }
+  function renderTutStep() {
+    document.querySelectorAll('.tutorial-step').forEach((el,i) => el.classList.toggle('active', i === tutStep));
+    document.querySelectorAll('.tutorial-dot') .forEach((el,i) => el.classList.toggle('active', i === tutStep));
+    tutBackBtn.style.display = tutStep === 0 ? 'none' : '';
+    tutNextBtn.textContent   = tutStep === TUT_TOTAL - 1 ? 'Got it ✓' : 'Next';
+  }
+  tutNextBtn.addEventListener('click', () => { tutStep < TUT_TOTAL - 1 ? (tutStep++, renderTutStep()) : hideTutorial(); });
+  tutBackBtn.addEventListener('click', () => { if (tutStep > 0) { tutStep--; renderTutStep(); } });
+  tutSkipBtn.addEventListener('click', hideTutorial);
+  document.querySelector('.tutorial-card').addEventListener('click', function(e) {
+    if (e.target.closest('button')) return;
+    tutStep < TUT_TOTAL - 1 ? (tutStep++, renderTutStep()) : hideTutorial();
+  });
+  tutorialOverlay.addEventListener('click', e => { if (e.target === tutorialOverlay) hideTutorial(); });
+
+  /* ── FEEDBACK ── */
+  feedbackFab.addEventListener('click', () => feedbackDialog.showModal());
+  document.getElementById('closeFeedbackBtn').addEventListener('click', () => feedbackDialog.close());
+  document.getElementById('submitFeedbackBtn').addEventListener('click', () => {
+    const email = document.getElementById('feedbackEmail').value.trim();
+    const text  = document.getElementById('feedbackText').value.trim();
+    if (!text) { document.getElementById('feedbackText').focus(); return; }
+    // Mailto fallback (replace with real backend endpoint)
+    const mailto = `mailto:qurandiary.feedback@gmail.com?subject=Quran Diary Feedback&body=${encodeURIComponent((email ? 'From: ' + email + '\n\n' : '') + text)}`;
+    window.open(mailto);
+    document.getElementById('feedbackSuccess').classList.remove('hidden');
+    setTimeout(() => { feedbackDialog.close(); document.getElementById('feedbackSuccess').classList.add('hidden'); document.getElementById('feedbackText').value = ''; document.getElementById('feedbackEmail').value = ''; }, 2000);
+  });
+
+  /* ── UTIL ── */
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── AUDHUBILLAH FADE ── */
+  function showAudhu() {
+    const script = state.script || 'uthmani';
+    document.getElementById('audhuUthmani').style.display = script === 'uthmani' ? '' : 'none';
+    document.getElementById('audhuIndopak').style.display = script === 'indopak' ? '' : 'none';
+    audhuOverlay.style.display = 'flex';
+    audhuOverlay.style.opacity = '1';
+    audhuOverlay.classList.remove('fade-out', 'done');
+
+    setTimeout(() => {
+      audhuOverlay.classList.add('fade-out');
+      setTimeout(() => { audhuOverlay.classList.add('done'); }, 1300);
+    }, 2400);
+  }
+
+  /* ── BOOT ── */
+  async function boot() {
+    // Open IndexedDB first
+    try { await openIDB(); } catch(e) { /* fallback to localStorage */ }
+
+    // Load state
+    const saved = await storageLoad();
+    if (saved) {
+      state = {
+        ...DEFAULT_STATE,
+        firstName:    saved.firstName    || "",
+        memorized:    saved.memorized    || {},
+        pageMemorized:saved.pageMemorized|| {},
+        script:       saved.script       || "uthmani",
+        theme:        saved.theme        || "parchment",
+        lang:         saved.lang         || "en",
+        viewMode:     saved.viewMode     || "surah",
+        landingSeen:  saved.landingSeen  || false,
+        tutorialSeen: saved.tutorialSeen || false
+      };
+    }
+
+    applyTheme(state.theme);
+    applyScript(state.script);
+    showAudhu();
 
     if (state.landingSeen && state.firstName) {
       initLanding();
-      showApp();
+      setTimeout(showMainView, 1800); // show after audhu fades
     } else {
-      initLanding();
+      setTimeout(() => {
+        landingScreen.classList.remove('hidden');
+        initLanding();
+      }, 1800);
     }
+  }
+
+  boot();
   </script>
 
-  <!-- Version: 1.2.1 -->
+  <!-- Version: 2.0.0 -->
 </body>
 </html>
