@@ -453,7 +453,8 @@
       /* Standard Madani Mushaf aspect ratio: 17×24cm ≈ 0.708 */
       width: 100%;
       max-width: 460px;
-      aspect-ratio: 0.71 / 1;
+      /* Don't use a fixed aspect-ratio — let lines breathe with proper line-height.
+         The page height is determined by the content (lines × line-height). */
       background: #fdf8ef;
       /* Double-border frame — outer gold, inner thin */
       border: 2px solid #b8980a;
@@ -537,22 +538,26 @@
     [data-theme="dark"] .mushaf-basmala { color: #d4be90; }
 
     /* ── MUSHAF LINE — the core element ── */
+    /* KEY FIX: Arabic letters have tall diacritics above and long descenders below.
+       line-height must be ≥1.9 for Scheherazade New, ≥2.2 for Nastaliq.
+       We use a fixed height per line so the page fills predictably. */
     .mushaf-line {
       flex: 1;
       display: flex;
       align-items: center;
       direction: rtl;
       font-family: 'Scheherazade New', serif !important;
-      /* Font size scales: 15-line page needs smaller text than 13-line */
-      font-size: clamp(0.82rem, 2.5vw, 1.08rem);
-      line-height: 1;
+      font-size: clamp(0.78rem, 2.3vw, 1.0rem);
+      /* line-height MUST be generous — Arabic has tall marks above and below */
+      line-height: 2.0;
       color: #1a1008;
       border-radius: 2px;
-      padding: 1px 3px;
+      padding: 0 4px;
       cursor: pointer;
       transition: background 0.1s;
       position: relative;
-      min-height: 0;
+      /* overflow visible so descenders are not clipped */
+      overflow: visible;
     }
     [data-theme="dark"] .mushaf-line { color: #ede5cc; }
     [data-theme="glass"] .mushaf-line { color: #12100a; }
@@ -562,16 +567,19 @@
       text-align: justify;
       text-align-last: justify;
       direction: rtl;
-      overflow: hidden;
-      /* Prevent text wrapping — each line is exactly one line */
+      overflow: visible;
       white-space: nowrap;
     }
-    /* Synthetic ayah mode (fallback API): allow wrapping */
+    /* Synthetic ayah mode (fallback API) */
+    .mushaf-page.synthetic-lines {
+      aspect-ratio: unset;
+      height: auto;
+      min-height: 400px;
+    }
     .mushaf-page.synthetic-lines .mushaf-line {
       flex: none;
-      padding: 0.35em 3px;
       height: auto;
-      min-height: 2.2em;
+      line-height: 2.2;
       border-bottom: 1px solid rgba(180,150,80,0.1);
     }
     .mushaf-page.synthetic-lines .mushaf-line .line-text {
@@ -602,10 +610,11 @@
     }
     [data-theme="dark"] .mushaf-page-num { color: #7a6840; }
 
-    /* IndoPak (Nastaliq) variant */
+    /* IndoPak (Nastaliq) variant — Nastaliq needs MORE line-height than Naskh */
     .mushaf-page.indopak .mushaf-line {
       font-family: 'Noto Nastaliq Urdu', serif !important;
-      font-size: clamp(0.72rem, 2.2vw, 0.94rem);
+      font-size: clamp(0.68rem, 2.0vw, 0.88rem);
+      line-height: 2.5;
     }
     .mushaf-page.indopak .mushaf-line .line-text {
       font-family: 'Noto Nastaliq Urdu', serif !important;
@@ -616,7 +625,8 @@
     }
     /* 13-line layout: larger text, fewer lines */
     .mushaf-page.lines-13 .mushaf-line {
-      font-size: clamp(0.95rem, 3vw, 1.22rem);
+      font-size: clamp(0.9rem, 2.8vw, 1.15rem);
+      line-height: 2.1;
     }
     /* Memorize summary bar below page */
     .mushaf-summary {
@@ -678,29 +688,10 @@
           <span class="tawwudh-text-uthmani active" id="tawwudhUthmani">أَعُوذُ بِٱللَّهِ مِنَ ٱلشَّيْطَٰنِ ٱلرَّجِيمِ</span>
           <span class="tawwudh-text-indopak" id="tawwudhIndopak">أَعُوذُ بِاللَّهِ مِنَ الشَّيطَانِ الرَّجِيمِ</span>
         </div>
-        <div class="choice-label">Choose your script</div>
+        <div class="choice-label">Arabic script</div>
         <div class="script-options">
-          <button class="script-btn selected" data-script="uthmani" type="button" aria-pressed="true">Uthmani</button>
-          <button class="script-btn" data-script="indopak" type="button" aria-pressed="false">IndoPak</button>
-        </div>
-      </div>
-
-      <div>
-        <div class="choice-label">Translation language</div>
-        <select id="langSelect" class="lang-select">
-          <!-- populated by JS -->
-        </select>
-      </div>
-
-      <div>
-        <div class="choice-label">View mode</div>
-        <div class="view-mode-options">
-          <button class="view-mode-btn selected" data-view="surah" type="button" aria-pressed="true">
-            <span class="vm-icon">📖</span>Surah View
-          </button>
-          <button class="view-mode-btn" data-view="page" type="button" aria-pressed="false">
-            <span class="vm-icon">📄</span>Page View
-          </button>
+          <button class="script-btn selected" data-script="uthmani" type="button" aria-pressed="true">Uthmani (Hafs)</button>
+          <button class="script-btn" data-script="indopak" type="button" aria-pressed="false">IndoPak (Nastaliq)</button>
         </div>
       </div>
 
@@ -719,7 +710,7 @@
         </div>
       </div>
 
-      <button class="enter-btn" id="landingEnterBtn" type="button">Enter →</button>
+      <button class="enter-btn" id="landingEnterBtn" type="button">Begin →</button>
     </div>
   </section>
 
@@ -735,7 +726,7 @@
     <div class="container">
       <section class="stats" id="stats"></section>
       <section class="grid" id="surahGrid"></section>
-      <div class="clear-wrap">
+      <div class="clear-wrap" style="display:none">
         <button id="clearDataBtn" class="danger">Clear app data</button>
       </div>
     </div>
@@ -872,8 +863,8 @@
       <div class="settings-section">
         <div class="settings-label">Arabic script</div>
         <div class="script-options" id="settingsScriptOptions">
-          <button class="script-btn selected" data-script="uthmani" type="button">Uthmani</button>
-          <button class="script-btn" data-script="indopak" type="button">IndoPak</button>
+          <button class="script-btn selected" data-script="uthmani" type="button">Uthmani (Hafs)</button>
+          <button class="script-btn" data-script="indopak" type="button">IndoPak (Nastaliq)</button>
         </div>
       </div>
 
@@ -909,7 +900,10 @@
         </div>
       </div>
 
-      <button class="secondary" id="settingsCloseBtn" style="margin-top:0.3rem">Done</button>
+      <div style="border-top:1px solid var(--line);margin-top:0.5rem;padding-top:1rem;display:flex;flex-direction:column;gap:0.6rem;">
+        <button class="primary" id="settingsCloseBtn" style="width:100%">Done</button>
+        <button class="danger" id="resetDataBtn" style="width:100%;font-size:0.88rem;">🗑 Reset all progress &amp; start over</button>
+      </div>
     </div>
   </div>
 
@@ -1419,93 +1413,140 @@
   }
 
   /* ── DRAG-SELECT LOGIC ── */
-  function setupDragSelect(container, getItems, onToggle) {
-    let dragging = false;
-    let dragMode = null; // 'add' or 'remove'
-    let lastTap = {};
+  /* ── DRAG-SELECT ──────────────────────────────────────────────────
+     Rewritten to fix key bugs:
+     1. getItems() returned a copy — mutating it didn't persist across move events.
+        Fix: cache the working Set for the duration of the drag.
+     2. touchmove was being cancelled by scroll — we only preventDefault when
+        we're actually dragging across ayahs (not on the initial touch).
+     3. Touch: we detect movement > 6px before entering drag mode so a tap
+        still works as a tap, and a deliberate drag works as multi-select.
+     4. Double-tap: toggle translation inline.
+  ─────────────────────────────────────────────────────────────────── */
+  function setupDragSelect(container, onSave, onUIUpdate) {
+    let dragging    = false;
+    let dragMode    = null;   // 'add' | 'remove'
+    let dragSurah   = null;
+    let workingSet  = null;   // the Set being mutated during drag
+    let touchStartY = 0;
+    let touchStartX = 0;
+    let touchMoved  = false;
+    let lastTap     = {};
 
-    function getItemFromPoint(x, y) {
-      const items = container.querySelectorAll('[data-ayah]');
-      for (const el of items) {
-        const r = el.getBoundingClientRect();
-        if (y >= r.top && y <= r.bottom && x >= r.left && x <= r.right) return el;
-      }
-      return null;
+    function elAt(x, y) {
+      // Use elementFromPoint for reliability with nested spans
+      const el = document.elementFromPoint(x, y);
+      return el && el.closest('[data-ayah]');
     }
 
-    container.addEventListener('touchstart', e => {
-      const touch = e.touches[0];
-      const el    = getItemFromPoint(touch.clientX, touch.clientY);
+    function startDrag(el) {
+      const ayahNo  = Number(el.dataset.ayah);
+      const surahNo = Number(el.dataset.surah);
+      dragSurah   = surahNo;
+      workingSet  = getMemorizedSet(surahNo); // fresh copy to mutate
+      dragMode    = workingSet.has(ayahNo) ? 'remove' : 'add';
+      applyToEl(el, ayahNo);
+      dragging = true;
+    }
+
+    function applyToEl(el, ayahNo) {
+      if (!workingSet) return;
+      const before = workingSet.has(ayahNo);
+      if (dragMode === 'add')    workingSet.add(ayahNo);
+      if (dragMode === 'remove') workingSet.delete(ayahNo);
+      if (workingSet.has(ayahNo) !== before || true) {
+        // Persist immediately so each step is saved
+        onSave(dragSurah, workingSet);
+        onUIUpdate(dragSurah, workingSet);
+      }
+    }
+
+    function continueDrag(x, y) {
+      const el = elAt(x, y);
       if (!el) return;
-      const ayahNo = Number(el.dataset.ayah);
+      const ayahNo  = Number(el.dataset.ayah);
+      const surahNo = Number(el.dataset.surah);
+      // Only apply if same surah and would change state
+      if (surahNo !== dragSurah) return;
+      const currently = workingSet.has(ayahNo);
+      if ((dragMode === 'add' && !currently) || (dragMode === 'remove' && currently)) {
+        applyToEl(el, ayahNo);
+      }
+    }
+
+    // ── TOUCH ──
+    container.addEventListener('touchstart', e => {
+      const t = e.touches[0];
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+      touchMoved  = false;
+
+      const el = elAt(t.clientX, t.clientY);
+      if (!el) return;
+      const ayahNo  = Number(el.dataset.ayah);
       const surahNo = Number(el.dataset.surah);
 
-      // Double tap detection
+      // Double-tap: toggle translation
       const now = Date.now();
       const key = surahNo + '_' + ayahNo;
-      if (lastTap.key === key && now - lastTap.time < 400) {
-        // Double tap -> toggle translation
+      if (lastTap.key === key && now - lastTap.time < 380) {
         const transEl = el.querySelector('.ayah-translation');
-        if (transEl) transEl.classList.toggle('visible');
+        if (transEl) { transEl.classList.toggle('visible'); }
         lastTap = {};
         e.preventDefault();
         return;
       }
       lastTap = { key, time: now };
-
-      dragging = true;
-      const memorized = getItems(surahNo);
-      dragMode = memorized.has(ayahNo) ? 'remove' : 'add';
-      dragMode === 'add' ? memorized.add(ayahNo) : memorized.delete(ayahNo);
-      onToggle(surahNo, memorized, el);
+      // Don't start drag yet — wait to see if it's a tap or a drag
     }, { passive: false });
 
     container.addEventListener('touchmove', e => {
-      if (!dragging) return;
-      e.preventDefault();
-      const touch = e.touches[0];
-      const el    = getItemFromPoint(touch.clientX, touch.clientY);
-      if (!el) return;
-      const ayahNo  = Number(el.dataset.ayah);
-      const surahNo = Number(el.dataset.surah);
-      const memorized = getItems(surahNo);
-      const currently = memorized.has(ayahNo);
-      if ((dragMode === 'add' && !currently) || (dragMode === 'remove' && currently)) {
-        dragMode === 'add' ? memorized.add(ayahNo) : memorized.delete(ayahNo);
-        onToggle(surahNo, memorized, el);
+      const t = e.touches[0];
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+
+      if (!touchMoved && dist > 8) {
+        // Became a drag — start drag mode
+        touchMoved = true;
+        const el = elAt(t.clientX, t.clientY);
+        if (el) startDrag(el);
+      }
+      if (dragging) {
+        e.preventDefault(); // only block scroll when actually dragging
+        continueDrag(t.clientX, t.clientY);
       }
     }, { passive: false });
 
-    container.addEventListener('touchend', () => { dragging = false; dragMode = null; });
-    container.addEventListener('touchcancel', () => { dragging = false; dragMode = null; });
+    container.addEventListener('touchend', e => {
+      if (!touchMoved) {
+        // Was a tap — toggle the single ayah
+        const t = e.changedTouches[0];
+        const el = elAt(t.clientX, t.clientY);
+        if (el) {
+          startDrag(el);
+        }
+      }
+      dragging = false; dragMode = null; dragSurah = null; workingSet = null; touchMoved = false;
+    });
+    container.addEventListener('touchcancel', () => {
+      dragging = false; dragMode = null; dragSurah = null; workingSet = null; touchMoved = false;
+    });
 
-    // Mouse drag
+    // ── MOUSE ──
     container.addEventListener('mousedown', e => {
       const el = e.target.closest('[data-ayah]');
       if (!el) return;
-      const ayahNo  = Number(el.dataset.ayah);
-      const surahNo = Number(el.dataset.surah);
-      const memorized = getItems(surahNo);
-      dragMode = memorized.has(ayahNo) ? 'remove' : 'add';
-      dragMode === 'add' ? memorized.add(ayahNo) : memorized.delete(ayahNo);
-      onToggle(surahNo, memorized, el);
-      dragging = true;
+      e.preventDefault();
+      startDrag(el);
     });
     document.addEventListener('mousemove', e => {
       if (!dragging) return;
-      const el = document.elementFromPoint(e.clientX, e.clientY);
-      const item = el && el.closest('[data-ayah]');
-      if (!item || !container.contains(item)) return;
-      const ayahNo  = Number(item.dataset.ayah);
-      const surahNo = Number(item.dataset.surah);
-      const memorized = getItems(surahNo);
-      const currently = memorized.has(ayahNo);
-      if ((dragMode === 'add' && !currently) || (dragMode === 'remove' && currently)) {
-        dragMode === 'add' ? memorized.add(ayahNo) : memorized.delete(ayahNo);
-        onToggle(surahNo, memorized, item);
-      }
+      continueDrag(e.clientX, e.clientY);
     });
-    document.addEventListener('mouseup', () => { dragging = false; dragMode = null; });
+    document.addEventListener('mouseup', () => {
+      dragging = false; dragMode = null; dragSurah = null; workingSet = null;
+    });
   }
 
   /* ── DIVE IN (SURAH MODAL AYAHS) ── */
@@ -1553,12 +1594,13 @@
         ayahListEl.appendChild(item);
       });
 
-      // Drag-select
-      setupDragSelect(ayahListEl,
-        (sNo) => getMemorizedSet(sNo),
-        (sNo, newSet, el) => {
-          setMemorizedSet(sNo, newSet);
-          // Update UI for ALL items in this surah
+      // Drag-select — new signature: (container, onSave, onUIUpdate)
+      setupDragSelect(
+        ayahListEl,
+        // onSave: persist the working set to state
+        (sNo, newSet) => { setMemorizedSet(sNo, newSet); },
+        // onUIUpdate: redraw UI to reflect current set
+        (sNo, newSet) => {
           ayahListEl.querySelectorAll('[data-ayah]').forEach(it => {
             const aNo = Number(it.dataset.ayah);
             it.classList.toggle('memorized', newSet.has(aNo));
@@ -1566,8 +1608,8 @@
             if (chk) chk.textContent = newSet.has(aNo) ? '✓' : '';
           });
           const pct = surahPercent(index);
-          modalPercent.textContent    = pct + "% memorized";
-          markCompleteBtn.textContent = pct === 100 ? "Mark incomplete" : "Mark complete";
+          modalPercent.textContent    = pct + '% memorized';
+          markCompleteBtn.textContent = pct === 100 ? 'Mark incomplete' : 'Mark complete';
           renderSurahView();
         }
       );
@@ -2083,6 +2125,23 @@
   gearBtn.addEventListener('click', openSettings);
   gearBtn2.addEventListener('click', openSettings);
   document.getElementById('settingsCloseBtn').addEventListener('click', closeSettings);
+
+  document.getElementById('resetDataBtn').addEventListener('click', function() {
+    if (!confirm('Reset all progress and return to the start? This cannot be undone.')) return;
+    state = { ...DEFAULT_STATE };
+    surahCache = {}; transCache = {}; pageCache = {};
+    saveState();
+    settingsPanel.classList.remove('open');
+    applyTheme('parchment');
+    applyScript('uthmani');
+    appScreen.classList.add('hidden');
+    pageViewScreen.style.display = 'none';
+    pageListScreen.style.display = 'none';
+    pageDetailScreen.style.display = 'none';
+    feedbackFab.classList.add('hidden');
+    landingScreen.classList.remove('hidden');
+    initLanding();
+  });
   settingsPanel.addEventListener('click', e => { if (e.target === settingsPanel) closeSettings(); });
 
   // Settings scripts/themes
