@@ -156,37 +156,86 @@
     .enter-btn:hover { opacity: 0.88; }
     .enter-btn:active { transform: scale(0.985); }
 
-    /* ── TUTORIAL ── */
+    /* ── WELCOME TUTORIAL (1 step) ── */
     #tutorialOverlay {
       position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.58);
       display: flex; align-items: center; justify-content: center; padding: 1rem;
-      opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
+      opacity: 0; transition: opacity 0.4s ease; pointer-events: none;
     }
     #tutorialOverlay.visible { opacity: 1; pointer-events: auto; }
-    .tutorial-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 2rem 1.7rem 1.5rem; width: min(100%, 400px); max-height: 90vh; overflow-y: auto; position: relative; -webkit-overflow-scrolling: touch; }
-    .tutorial-skip { position: absolute; top: 0.9rem; right: 0.9rem; font-family: var(--font-latin); font-size: 0.78rem; font-weight: 600; color: var(--text2); background: var(--surface2); border: 1px solid var(--line); border-radius: 8px; padding: 0.3rem 0.7rem; cursor: pointer; min-height: 32px; transition: color 0.15s, background 0.15s; }
-    .tutorial-skip:hover { color: var(--text); background: var(--bg2); }
-    .tutorial-steps-wrap { min-height: 230px; margin-bottom: 0.5rem; }
-    .tutorial-step { display: none; }
-    .tutorial-step.active { display: block; animation: tutFade 0.18s ease; }
-    @keyframes tutFade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
-    .tutorial-icon  { font-size: 2.2rem; text-align: center; margin-bottom: 0.75rem; }
-    .tutorial-title { font-family: var(--font-latin); font-size: 1.1rem; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 0.5rem; line-height: 1.3; }
-    .tutorial-body  { font-family: var(--font-latin); font-size: 0.9rem; color: var(--text2); line-height: 1.65; text-align: center; margin-bottom: 0.5rem; }
+    .tutorial-card {
+      background: var(--surface); border: 1px solid var(--line); border-radius: 18px;
+      box-shadow: var(--shadow); padding: 2rem 1.7rem 1.6rem; width: min(100%, 380px);
+      position: relative; animation: tutFade 0.22s ease;
+    }
+    @keyframes tutFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .tutorial-icon  { font-size: 2rem; text-align: center; margin-bottom: 0.7rem; }
+    .tutorial-title { font-family: var(--font-latin); font-size: 1.1rem; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 0.6rem; line-height: 1.3; }
+    .tutorial-body  { font-family: var(--font-latin); font-size: 0.88rem; color: var(--text2); line-height: 1.65; text-align: center; }
     .tutorial-body em { color: var(--accent); font-style: normal; font-weight: 600; }
-    .tutorial-hadith { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 0.75rem 0.9rem; margin: 0.75rem 0; text-align: left; }
-    .tutorial-hadith p { font-family: var(--font-latin); font-size: 0.84rem; color: var(--text); line-height: 1.65; font-style: italic; }
-    .tutorial-hadith cite { font-family: var(--font-latin); font-size: 0.74rem; color: var(--text2); display: block; margin-top: 0.4rem; font-style: normal; }
-    .tutorial-dots { display: flex; justify-content: center; gap: 0.45rem; margin-bottom: 1rem; }
-    .tutorial-dot  { width: 8px; height: 8px; border-radius: 50%; background: var(--line); border: 1.5px solid var(--line); transition: background 0.2s, border-color 0.2s; }
-    .tutorial-dot.active { background: var(--accent); border-color: var(--accent); }
-    [data-theme="glass"] .tutorial-dot { background: #c0cce8; border-color: #a0b0d8; }
-    [data-theme="glass"] .tutorial-dot.active { background: var(--accent); border-color: var(--accent); }
-    .tutorial-nav { display: flex; gap: 0.6rem; justify-content: center; }
-    .tutorial-nav button { font-family: var(--font-latin); font-size: 0.9rem; font-weight: 600; padding: 0.65rem 1.4rem; border-radius: var(--radius-sm); cursor: pointer; min-height: 44px; border: none; transition: opacity 0.15s; }
-    .tutorial-nav button:hover { opacity: 0.85; }
-    .tut-btn-primary   { background: var(--accent); color: #fff; }
-    .tut-btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--line) !important; }
+    .tutorial-hadith {
+      background: var(--bg2); border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0; padding: 0.75rem 0.9rem; margin: 0.8rem 0;
+    }
+    .tutorial-hadith p    { font-family: var(--font-latin); font-size: 0.83rem; color: var(--text); line-height: 1.65; font-style: italic; }
+    .tutorial-hadith cite { font-family: var(--font-latin); font-size: 0.72rem; color: var(--text2); display: block; margin-top: 0.4rem; font-style: normal; }
+    .tutorial-nav { display: flex; justify-content: center; margin-top: 1.2rem; }
+    .tut-btn-primary { background: var(--accent); color: #fff; font-family: var(--font-latin); font-size: 0.95rem; font-weight: 700; padding: 0.72rem 2rem; border-radius: var(--radius-sm); border: none; cursor: pointer; min-height: 44px; transition: opacity 0.15s; width: 100%; }
+    .tut-btn-primary:hover { opacity: 0.88; }
+
+    /* ── IN-SURAH CONTEXTUAL POPUP ──
+       Small floating tip anchored just below the element it describes.
+       Two variants: 'title-tip' (near surah name) and 'ayah-tip' (near first ayah).
+    */
+    .ctx-popup {
+      position: absolute;
+      z-index: 900;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.14);
+      padding: 0.6rem 0.8rem 0.6rem 0.7rem;
+      max-width: 260px;
+      min-width: 180px;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.45rem;
+      pointer-events: auto;
+      animation: ctxPopIn 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes ctxPopIn {
+      from { opacity: 0; transform: scale(0.88) translateY(4px); }
+      to   { opacity: 1; transform: scale(1)    translateY(0); }
+    }
+    @keyframes ctxPopOut {
+      from { opacity: 1; transform: scale(1) translateY(0); }
+      to   { opacity: 0; transform: scale(0.9) translateY(-3px); }
+    }
+    .ctx-popup-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+    .ctx-popup-text { font-family: var(--font-latin); font-size: 0.78rem; color: var(--text2); line-height: 1.5; flex: 1; }
+    .ctx-popup-text strong { color: var(--text); font-weight: 600; }
+    .ctx-popup-close {
+      background: none; border: none; color: var(--text2);
+      font-size: 0.85rem; cursor: pointer; padding: 0; min-height: auto;
+      line-height: 1; flex-shrink: 0; margin-top: 1px; opacity: 0.6;
+      transition: opacity 0.15s;
+    }
+    .ctx-popup-close:hover { opacity: 1; }
+    /* Arrow pointing up */
+    .ctx-popup::before {
+      content: '';
+      position: absolute;
+      top: -6px; left: 18px;
+      width: 10px; height: 10px;
+      background: var(--surface);
+      border-left: 1px solid var(--line);
+      border-top: 1px solid var(--line);
+      transform: rotate(45deg);
+    }
+    /* Wrapper that holds both popups — position:relative so we can anchor inside it */
+    .ctx-popup-anchor {
+      position: relative;
+    }
 
     /* ── APP HEADER ── */
     #appScreen { position: relative; z-index: 1; }
@@ -335,20 +384,53 @@
 
     .drag-hint { font-family: var(--font-latin); font-size: 0.76rem; color: var(--text2); text-align: center; padding: 0.5rem 0 0.1rem; opacity: 0.7; }
 
-    /* Swipe-left: translation flash */
-    @keyframes swipeReveal {
-      0%  { background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
-      40% { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); }
-      100%{ background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+    /* ── SWIPE CUE PILL ──
+       A floating label that tracks the user's finger in real time.
+       Shows before release so they know what will happen.
+    */
+    .swipe-cue {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      pointer-events: none;
+      display: flex; align-items: center; gap: 0.3rem;
+      padding: 0.28rem 0.65rem;
+      border-radius: 20px;
+      font-family: var(--font-latin);
+      font-size: 0.75rem; font-weight: 700;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.12s;
+      z-index: 4;
     }
-    /* Swipe-right: mark flash */
-    @keyframes swipeMark {
-      0%  { transform: scale(1); }
-      35% { transform: scale(1.025); background: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
-      100%{ transform: scale(1); }
+    .swipe-cue.left  { right: 0.6rem; background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+    .swipe-cue.right { left: 0.6rem;  background: color-mix(in srgb, #22c55e 14%, var(--surface));      color: #16a34a;         border: 1px solid color-mix(in srgb, #22c55e 30%, transparent); }
+    .swipe-cue.unmark-right { left: 0.6rem; background: color-mix(in srgb, #ef4444 10%, var(--surface)); color: #dc2626; border: 1px solid color-mix(in srgb, #ef4444 25%, transparent); }
+    .swipe-cue.hide-left    { right: 0.6rem; background: color-mix(in srgb, var(--text2) 10%, var(--surface)); color: var(--text2); border: 1px solid var(--line); }
+    [data-theme="dark"] .swipe-cue.right  { color: #4ade80; background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.25); }
+    [data-theme="dark"] .swipe-cue.unmark-right { color: #f87171; background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.2); }
+    .swipe-cue.visible { opacity: 1; }
+
+    /* Swipe-left fired: background flash */
+    @keyframes swipeRevealFlash {
+      0%   { background: color-mix(in srgb, var(--accent) 5%, var(--surface)); }
+      30%  { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+      100% { background: color-mix(in srgb, var(--accent) 5%, var(--surface)); }
     }
-    .ayah-item.swipe-reveal { animation: swipeReveal 0.35s ease; }
-    .ayah-item.swipe-mark   { animation: swipeMark 0.32s ease; }
+    /* Swipe-right fired: green flash */
+    @keyframes swipeMarkFlash {
+      0%   { background: color-mix(in srgb, #22c55e 5%, var(--surface)); }
+      35%  { background: color-mix(in srgb, #22c55e 20%, var(--surface)); transform: scale(1.018); }
+      100% { background: var(--surface); transform: scale(1); }
+    }
+    /* Swipe-right unmark: red flash */
+    @keyframes swipeUnmarkFlash {
+      0%   { background: color-mix(in srgb, #ef4444 5%, var(--surface)); }
+      35%  { background: color-mix(in srgb, #ef4444 14%, var(--surface)); }
+      100% { background: var(--surface); }
+    }
+    .ayah-item.swipe-reveal      { animation: swipeRevealFlash 0.38s ease; }
+    .ayah-item.swipe-mark        { animation: swipeMarkFlash   0.36s ease; }
+    .ayah-item.swipe-unmark      { animation: swipeUnmarkFlash 0.36s ease; }
 
     /* Long-press entering drag mode: brief pulse on the whole list */
     @keyframes dragModeEntry { 0%{opacity:1} 50%{opacity:0.82} 100%{opacity:1} }
@@ -1035,60 +1117,23 @@
     </div>
   </div>
 
-  <!-- ── WELCOME TUTORIAL (2 steps) ── -->
+  <!-- ── WELCOME TUTORIAL (1 step) ── -->
   <div id="tutorialOverlay" role="dialog" aria-modal="true" aria-label="Welcome">
     <div class="tutorial-card">
-      <button class="tutorial-skip" id="tutSkipBtn" type="button">Skip</button>
-      <div class="tutorial-steps-wrap">
-        <div class="tutorial-step active" id="tutStep1">
-          <div class="tutorial-icon">📖</div>
-          <div class="tutorial-title">Welcome to your Quran Diary</div>
-          <div class="tutorial-hadith">
-            <p>"It will be said to the companion of the Quran: Recite and ascend as you recited in the world! Verily, your rank is determined by the last verse you recite."</p>
-            <cite>— Prophet Muhammad ﷺ · Sunan al-Tirmidhī 2914 · Sahih</cite>
-          </div>
-          <div class="tutorial-body">May this app be an aid on your journey of ascension.</div>
-        </div>
-        <div class="tutorial-step" id="tutStep2">
-          <div class="tutorial-icon">🟩</div>
-          <div class="tutorial-title">Tap any surah to begin</div>
-          <div class="tutorial-body">
-            Colors show your progress — pale when unstarted, deep green when complete.<br/><br/>
-            <em>You'll see gesture tips the first time you open a surah.</em><br/><br/>
-            Tap ⚙️ anytime to change script, language, theme, or view.
-          </div>
-        </div>
+      <div class="tutorial-icon">📖</div>
+      <div class="tutorial-title">Welcome to your Quran Diary</div>
+      <div class="tutorial-hadith">
+        <p>"It will be said to the companion of the Quran: Recite and ascend as you recited in the world! Verily, your rank is determined by the last verse you recite."</p>
+        <cite>— Prophet Muhammad ﷺ · Sunan al-Tirmidhī 2914 · Sahih</cite>
       </div>
-      <div class="tutorial-dots" id="tutDots">
-        <div class="tutorial-dot active"></div>
-        <div class="tutorial-dot"></div>
-      </div>
+      <div class="tutorial-body">May this be an aid on your journey. <em>Tap any surah to begin.</em></div>
       <div class="tutorial-nav">
-        <button class="tut-btn-secondary" id="tutBackBtn" type="button" style="display:none">Back</button>
-        <button class="tut-btn-primary"   id="tutNextBtn" type="button">Next</button>
+        <button class="tut-btn-primary" id="tutNextBtn" type="button">Begin →</button>
       </div>
     </div>
   </div>
 
-  <!-- ── CONTEXTUAL TOOLTIP (first-time surah gestures) ── -->
-  <div id="contextTooltip" style="
-    position:fixed; z-index:800; bottom:0; left:0; right:0;
-    background:var(--surface); border-top:1px solid var(--line);
-    padding:0.9rem 1.2rem; box-shadow:0 -4px 20px rgba(0,0,0,0.15);
-    font-family:var(--font-latin); font-size:0.88rem; color:var(--text2);
-    display:none; animation: slideUp 0.25s ease;
-  ">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.8rem;">
-      <div id="contextTooltipText"></div>
-      <button id="contextTooltipClose" style="
-        background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--text2);
-        padding:0;min-height:auto;flex-shrink:0;line-height:1;
-      ">✕</button>
-    </div>
-  </div>
-  <style>
-    @keyframes slideUp { from { transform: translateY(100%); opacity:0; } to { transform: translateY(0); opacity:1; } }
-  </style>
+  <!-- Contextual in-surah tips injected by JS into modal header/ayah list -->
 
   <!-- Acknowledgements popup -->
   <dialog id="ackDialog" style="max-width:min(96vw,460px);padding:0;">
@@ -1363,9 +1408,7 @@
   const nextSurahBtn     = document.getElementById("nextSurahBtn");
   const toggleTransBtn   = document.getElementById("toggleTransBtn");
   const tutorialOverlay  = document.getElementById("tutorialOverlay");
-  const tutSkipBtn       = document.getElementById("tutSkipBtn");
   const tutNextBtn       = document.getElementById("tutNextBtn");
-  const tutBackBtn       = document.getElementById("tutBackBtn");
   const settingsPanel    = document.getElementById("settingsPanel");
   const feedbackDialog   = document.getElementById("feedbackDialog");
   const feedbackFab      = document.getElementById("feedbackFab");
@@ -1774,30 +1817,85 @@
       onUIUpdate(surahNo, set);
     }
 
-    // ── Swipe left: reveal translation ──
+    // ── Swipe left: toggle translation ──
     function swipeLeft(el) {
       if (!el) return;
       const transEl = el.querySelector('.ayah-translation');
       if (transEl) {
-        transEl.classList.add('visible');
+        const isVisible = transEl.classList.contains('visible');
+        transEl.classList.toggle('visible', !isVisible);
         el.classList.add('swipe-reveal');
-        setTimeout(() => el.classList.remove('swipe-reveal'), 380);
+        setTimeout(() => el.classList.remove('swipe-reveal'), 400);
       }
     }
 
-    // ── Swipe right: mark complete ──
+    // ── Swipe right: mark/unmark complete ──
     function swipeRight(el) {
       if (!el) return;
       const surahNo = Number(el.dataset.surah);
       const ayahNo  = Number(el.dataset.ayah);
       const set = getMemorizedSet(surahNo);
-      // Swipe right always MARKS (not toggles) — it's a deliberate "done" action
-      // But if already marked, it unmarks (so it stays reversible)
-      set.has(ayahNo) ? set.delete(ayahNo) : set.add(ayahNo);
+      const wasMarked = set.has(ayahNo);
+      wasMarked ? set.delete(ayahNo) : set.add(ayahNo);
       onSave(surahNo, set);
       onUIUpdate(surahNo, set);
-      el.classList.add('swipe-mark');
-      setTimeout(() => el.classList.remove('swipe-mark'), 360);
+      el.classList.add(wasMarked ? 'swipe-unmark' : 'swipe-mark');
+      setTimeout(() => { el.classList.remove('swipe-mark'); el.classList.remove('swipe-unmark'); }, 400);
+    }
+
+    // ── Update swipe cue pills in real time as finger moves ──
+    function updateSwipeCue(el, dx) {
+      if (!el) return;
+      const adx = Math.abs(dx);
+      // Only show cue once horizontal intent is clear (>18px)
+      if (adx < 18) { clearSwipeCue(el); return; }
+
+      const leftCue  = el.querySelector('.swipe-cue.left, .swipe-cue.hide-left');
+      const rightCue = el.querySelector('.swipe-cue.right, .swipe-cue.unmark-right');
+      // Reset classes first
+      if (leftCue)  { leftCue.className  = 'swipe-cue'; }
+      if (rightCue) { rightCue.className = 'swipe-cue'; }
+
+      const transEl  = el.querySelector('.ayah-translation');
+      const isMemorized = el.classList.contains('memorized');
+      const transVisible = transEl && transEl.classList.contains('visible');
+
+      // Progress 0→1 over 18px to threshold
+      const prog = Math.min(1, (adx - 18) / (SWIPE_THRESHOLD - 18));
+
+      if (dx < 0) {
+        // Swiping LEFT
+        const pill = el.querySelector('.swipe-cue:first-child') || leftCue;
+        if (!pill) return;
+        if (transVisible) {
+          pill.className = 'swipe-cue hide-left visible';
+          pill.textContent = '🌐 Hide';
+        } else {
+          pill.className = 'swipe-cue left visible';
+          pill.textContent = '🌐 Show';
+        }
+        pill.style.opacity = String(0.4 + prog * 0.6);
+      } else {
+        // Swiping RIGHT
+        const pill = el.querySelectorAll('.swipe-cue')[1] || rightCue;
+        if (!pill) return;
+        if (isMemorized) {
+          pill.className = 'swipe-cue unmark-right visible';
+          pill.textContent = '✕ Unmark';
+        } else {
+          pill.className = 'swipe-cue right visible';
+          pill.textContent = '✓ Done';
+        }
+        pill.style.opacity = String(0.4 + prog * 0.6);
+      }
+    }
+
+    function clearSwipeCue(el) {
+      if (!el) return;
+      el.querySelectorAll('.swipe-cue').forEach(p => {
+        p.classList.remove('visible');
+        p.style.opacity = '';
+      });
     }
 
     // ── Reset all gesture state ──
@@ -1859,6 +1957,7 @@
         } else {
           // Vertical intent → scroll (hand off to browser entirely)
           gesturePhase = 'scroll';
+          clearSwipeCue(touchStartEl);
         }
         return;
       }
@@ -1871,8 +1970,12 @@
         return;
       }
 
-      // Phase: swipe-h — track but don't block scroll
-      // Phase: scroll — do nothing, let browser scroll
+      // Phase: swipe-h — show real-time cue pill
+      if (gesturePhase === 'swipe-h') {
+        updateSwipeCue(touchStartEl, dx);
+      }
+
+      // Phase: scroll — do nothing
     }, { passive: false });
 
     container.addEventListener('touchend', e => {
@@ -1884,14 +1987,17 @@
       const ady = Math.abs(dy);
       const el  = touchStartEl;
 
+      // Always clear the cue pill on release
+      clearSwipeCue(el);
+
       if (gesturePhase === 'holding') {
         // No movement → tap
         tapToggle(el);
       } else if (gesturePhase === 'swipe-h') {
         // Horizontal swipe — fire if threshold met
         if (adx >= SWIPE_THRESHOLD && adx > ady * 1.4) {
-          if (dx < 0) swipeLeft(el);   // ← left = translation
-          else        swipeRight(el);  // → right = mark complete
+          if (dx < 0) swipeLeft(el);   // ← left = toggle translation
+          else        swipeRight(el);  // → right = mark/unmark complete
         }
         // Sub-threshold horizontal: treat as tap
         else if (adx < 12 && ady < 12) {
@@ -1904,7 +2010,10 @@
       resetGesture();
     }, { passive: true });
 
-    container.addEventListener('touchcancel', () => resetGesture(), { passive: true });
+    container.addEventListener('touchcancel', () => {
+      clearSwipeCue(touchStartEl);
+      resetGesture();
+    }, { passive: true });
 
     // ────────────────────────────────────────
     // MOUSE (desktop) — immediate drag on mousedown
@@ -2043,6 +2152,8 @@
         item.dataset.ayah  = String(number);
         item.dataset.surah = String(surahNum);
         item.innerHTML = `
+          <span class="swipe-cue left"  aria-hidden="true"></span>
+          <span class="swipe-cue right" aria-hidden="true"></span>
           <div class="ayah-item-header">
             <span class="ayah-label">Ayah ${number}</span>
             <span class="ayah-check">${memorized.has(number) ? '✓' : ''}</span>
@@ -2077,8 +2188,8 @@
       setupTitleDoubleTap(modalTitleArabic, ayahListEl);
       setupTitleDoubleTap(modalTitleLatin, ayahListEl);
 
-      // Contextual tooltip: show gesture hints first time this surah is opened
-      showContextTooltip(index);
+      // Contextual popup tips: show first time this surah is opened
+      showSurahContextPopups(index, modalTitleArabic, ayahListEl);
 
     } catch(err) {
       ayahListEl.innerHTML = "<p style='font-family:Georgia,serif;color:#c0392b;padding:.5rem'>Could not load. Check connection and try again.</p>";
@@ -2095,10 +2206,10 @@
   });
 
   /* ── MODAL LISTENERS ── */
-  closeModalBtn.addEventListener("click", () => surahDialog.close());
+  closeModalBtn.addEventListener("click", () => { clearCtxPopups(); surahDialog.close(); });
   surahDialog.addEventListener("click", function(e) {
     const r = surahDialog.getBoundingClientRect();
-    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) surahDialog.close();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) { clearCtxPopups(); surahDialog.close(); }
   });
   markCompleteBtn.addEventListener("click", function() {
     if (activeSurahIndex === null) return;
@@ -2907,70 +3018,161 @@
   /* ── ACKNOWLEDGEMENTS POPUP ── */
   function showAckPopup() { document.getElementById('ackDialog').showModal(); }
 
-  /* ── CONTEXTUAL TOOLTIP ── */
-  let tooltipTimer = null;
-  // Track which surahs have seen the tip
-  function getSeenTips() { return state.seenTips || (state.seenTips = {}); }
+  /* ══════════════════════════════════════════════════════════════════
+     IN-SURAH CONTEXTUAL POPUPS  (Phase 2)
+     ────────────────────────────────────────────────────────────────
+     Two small popups appear the FIRST time a surah is opened in dive-in:
+       1. Title popup  — anchored below the surah Arabic title
+                         → "Double-tap this title to show all translations"
+       2. Ayah popup   — anchored below the first ayah
+                         → "Swipe ← translation · Swipe → mark done · Long press to drag"
+     Each dismisses on tap or auto-hides after 6 s.
+     We track per-surah seen state so they only show once per surah.
+     ══════════════════════════════════════════════════════════════════ */
 
-  const CONTEXT_TIPS = {
-    gestures: {
-      en: '👆 <strong>Long press</strong> to enter select mode, then drag to mark ayahs. <strong>Swipe left</strong> on an ayah to see its translation. <strong>Swipe right</strong> to mark it memorized. <strong>Double-tap</strong> the surah name to show all translations.',
-      ar: '👆 <strong>اضغط طويلاً</strong> للدخول في وضع التحديد، ثم اسحب لتحديد الآيات. <strong>مرر يساراً</strong> للترجمة. <strong>مرر يميناً</strong> للتحديد كمحفوظ.',
-      fr: '👆 <strong>Appui long</strong> pour sélectionner, puis glisser. <strong>Balayer gauche</strong> pour la traduction. <strong>Balayer droite</strong> pour marquer mémorisé. <strong>Double-tap</strong> sur le nom pour tout afficher.',
-      de: '👆 <strong>Lang drücken</strong> für Auswahlmodus, dann ziehen. <strong>Links wischen</strong> für Übersetzung. <strong>Rechts wischen</strong> zum Markieren. <strong>Doppeltippen</strong> für alle Übersetzungen.',
-      es: '👆 <strong>Pulsación larga</strong> para seleccionar y arrastrar. <strong>Desliza izquierda</strong> para traducción. <strong>Desliza derecha</strong> para marcar memorizado. <strong>Doble tap</strong> en el título.',
-      tr: '👆 <strong>Uzun bas</strong> seçim moduna girmek için, sürükle. <strong>Sola kaydır</strong> çeviri için. <strong>Sağa kaydır</strong> ezberlenmiş işareti için. <strong>Çift dokun</strong> tüm çeviriler.',
-      ur: '👆 <strong>دبائیں</strong> منتخب کرنے کے لیے، پھر گھسیٹیں۔ <strong>بائیں سوائپ</strong> ترجمے کے لیے۔ <strong>دائیں سوائپ</strong> حفظ کے لیے۔',
-      id: '👆 <strong>Tekan lama</strong> untuk memilih lalu seret. <strong>Geser kiri</strong> untuk terjemahan. <strong>Geser kanan</strong> untuk menandai hafal. <strong>Ketuk dua kali</strong> judul surah.',
-      ru: '👆 <strong>Долгое нажатие</strong> для режима выбора. <strong>Вправо</strong> — перевод. <strong>Влево</strong> — отметить. <strong>Двойное нажатие</strong> — все переводы.',
+  const CTX_STRINGS = {
+    title: {
+      en: { icon: '👆', text: '<strong>Double-tap</strong> this title to show or hide all translations at once.' },
+      ar: { icon: '👆', text: '<strong>انقر مرتين</strong> على هذا العنوان لعرض أو إخفاء كل الترجمات.' },
+      fr: { icon: '👆', text: '<strong>Double-tapez</strong> ce titre pour afficher ou masquer toutes les traductions.' },
+      de: { icon: '👆', text: '<strong>Doppeltippen</strong> auf diesen Titel, um alle Übersetzungen ein-/auszublenden.' },
+      es: { icon: '👆', text: '<strong>Doble toque</strong> en este título para mostrar u ocultar todas las traducciones.' },
+      tr: { icon: '👆', text: 'Tüm çevirileri göstermek/gizlemek için bu başlığa <strong>çift dokun</strong>.' },
+      ur: { icon: '👆', text: 'تمام تراجم دکھانے کے لیے اس عنوان پر <strong>دو بار ٹچ کریں</strong>۔' },
+      id: { icon: '👆', text: '<strong>Ketuk dua kali</strong> judul ini untuk tampilkan/sembunyikan semua terjemahan.' },
+      ru: { icon: '👆', text: '<strong>Двойное нажатие</strong> на заголовок — показать/скрыть все переводы.' },
+    },
+    ayah: {
+      en: { icon: '✋', text: '<strong>Swipe ←</strong> to toggle translation · <strong>Swipe →</strong> to mark done · <strong>Long press</strong> to drag-select multiple' },
+      ar: { icon: '✋', text: '<strong>مرر ←</strong> للترجمة · <strong>مرر →</strong> للتحديد · <strong>اضغط طويلاً</strong> للتحديد المتعدد' },
+      fr: { icon: '✋', text: '<strong>Glisser ←</strong> traduction · <strong>Glisser →</strong> marquer · <strong>Appui long</strong> sélection multiple' },
+      de: { icon: '✋', text: '<strong>← Wischen</strong> Übersetzung · <strong>→ Wischen</strong> markieren · <strong>Lang drücken</strong> Mehrfachauswahl' },
+      es: { icon: '✋', text: '<strong>Deslizar ←</strong> traducción · <strong>Deslizar →</strong> marcar · <strong>Pulsar largo</strong> selección múltiple' },
+      tr: { icon: '✋', text: '<strong>← Kaydır</strong> çeviri · <strong>→ Kaydır</strong> işaretle · <strong>Uzun bas</strong> çoklu seçim' },
+      ur: { icon: '✋', text: '<strong>← سوائپ</strong> ترجمہ · <strong>→ سوائپ</strong> نشان · <strong>دبائیں</strong> متعدد انتخاب' },
+      id: { icon: '✋', text: '<strong>Geser ←</strong> terjemahan · <strong>Geser →</strong> tandai · <strong>Tahan</strong> pilih banyak' },
+      ru: { icon: '✋', text: '<strong>← Свайп</strong> перевод · <strong>→ Свайп</strong> отметить · <strong>Долгое нажатие</strong> несколько' },
     }
   };
 
-  function showContextTooltip(surahIdx) {
+  function getSeenTips() { return state.seenTips || (state.seenTips = {}); }
+
+  let ctxPopupTimers = [];
+
+  function dismissCtxPopup(popup) {
+    if (!popup || !popup.parentNode) return;
+    popup.style.animation = 'ctxPopOut 0.16s ease forwards';
+    setTimeout(() => popup.remove(), 160);
+  }
+
+  // Inject a popup below a target element, inside a relative-positioned container
+  function injectCtxPopup(targetEl, anchorEl, textHtml, icon, timerId) {
+    if (!targetEl || !anchorEl) return null;
+
+    // Wrap anchor in relative container if not already
+    if (getComputedStyle(anchorEl).position === 'static') {
+      anchorEl.style.position = 'relative';
+    }
+
+    const popup = document.createElement('div');
+    popup.className = 'ctx-popup';
+    popup.innerHTML = `
+      <span class="ctx-popup-icon">${icon}</span>
+      <span class="ctx-popup-text">${textHtml}</span>
+      <button class="ctx-popup-close" aria-label="Dismiss">✕</button>
+    `;
+
+    // Position below targetEl within anchorEl
+    anchorEl.appendChild(popup);
+    const targetRect  = targetEl.getBoundingClientRect();
+    const anchorRect  = anchorEl.getBoundingClientRect();
+    const topOffset   = targetRect.bottom - anchorRect.top + 6;
+    const leftOffset  = Math.max(8, targetRect.left - anchorRect.left);
+    popup.style.top  = topOffset + 'px';
+    popup.style.left = leftOffset + 'px';
+
+    popup.querySelector('.ctx-popup-close').addEventListener('click', e => {
+      e.stopPropagation();
+      clearTimeout(timerId.t);
+      dismissCtxPopup(popup);
+    });
+    popup.addEventListener('click', e => e.stopPropagation());
+
+    return popup;
+  }
+
+  // Show both contextual popups for first-time surah view
+  // titleEl: the Arabic title element in modal header
+  // ayahListEl: the scrollable ayah list
+  function showSurahContextPopups(surahIdx, titleEl, ayahListContainer) {
     const tips = getSeenTips();
-    const key = 'gesture_' + surahIdx;
-    if (tips[key]) return; // already seen
+    const key  = 'surah_ctx_' + surahIdx;
+    if (tips[key]) return;
     tips[key] = true;
     saveState();
 
-    const lang = state.lang || 'en';
-    const tipHtml = (CONTEXT_TIPS.gestures[lang] || CONTEXT_TIPS.gestures.en);
+    const lang   = state.lang || 'en';
+    const titleStr = CTX_STRINGS.title[lang] || CTX_STRINGS.title.en;
+    const ayahStr  = CTX_STRINGS.ayah[lang]  || CTX_STRINGS.ayah.en;
 
-    const tooltip = document.getElementById('contextTooltip');
-    const textEl  = document.getElementById('contextTooltipText');
-    if (!tooltip || !textEl) return;
+    // We need a relative-positioned wrapper around the modal header to anchor tip 1
+    // and the ayah list for tip 2. We inject them after a short delay so layout is stable.
+    ctxPopupTimers.forEach(t => clearTimeout(t));
+    ctxPopupTimers = [];
 
-    textEl.innerHTML = tipHtml;
-    tooltip.style.display = 'block';
+    const t1 = { t: null };
+    const t2 = { t: null };
 
-    // Auto-hide after 7 seconds
-    clearTimeout(tooltipTimer);
-    tooltipTimer = setTimeout(() => { tooltip.style.display = 'none'; }, 7000);
+    // Tip 1 — near the title (after 500ms so modal is fully open)
+    const timer1 = setTimeout(() => {
+      const modalHeader = titleEl.closest('.modal-header');
+      if (!modalHeader) return;
+      const popup1 = injectCtxPopup(titleEl, modalHeader, titleStr.text, titleStr.icon, t1);
+      if (popup1) {
+        t1.t = setTimeout(() => dismissCtxPopup(popup1), 7000);
+        ctxPopupTimers.push(t1.t);
+      }
+
+      // Tip 2 — near first ayah (another 300ms so tip 1 is visible first)
+      const timer2 = setTimeout(() => {
+        const firstAyah = ayahListContainer.querySelector('[data-ayah]');
+        if (!firstAyah) return;
+        const popup2 = injectCtxPopup(firstAyah, ayahListContainer, ayahStr.text, ayahStr.icon, t2);
+        if (popup2) {
+          // ayah list is scrollable and overflow:hidden — position fixed within viewport instead
+          popup2.style.position = 'fixed';
+          const fRect = firstAyah.getBoundingClientRect();
+          popup2.style.top  = (fRect.bottom + 6) + 'px';
+          popup2.style.left = Math.max(8, fRect.left) + 'px';
+          popup2.style.maxWidth = Math.min(260, window.innerWidth - 24) + 'px';
+          t2.t = setTimeout(() => dismissCtxPopup(popup2), 8000);
+          ctxPopupTimers.push(t2.t);
+        }
+      }, 300);
+      ctxPopupTimers.push(timer2);
+
+    }, 500);
+    ctxPopupTimers.push(timer1);
   }
 
-  document.getElementById('contextTooltipClose').addEventListener('click', () => {
-    clearTimeout(tooltipTimer);
-    document.getElementById('contextTooltip').style.display = 'none';
-  });
-
-  /* ── TUTORIAL ── */
-  const TUT_TOTAL = 2;
-  let tutStep = 0;
-  function showTutorial() { tutStep = 0; renderTutStep(); tutorialOverlay.classList.add('visible'); }
-  function hideTutorial()  { tutorialOverlay.classList.remove('visible'); state.tutorialSeen = true; saveState(); }
-  function renderTutStep() {
-    document.querySelectorAll('.tutorial-step').forEach((el,i) => el.classList.toggle('active', i === tutStep));
-    document.querySelectorAll('.tutorial-dot') .forEach((el,i) => el.classList.toggle('active', i === tutStep));
-    tutBackBtn.style.display = tutStep === 0 ? 'none' : '';
-    tutNextBtn.textContent   = tutStep === TUT_TOTAL - 1 ? 'Got it ✓' : 'Next';
+  // Clear all pending popup timers (e.g. when modal closes)
+  function clearCtxPopups() {
+    ctxPopupTimers.forEach(t => clearTimeout(t));
+    ctxPopupTimers = [];
+    // Remove any lingering popups
+    document.querySelectorAll('.ctx-popup').forEach(p => p.remove());
   }
-  tutNextBtn.addEventListener('click', () => { tutStep < TUT_TOTAL - 1 ? (tutStep++, renderTutStep()) : hideTutorial(); });
-  tutBackBtn.addEventListener('click', () => { if (tutStep > 0) { tutStep--; renderTutStep(); } });
-  tutSkipBtn.addEventListener('click', hideTutorial);
-  document.querySelector('.tutorial-card').addEventListener('click', function(e) {
-    if (e.target.closest('button')) return;
-    tutStep < TUT_TOTAL - 1 ? (tutStep++, renderTutStep()) : hideTutorial();
-  });
+
+  /* ── TUTORIAL (single step) ── */
+  function showTutorial() {
+    tutorialOverlay.classList.add('visible');
+  }
+  function hideTutorial() {
+    tutorialOverlay.classList.remove('visible');
+    state.tutorialSeen = true;
+    saveState();
+  }
+  document.getElementById('tutNextBtn').addEventListener('click', hideTutorial);
   tutorialOverlay.addEventListener('click', e => { if (e.target === tutorialOverlay) hideTutorial(); });
 
   /* ── FEEDBACK ── */
