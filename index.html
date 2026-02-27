@@ -557,290 +557,121 @@
     #feedbackFab:hover { opacity: 0.9; transform: scale(1.04); }
     #feedbackFab.hidden { display: none; }
 
-    /* ── MUSHAF PAGE VIEW ─────────────────────────────────────────── */
+    /* ── MUSHAF PAGE VIEW — image scan based ──────────────────────── */
     #pageDetailScreen {
       display: none;
       position: fixed !important;
       inset: 0;
       z-index: 50;
-      background: var(--bg);
+      background: #1a1510;
       flex-direction: column;
       overflow: hidden;
     }
     #pageDetailScreen.active { display: flex !important; }
 
-    /* Compact header for page detail — minimal chrome, max page space */
+    /* Compact back header — dark to match scan background */
     #pageDetailScreen .back-header {
-      padding: 0.4rem 0.7rem;
-      min-height: 40px;
+      padding: 0.35rem 0.7rem;
+      min-height: 42px;
       flex-shrink: 0;
       z-index: 10;
+      background: rgba(10,8,5,0.92);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
     }
+    #pageDetailScreen .back-btn,
+    #pageDetailScreen #markPageCompleteBtn {
+      font-size: 0.8rem; padding: 0.3rem 0.65rem; min-height: 34px;
+    }
+    #pageDetailScreen .back-title { color: rgba(255,255,255,0.75); font-size: 0.82rem; }
 
     .mushaf-wrap {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      overflow: hidden;
-      position: relative;
-      padding: 0;
-      min-height: 0;
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+      align-items: center; overflow: hidden; position: relative;
     }
-
-    /* Swipe/drag area fills all remaining space */
     .mushaf-swipe-wrap {
-      flex: 1;
-      min-height: 0;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      position: relative;
-      /* touch-action managed per zone in JS */
-      touch-action: none;
+      flex: 1; min-height: 0; width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; touch-action: none; gap: 6px;
+      padding: 0 4px;
     }
 
-    /* ── MUSHAF PAGE — strict 17×24cm aspect ratio ── */
-    .mushaf-page {
-      /* 17:24 = 0.7083 — always enforced, never overridden */
-      --page-ratio: 0.7083;
-      width: min(90vw, calc(var(--available-height, 88vh) * var(--page-ratio)));
-      height: min(calc(90vw / var(--page-ratio)), var(--available-height, 88vh));
-      background: #fdf8ef;
-      border: 2px solid #b8980a;
-      outline: 1px solid #c8b88a;
-      outline-offset: 4px;
-      border-radius: 2px;
-      box-shadow:
-        0 6px 32px rgba(60,40,10,0.22),
-        0 2px 8px rgba(60,40,10,0.10),
-        inset 0 0 12px rgba(180,150,80,0.06);
-      display: flex;
-      flex-direction: column;
-      padding: 4% 5.5% 5% 5.5%;
-      position: relative;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: none;
-      overflow: hidden;
-      flex-shrink: 0;
-      box-sizing: border-box;
+    /* ── MUSHAF PAGE WRAP — holds scan image + highlight overlay ── */
+    .mushaf-page-wrap {
+      position: relative; flex-shrink: 0;
+      /* width/height set by JS to preserve 17:24 ratio within available space */
     }
-    /* Inner frame lines like a printed mushaf */
-    .mushaf-page::before, .mushaf-page::after {
-      content: '';
-      position: absolute;
-      border: 1px solid rgba(180,150,80,0.25);
+    .mushaf-page-wrap img.mushaf-scan {
+      display: block; width: 100%; height: 100%;
+      object-fit: fill;
+      user-select: none; -webkit-user-select: none;
+      /* crisp text rendering for scanned pages */
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+      border: 1px solid rgba(120,90,30,0.4);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4);
+    }
+    /* Semi-transparent green overlay — marks the page as memorized */
+    .mushaf-highlight-overlay {
+      position: absolute; inset: 0;
+      background: rgba(34,197,94,0.22);
       pointer-events: none;
-      border-radius: 1px;
+      opacity: 0; transition: opacity 0.22s;
+      mix-blend-mode: multiply;
     }
-    .mushaf-page::before { inset: 6px; }
-    .mushaf-page::after  { inset: 9px; }
-    [data-theme="dark"] .mushaf-page {
-      background: #17160e;
-      border-color: #5a4a10;
-      outline-color: #3a3020;
-      box-shadow: 0 6px 32px rgba(0,0,0,0.6), inset 0 0 16px rgba(40,30,5,0.5);
-    }
-    [data-theme="dark"] .mushaf-page::before,
-    [data-theme="dark"] .mushaf-page::after { border-color: rgba(100,80,20,0.2); }
-    [data-theme="glass"] .mushaf-page {
-      background: #f9f6ff;
-      border-color: #8898cc;
-      outline-color: #b0c0e8;
-    }
+    .mushaf-highlight-overlay.active  { opacity: 1; }
+    .mushaf-highlight-overlay.dragging { background: rgba(34,197,94,0.38); opacity: 1; }
+    [data-theme="dark"] .mushaf-highlight-overlay { background: rgba(20,140,60,0.40); mix-blend-mode: screen; }
+    [data-theme="dark"] .mushaf-highlight-overlay.dragging { background: rgba(20,140,60,0.55); }
+    [data-theme="glass"] .mushaf-highlight-overlay { background: rgba(58,95,203,0.22); }
 
-    /* ── TAP ZONES — narrow strips on left and right edges ──
-       These sit ABOVE the page (z-index 6) and are only 15% wide each.
-       The center 70% is left for the highlighter drag gesture.
-       Left edge = next page (Arabic: turning left = forward)
-       Right edge = previous page
-    */
+    /* Tap zones — narrow strips on each side of the page wrap */
     .page-tap-zones {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      pointer-events: none;
-      z-index: 6;
+      position: absolute; inset: 0;
+      display: flex; pointer-events: none; z-index: 6;
     }
-    .tap-zone {
-      height: 100%;
-      pointer-events: auto;
-      /* Visual flash feedback only — normally invisible */
-      background: rgba(120,90,30,0.0);
-      transition: background 0.12s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .tap-zone { height: 100%; pointer-events: auto; position: relative; }
+    .tap-zone-left  { width: 14%; }
+    .tap-zone-right { width: 14%; }
+    .tap-zone-mid   { flex: 1; pointer-events: none; }
+    /* Chevron arrows on the strips */
+    .tap-zone-left::after, .tap-zone-right::after {
+      content: ''; position: absolute; top: 50%; transform: translateY(-50%);
+      width: 0; height: 0; border-style: solid; opacity: 0.5;
     }
-    .tap-zone-left  { width: 15%; }
-    .tap-zone-right { width: 15%; }
-    .tap-zone-mid   { flex: 1; pointer-events: none; } /* pass-through for drag */
-    .tap-zone.flash { background: rgba(120,90,30,0.10); }
-    /* Subtle chevron indicators */
-    .tap-zone::after {
-      content: '';
-      width: 0; height: 0;
-      border-style: solid;
-      opacity: 0.18;
-    }
-    .tap-zone-left::after  { border-width: 8px 10px 8px 0; border-color: transparent var(--accent) transparent transparent; }
-    .tap-zone-right::after { border-width: 8px 0 8px 10px; border-color: transparent transparent transparent var(--accent); }
+    .tap-zone-left::after  { left: 5px;  border-width: 9px 11px 9px 0; border-color: transparent rgba(255,210,80,0.8) transparent transparent; }
+    .tap-zone-right::after { right: 5px; border-width: 9px 0 9px 11px; border-color: transparent transparent transparent rgba(255,210,80,0.8); }
+    .tap-zone.flash { background: rgba(255,210,80,0.10); }
 
-    /* Landscape: two pages side by side, no tap zones, swipe to navigate */
     @media (orientation: landscape) {
-      .mushaf-swipe-wrap { gap: 2vw; padding: 0 1vw; }
-      .mushaf-page {
-        width: min(44vw, calc(var(--available-height, 88vh) * var(--page-ratio)));
-        height: min(calc(44vw / var(--page-ratio)), var(--available-height, 88vh));
-      }
-      #mushafPageB { display: flex !important; }
       .page-tap-zones { display: none; }
       .mushaf-gesture-hint { display: none; }
     }
-    @media (orientation: portrait) {
-      #mushafPageB { display: none !important; }
-    }
 
-    /* Surah name ornamental header */
-    .mushaf-surah-header {
-      text-align: center;
-      font-family: 'Scheherazade New', serif !important;
-      font-size: clamp(0.85rem, 2.8vw, 1.2rem);
-      color: #7a5c2e;
-      line-height: 1.6;
-      flex-shrink: 0;
-      background: linear-gradient(to right, transparent, rgba(180,150,80,0.08), transparent);
-      border-top: 1px solid rgba(180,150,80,0.3);
-      border-bottom: 1px solid rgba(180,150,80,0.3);
-      margin: 0.15em 0;
-      padding: 0.1em 0;
-    }
-    .mushaf-surah-header::before, .mushaf-surah-header::after {
-      content: '❧'; font-size: 0.7em; opacity: 0.4; margin: 0 0.4em;
-    }
-    [data-theme="dark"] .mushaf-surah-header {
-      color: #c8a860;
-      background: linear-gradient(to right, transparent, rgba(100,80,20,0.12), transparent);
-      border-color: rgba(100,80,20,0.3);
-    }
-
-    /* Bismillah line */
-    .mushaf-basmala {
-      text-align: center;
-      font-family: 'Scheherazade New', serif !important;
-      font-size: clamp(0.85rem, 2.8vw, 1.2rem);
-      color: #2c1e08;
-      line-height: 1.8;
-      flex-shrink: 0;
-    }
-    [data-theme="dark"] .mushaf-basmala { color: #d4be90; }
-
-    /* ── MUSHAF LINE — 15 equal rows filling the page ── */
-    .mushaf-line {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      align-items: center;
-      direction: rtl;
-      font-family: 'Scheherazade New', serif !important;
-      font-size: inherit;
-      line-height: 2.0;
-      color: #1a1008;
-      border-radius: 2px;
-      padding: 0 4px;
-      cursor: crosshair; /* signals draggable */
-      transition: background 0.08s;
-      position: relative;
-      overflow: visible;
-    }
-    [data-theme="dark"] .mushaf-line { color: #ede5cc; }
-    [data-theme="glass"] .mushaf-line { color: #12100a; }
-    .mushaf-line .line-text {
-      flex: 1;
-      font-family: inherit !important;
-      font-size: inherit;
-      text-align: justify;
-      text-align-last: right;
-      direction: rtl;
-      overflow: visible;
-      white-space: nowrap;
-    }
-
-    /* Synthetic fallback (Strategy B) — ayah-per-line */
-    .mushaf-page.synthetic-lines {
-      /* Keep exact same outer dimensions — no overrides */
-      overflow-y: auto;
-    }
-    .mushaf-page.synthetic-lines .mushaf-line {
-      flex: none;
-      min-height: 2.6em;
-      height: auto;
-      line-height: 2.2;
-      font-size: clamp(0.78rem, 2vw, 1rem);
-      border-bottom: 1px solid rgba(180,150,80,0.1);
-      padding: 0.05em 4px;
-    }
-    .mushaf-page.synthetic-lines .mushaf-line .line-text {
-      white-space: normal;
-      text-align: right;
-    }
-
-    /* Memorized highlight */
-    .mushaf-line.memorized   { background: rgba(60,160,90,0.20); }
-    .mushaf-line.drag-active { background: rgba(60,160,90,0.38); }
-    [data-theme="dark"] .mushaf-line.memorized   { background: rgba(20,80,40,0.55); }
-    [data-theme="dark"] .mushaf-line.drag-active  { background: rgba(20,80,40,0.75); }
-    [data-theme="glass"] .mushaf-line.memorized  { background: rgba(40,120,200,0.18); }
-    [data-theme="glass"] .mushaf-line.drag-active { background: rgba(40,120,200,0.30); }
-
-    /* Page number */
-    .mushaf-page-num {
-      position: absolute;
-      bottom: 1.2%;
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: 'Scheherazade New', Georgia, serif;
-      font-size: clamp(0.5rem, 1.2vw, 0.7rem);
-      color: #9a8060;
-      letter-spacing: 0.5px;
-      pointer-events: none;
-    }
-    [data-theme="dark"] .mushaf-page-num { color: #7a6840; }
-
-    /* Ayah-end number marker */
-    .ayah-marker {
-      font-family: 'Scheherazade New', serif;
-      font-size: 0.8em;
-      color: #7a5c2e;
-      opacity: 0.75;
-      display: inline;
-      unicode-bidi: embed;
-      direction: rtl;
-    }
-    [data-theme="dark"]  .ayah-marker { color: #c8a860; }
-    [data-theme="glass"] .ayah-marker { color: #6a4c1e; }
-
-    /* Summary / gesture hint below page */
+    /* Bottom bar */
     .mushaf-summary {
-      font-family: var(--font-latin);
-      font-size: 0.72rem;
-      color: var(--text2);
-      text-align: center;
-      padding: 0.25rem 0.5rem 0;
-      flex-shrink: 0;
+      font-family: var(--font-latin); font-size: 0.7rem;
+      color: rgba(255,255,255,0.5); text-align: center;
+      padding: 0.2rem 0.5rem 0; flex-shrink: 0;
     }
     .mushaf-gesture-hint {
-      font-family: var(--font-latin);
-      font-size: 0.65rem;
-      color: var(--text2);
-      opacity: 0.55;
-      text-align: center;
-      padding: 0.1rem 0.5rem 0.25rem;
-      flex-shrink: 0;
+      font-family: var(--font-latin); font-size: 0.6rem;
+      color: rgba(255,255,255,0.28); text-align: center;
+      padding: 0.06rem 0.5rem 0.2rem; flex-shrink: 0;
     }
+
+    /* ── SURAH DRAG: ayah number badge + auto-scroll ── */
+    #dragScrollBadge {
+      position: fixed; right: 14px;
+      background: var(--accent); color: #fff;
+      font-family: var(--font-latin); font-size: 0.95rem; font-weight: 700;
+      padding: 0.35rem 0.7rem; border-radius: 8px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+      pointer-events: none; z-index: 800;
+      display: none; min-width: 50px; text-align: center;
+      transform: translateY(-50%);
+    }
+    #dragScrollBadge.visible { display: block; }
   </style>
 </head>
 <body>
@@ -965,29 +796,30 @@
     </header>
 
     <div class="mushaf-wrap" id="mushafWrap">
-      <!-- Page swipe area: contains 1 page (portrait) or 2 pages (landscape) -->
       <div class="mushaf-swipe-wrap" id="mushafSwipeWrap">
-      <!-- Tap zones: narrow left strip = next page, narrow right strip = prev page (RTL Mushaf).
-           The middle 70% is a pass-through zone — touch events go to the page for the highlighter gesture. -->
-      <div class="page-tap-zones" id="pageTapZones">
-        <div class="tap-zone tap-zone-left"  id="tapLeft"  aria-label="Next page"></div>
-        <div class="tap-zone tap-zone-mid"   id="tapMid"></div>
-        <div class="tap-zone tap-zone-right" id="tapRight" aria-label="Previous page"></div>
-      </div>
-        <!-- Primary (current) page -->
-        <div class="mushaf-page" id="mushafPage">
-          <div style="font-family:Georgia,serif;color:var(--text2);text-align:center;padding:2rem;font-size:0.9rem;">Loading…</div>
+        <!-- Primary page (always shown) -->
+        <div class="mushaf-page-wrap" id="mushafPageWrap">
+          <div class="page-tap-zones" id="pageTapZones">
+            <div class="tap-zone tap-zone-left"  id="tapLeft"  aria-label="Next page"></div>
+            <div class="tap-zone tap-zone-mid"   id="tapMid"></div>
+            <div class="tap-zone tap-zone-right" id="tapRight" aria-label="Previous page"></div>
+          </div>
+          <img class="mushaf-scan" id="mushafScanA" src="" alt="" draggable="false" />
+          <div class="mushaf-highlight-overlay" id="mushafOverlayA"></div>
         </div>
         <!-- Facing page (landscape only) -->
-        <div class="mushaf-page" id="mushafPageB" style="display:none;">
-          <div style="font-family:Georgia,serif;color:var(--text2);text-align:center;padding:2rem;font-size:0.9rem;"></div>
+        <div class="mushaf-page-wrap" id="mushafPageWrapB" style="display:none">
+          <img class="mushaf-scan" id="mushafScanB" src="" alt="" draggable="false" />
+          <div class="mushaf-highlight-overlay" id="mushafOverlayB"></div>
         </div>
       </div>
-
       <div class="mushaf-summary" id="mushafSummary"></div>
-      <div class="mushaf-gesture-hint" id="mushafGestureHint">Drag to highlight · tap edges to turn page · swipe to navigate</div>
+      <div class="mushaf-gesture-hint" id="mushafGestureHint">Drag anywhere to mark page · tap edges to turn · swipe to navigate</div>
     </div>
   </div>
+
+  <!-- Ayah badge shown during drag-select in surah view -->
+  <div id="dragScrollBadge">Ayah 1</div>
 
   <!-- ── SURAH MODAL ── -->
   <dialog id="surahDialog">
@@ -1759,6 +1591,45 @@
       if (dragMode === 'remove' && cur)  { workingSet.delete(ayahNo); onSave(dragSurah, workingSet); onUIUpdate(dragSurah, workingSet); }
     }
 
+    // ── Ayah badge + auto-scroll during drag mode ──
+    const badge = document.getElementById('dragScrollBadge');
+    let scrollRAF = null;
+
+    function showBadge(ayahNo, touchY) {
+      if (!badge) return;
+      badge.textContent = 'Ayah ' + ayahNo;
+      badge.style.top   = Math.max(30, Math.min(window.innerHeight - 30, touchY)) + 'px';
+      badge.classList.add('visible');
+    }
+    function hideBadge() {
+      if (badge) badge.classList.remove('visible');
+      if (scrollRAF) { cancelAnimationFrame(scrollRAF); scrollRAF = null; }
+    }
+
+    // Auto-scroll when drag finger is near the top or bottom of the dialog
+    const SCROLL_ZONE = 0.16; // fraction of dialog height that triggers scroll
+    const MAX_SPEED   = 12;   // px per animation frame at the very edge
+
+    function runAutoScroll(touchY) {
+      // Scroll the dialog element
+      const dialogEl = container.closest('dialog') || container.parentElement;
+      if (!dialogEl) return;
+      const rect = dialogEl.getBoundingClientRect();
+      const relY  = (touchY - rect.top) / rect.height;
+      let speed = 0;
+      if (relY < SCROLL_ZONE)
+        speed = -(1 - relY / SCROLL_ZONE) * MAX_SPEED;
+      else if (relY > 1 - SCROLL_ZONE)
+        speed = ((relY - (1 - SCROLL_ZONE)) / SCROLL_ZONE) * MAX_SPEED;
+
+      if (Math.abs(speed) > 0.5) {
+        dialogEl.scrollTop += speed;
+        scrollRAF = requestAnimationFrame(() => runAutoScroll(touchY));
+      } else {
+        if (scrollRAF) { cancelAnimationFrame(scrollRAF); scrollRAF = null; }
+      }
+    }
+
     // ── Enter drag mode (called by long press) ──
     function enterDragMode(el) {
       if (!el) return;
@@ -1774,6 +1645,7 @@
       setTimeout(() => container.classList.remove('drag-mode-enter'), 280);
       if (navigator.vibrate) navigator.vibrate(32);
       applyToEl(el);
+      showBadge(ayahNo, touchStartY);
     }
 
     // ── Simple tap toggle ──
@@ -1879,6 +1751,7 @@
       touchStartEl  = null;
       gesturePhase  = 'idle';
       container.classList.remove('drag-mode');
+      hideBadge();
     }
 
     // ────────────────────────────────────────
@@ -1936,7 +1809,14 @@
       if (gesturePhase === 'drag') {
         e.preventDefault(); // block scroll ONLY during drag
         const el = elAt(touch.clientX, touch.clientY);
-        if (el && Number(el.dataset.surah) === dragSurah) applyToEl(el);
+        if (el && Number(el.dataset.surah) === dragSurah) {
+          applyToEl(el);
+          const ayahNo = Number(el.dataset.ayah);
+          showBadge(ayahNo, touch.clientY);
+        }
+        // Auto-scroll when near edges
+        if (scrollRAF) { cancelAnimationFrame(scrollRAF); scrollRAF = null; }
+        runAutoScroll(touch.clientY);
         return;
       }
 
@@ -2318,673 +2198,192 @@
     openJuz(activeJuz);
   });
 
-  /* ── PAGE DETAIL / MUSHAF RENDERER ── */
-  /*
-    Uses api.quran.com/api/v4/verses/by_page/{n}?words=true&word_fields=text_uthmani,text_indopak,line_number,verse_key,page_number&per_page=50
-    Each word has line_number + verse_key (e.g. "2:255").
-    We group words into lines, render each line as a justified RTL row.
-    Memorization is ayah-level: tapping/dragging a line selects the whole ayah.
-    An ayah can span multiple lines — all its lines highlight together.
-  */
-  let mushafPageData  = null; // array of lines: [{lineNum, type, verseKey, surahNum, words:[]}]
-  let mushafDragging  = false;
-  let mushafDragMode  = null; // 'add'|'remove'
-  let mushafLastLine  = null;
-  let mushafLines     = 15;
+  /* ══════════════════════════════════════════════════════════════════
+     PAGE VIEW — Image Scan System  (Phase 3b)
+     ────────────────────────────────────────────────────────────────
+     Scan source: static.quran.com/images/madani/pages/page{NNN}.png
+     King Fahd Complex Madani Mushaf (15-line), same as quran.com.
+     Pages are static images — no text rendering, no API calls for
+     line data. Highlight overlay = page-level memorized state.
+     Portrait: 1 page. Landscape: 2 pages side by side.
+     ══════════════════════════════════════════════════════════════════ */
 
-  // 15-line Madani Mushaf only — layout selector removed
+  const PAGE_RATIO = 17 / 24; // Madani Mushaf: 17cm × 24cm
+
+  function mushafScanUrl(pageNum) {
+    const n = String(pageNum).padStart(3, '0');
+    return 'https://static.quran.com/images/madani/pages/page' + n + '.png';
+  }
+
+  function sizeMushafPages() {
+    // Available space = viewport minus header (~42px) minus summary/hint (~36px)
+    const headerH = 42, footerH = 36;
+    const availH  = Math.max(160, window.innerHeight - headerH - footerH);
+    const availW  = window.innerWidth;
+    const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+
+    if (isLandscape) {
+      // Two pages side by side with a small gap
+      const gap = 6;
+      const maxW = (availW - gap - 8) / 2;
+      const maxH = availH;
+      // Constrain by both dimensions keeping ratio
+      let w = Math.min(maxW, maxH * PAGE_RATIO);
+      let h = w / PAGE_RATIO;
+      if (h > maxH) { h = maxH; w = h * PAGE_RATIO; }
+      return { w: Math.floor(w), h: Math.floor(h), landscape: true };
+    } else {
+      // Single page — fill as much as possible
+      let w = Math.min(availW - 8, availH * PAGE_RATIO);
+      let h = w / PAGE_RATIO;
+      if (h > availH) { h = availH; w = h * PAGE_RATIO; }
+      return { w: Math.floor(w), h: Math.floor(h), landscape: false };
+    }
+  }
+
+  function applyPageSize(wrapEl, w, h) {
+    wrapEl.style.width  = w + 'px';
+    wrapEl.style.height = h + 'px';
+  }
 
   async function openPageDetail(pageNum) {
     activePage = pageNum;
     pageListScreen.style.display = 'none';
     pageDetailScreen.classList.add('active');
     document.getElementById('pageDetailTitle').textContent = 'Page ' + pageNum;
-    mushafLines = 15; // always 15-line Madani Mushaf
-    // Update mark button
     const markBtn = document.getElementById('markPageCompleteBtn');
     if (markBtn) markBtn.textContent = isPageComplete(pageNum) ? 'Mark Incomplete' : 'Mark Complete';
-    await loadAndRenderMushafPage(pageNum);
-  }
-
-  /* Multiple API strategies for fetching page data with line_number.
-     Strategy A: api.quran.com/api/v4 (public, may still work, deprecated)
-     Strategy B: api.alquran.cloud/v1/page (no line_number, so we synthesize lines by ayah)
-     We try A first; if it fails or returns 403, fall back to B. */
-
-  async function fetchPageStrategy_A(pageNum, field) {
-    const url = 'https://api.quran.com/api/v4/verses/by_page/' + pageNum
-      + '?words=true&word_fields=' + field + ',line_number,verse_key&per_page=50&fields=verse_key,text_uthmani,text_indopak&per_page=50';
-    const res = await fetch(url, { signal: AbortSignal.timeout ? AbortSignal.timeout(6000) : undefined });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (!data.verses || !data.verses.length) throw new Error('empty');
-    // Verify at least one word has line_number (not all APIs return it)
-    const hasLineNum = data.verses.some(v => v.words && v.words.some(w => w.line_number > 0));
-    if (!hasLineNum) throw new Error('no line_number');
-    return buildLinesFromVerses(data.verses, field);
-  }
-
-  async function fetchPageStrategy_B(pageNum) {
-    // alquran.cloud returns ayah-level text; we synthesize "lines" — one "line" per ayah
-    // This won't have authentic line breaks but gives correct text for memorization
-    const script = state.script === 'indopak' ? 'quran-indopak' : 'quran-uthmani';
-    const url = 'https://api.alquran.cloud/v1/page/' + pageNum + '/' + script;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (!data.data || !data.data.ayahs) throw new Error('empty');
-    return buildLinesFromAyahs(data.data.ayahs);
-  }
-
-  function buildLinesFromAyahs(ayahs) {
-    // Fallback: no word-level line data — treat each ayah as one "line"
-    const NO_BISM = new Set([1, 9]);
-    const result = [];
-    let lastSurah = null;
-    ayahs.forEach(a => {
-      const surahNum = a.surah.number;
-      const verseKey = surahNum + ':' + a.numberInSurah;
-      if (surahNum !== lastSurah) {
-        if (lastSurah !== null) {
-          result.push({ lineNum: result.length + 0.3, type: 'surah_name', surahNum, words: [] });
-          if (!NO_BISM.has(surahNum)) {
-            result.push({ lineNum: result.length + 0.4, type: 'basmala', surahNum, words: [] });
-          }
-        }
-        lastSurah = surahNum;
-      }
-      result.push({
-        lineNum: result.length + 1,
-        type: 'ayah',
-        verseKey,
-        surahNum,
-        syntheticAyah: true, // flag: this line = whole ayah, not a real Mushaf line
-        words: [{ text: a.text, verseKey }]
-      });
-    });
-    return result;
-  }
-
-  async function loadAndRenderMushafPage(pageNum) {
-    const pageEl = document.getElementById('mushafPage');
-    pageEl.innerHTML = '<div style="font-family:Georgia,serif;color:var(--text2);text-align:center;padding:2rem;font-size:0.9rem;">Loading page ' + pageNum + '…</div>';
-
-    const cacheKey = 'qcom_page_' + pageNum + '_' + state.script;
-    let lines;
-    if (pageCache[cacheKey]) {
-      lines = pageCache[cacheKey];
-    } else {
-      const field = state.script === 'indopak' ? 'text_indopak' : 'text_uthmani';
-      let strategyUsed = '';
-      try {
-        lines = await fetchPageStrategy_A(pageNum, field);
-        strategyUsed = 'A';
-      } catch(errA) {
-        try {
-          lines = await fetchPageStrategy_B(pageNum);
-          strategyUsed = 'B';
-        } catch(errB) {
-          pageEl.innerHTML = '<div style="font-family:Georgia,serif;color:#c0392b;text-align:center;padding:2rem;">Could not load page ' + pageNum + '.<br>Check your internet connection.</div>';
-          return;
-        }
-      }
-      pageCache[cacheKey] = lines;
-      // If strategy B was used, show a note that line breaks are approximate
-      if (strategyUsed === 'B') {
-        const note = document.createElement('div');
-        note.style.cssText = 'font-family:Georgia,serif;font-size:0.72rem;color:var(--text2);text-align:center;padding:0.3rem;opacity:0.7;';
-        note.textContent = '⚠ Line layout is approximate (Quran.com API unavailable)';
-        // Append after rendering
-        setTimeout(() => { const w = document.getElementById('mushafWrap'); if(w) w.appendChild(note); }, 100);
-      }
-    }
-    mushafPageData = lines;
     renderMushafPage();
   }
 
-  function buildLinesFromVerses(verses, field) {
-    // Map: lineNum -> { type:'ayah'|'surah_name'|'basmala', verseKey, surahNum, words:[] }
-    const lineMap = new Map();
-    
-    verses.forEach(verse => {
-      const vk = verse.verse_key; // e.g. "2:5"
-      const surahNum = parseInt(vk.split(':')[0]);
-      if (!verse.words || !verse.words.length) return;
-      verse.words.forEach(word => {
-        if (word.char_type_name === 'end') return; // skip ayah number glyphs
-        const ln = word.line_number;
-        if (!lineMap.has(ln)) lineMap.set(ln, { lineNum: ln, type: 'ayah', verseKey: vk, surahNum, words: [] });
-        const lineEntry = lineMap.get(ln);
-        // If this line spans multiple ayahs, track the first verse key but note it's mixed
-        if (lineEntry.verseKey !== vk) lineEntry.mixed = true;
-        lineMap.get(ln).words.push({ text: word[field] || word.text_uthmani || '', verseKey: vk });
-      });
-    });
-
-    // Sort by line number
-    const sorted = [...lineMap.entries()].sort((a,b) => a[0]-b[0]);
-    
-    // Detect surah headers: if first line of a surah starts with surah name words, mark it
-    // (We inject these based on surah boundaries in the verse list)
-    const result = [];
-    let lastSurah = null;
-    const NO_BISM = new Set([1,9]);
-    
-    sorted.forEach(([ln, entry]) => {
-      // Inject surah header before first ayah of a new surah
-      if (entry.surahNum !== lastSurah) {
-        if (lastSurah !== null) {
-          result.push({ lineNum: ln - 0.3, type: 'surah_name', surahNum: entry.surahNum, words: [] });
-          if (!NO_BISM.has(entry.surahNum)) {
-            result.push({ lineNum: ln - 0.1, type: 'basmala', surahNum: entry.surahNum, words: [] });
-          }
-        }
-        lastSurah = entry.surahNum;
-      }
-      result.push(entry);
-    });
-    
-    return result;
-  }
-
-  function getMushafLineMemState(line) {
-    // A line is "memorized" if ALL its ayahs are memorized
-    if (line.type !== 'ayah') return false;
-    const verseKeys = new Set(line.words.map(w => w.verseKey));
-    return [...verseKeys].every(vk => {
-      const [s, a] = vk.split(':').map(Number);
-      return getMemorizedSet(s).has(a);
-    });
-  }
-
-  function toggleMushafLine(line, forceState) {
-    if (line.type !== 'ayah') return;
-    const verseKeys = new Set(line.words.map(w => w.verseKey));
-    verseKeys.forEach(vk => {
-      const [s, a] = vk.split(':').map(Number);
-      const mem = getMemorizedSet(s);
-      forceState ? mem.add(a) : mem.delete(a);
-      setMemorizedSet(s, mem);
-    });
-  }
-
   function renderMushafPage() {
-    if (!mushafPageData) return;
-    const pageEl = document.getElementById('mushafPage');
-    if (!pageEl) return;
+    if (!activePage) return;
+    const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+    const { w, h, landscape } = sizeMushafPages();
 
-    const isSynthetic = mushafPageData.some(l => l.syntheticAyah);
-    pageEl.className = 'mushaf-page' + (isSynthetic ? ' synthetic-lines' : '');
-    if (state.script === 'indopak') pageEl.classList.add('indopak');
-    pageEl.innerHTML = '';
+    const wrapA = document.getElementById('mushafPageWrap');
+    const wrapB = document.getElementById('mushafPageWrapB');
+    const scanA = document.getElementById('mushafScanA');
+    const scanB = document.getElementById('mushafScanB');
+    const overlayA = document.getElementById('mushafOverlayA');
+    const overlayB = document.getElementById('mushafOverlayB');
 
-    // Set --available-height so the CSS can size the page correctly
-    // Available = screen height minus header (~40px) minus summary/hint (~40px)
-    const availH = Math.max(200, window.innerHeight - 84);
-    pageEl.style.setProperty('--available-height', availH + 'px');
-    // Also set on wrap so landscape pages get it
-    const wrap = document.getElementById('mushafSwipeWrap');
-    if (wrap) wrap.style.setProperty('--available-height', availH + 'px');
+    // Size primary page
+    applyPageSize(wrapA, w, h);
+    scanA.src = mushafScanUrl(activePage);
+    overlayA.classList.toggle('active', isPageComplete(activePage));
 
-    renderPageLines(mushafPageData, pageEl, isSynthetic);
-
-    // Page number (Eastern Arabic numerals)
-    const pn = document.createElement('div');
-    pn.className = 'mushaf-page-num';
-    pn.textContent = toArabicNumerals(activePage);
-    pageEl.appendChild(pn);
+    // Facing page in landscape
+    if (landscape && activePage > 1) {
+      // Real Mushaf binding: odd pages are on the right, even on the left
+      // activePage on right (odd) or left (even) — show facing page opposite
+      const facingNum = activePage % 2 === 0 ? activePage - 1 : activePage + 1;
+      if (facingNum >= 1 && facingNum <= 604) {
+        wrapB.style.display = '';
+        applyPageSize(wrapB, w, h);
+        scanB.src = mushafScanUrl(facingNum);
+        overlayB.classList.toggle('active', isPageComplete(facingNum));
+      } else {
+        wrapB.style.display = 'none';
+      }
+    } else {
+      wrapB.style.display = 'none';
+    }
 
     updateMushafSummary();
-
-    // Dynamic font size — wait for layout, then fit 15 lines
-    requestAnimationFrame(() => {
-      if (!isSynthetic) {
-        fitMushafFont(pageEl);
-      }
-      // Landscape: also render facing page
-      const pageB = document.getElementById('mushafPageB');
-      if (pageB) {
-        const isLandscape = window.matchMedia('(orientation: landscape)').matches;
-        if (isLandscape && activePage > 1) {
-          const facingNum = activePage % 2 === 0 ? activePage - 1 : activePage + 1;
-          renderFacingPage(facingNum, pageB);
-        } else {
-          pageB.style.display = 'none';
-        }
-      }
-    });
-
-    setupMushafDrag(pageEl);
-  }
-
-  function fitMushafFont(pageEl) {
-    // Inner height = page height minus top+bottom padding (9% combined ≈ padding 4%+5%)
-    const innerH = pageEl.clientHeight * 0.91;
-    const lineH  = innerH / 15;
-    // line-height is 2.0, so font-size = lineH / 2
-    const fs = Math.max(7, Math.min(20, lineH / 2));
-    pageEl.style.fontSize = fs + 'px';
-    return fs;
-  }
-
-  async function renderFacingPage(pageNum, pageEl) {
-    if (pageNum < 1 || pageNum > 604) { pageEl.style.display = 'none'; return; }
-    pageEl.style.display = '';
-    pageEl.innerHTML = '<div style="font-family:Georgia,serif;color:var(--text2);text-align:center;padding:2rem;font-size:0.9rem;">Loading…</div>';
-
-    const cacheKey = 'qcom_page_' + pageNum + '_' + state.script;
-    let lines = pageCache[cacheKey];
-    if (!lines) {
-      const field = state.script === 'indopak' ? 'text_indopak' : 'text_uthmani';
-      try { lines = await fetchPageStrategy_A(pageNum, field); }
-      catch(e) { try { lines = await fetchPageStrategy_B(pageNum); } catch(e2) { pageEl.style.display='none'; return; } }
-      pageCache[cacheKey] = lines;
-    }
-    const isSynthetic = lines.some(l => l.syntheticAyah);
-    pageEl.className = 'mushaf-page' + (isSynthetic ? ' synthetic-lines' : '');
-    if (state.script === 'indopak') pageEl.classList.add('indopak');
-    pageEl.innerHTML = '';
-    renderPageLines(lines, pageEl, isSynthetic);
-    const pn = document.createElement('div');
-    pn.className = 'mushaf-page-num';
-    pn.textContent = toArabicNumerals(pageNum);
-    pageEl.appendChild(pn);
-    requestAnimationFrame(() => {
-      if (!isSynthetic) fitMushafFont(pageEl);
-    });
-    setupMushafDrag(pageEl, pageNum);
-  }
-
-  // Shared line-rendering logic used by both pages
-  function renderPageLines(pageData, pageEl, isSynthetic) {
-    pageData.forEach((line, idx) => {
-      if (line.type === 'surah_name') {
-        const hdr = document.createElement('div');
-        hdr.className = 'mushaf-surah-header';
-        hdr.textContent = SURAHS_ARABIC[line.surahNum - 1] || '';
-        pageEl.appendChild(hdr);
-        return;
-      }
-      if (line.type === 'basmala') {
-        const bsm = document.createElement('div');
-        bsm.className = 'mushaf-basmala';
-        bsm.textContent = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ';
-        pageEl.appendChild(bsm);
-        return;
-      }
-      const mem = getMushafLineMemState(line);
-      const lineEl = document.createElement('div');
-      lineEl.className = 'mushaf-line' + (mem ? ' memorized' : '');
-      lineEl.dataset.lineIdx = String(idx);
-      const textSpan = document.createElement('span');
-      textSpan.className = 'line-text';
-      const words = line.words.map(w => w.text).join(' ');
-      const lastWord = line.words[line.words.length - 1];
-      let showMarker = false, markerNum = '';
-      if (lastWord) {
-        const [, ayahNum] = lastWord.verseKey.split(':');
-        if (isSynthetic) { showMarker = true; markerNum = ayahNum; }
-        else {
-          const nextLine = pageData[idx + 1];
-          const nextKey  = nextLine && nextLine.words && nextLine.words[0] && nextLine.words[0].verseKey;
-          if (!nextKey || nextKey !== lastWord.verseKey) { showMarker = true; markerNum = ayahNum; }
-        }
-      }
-      if (showMarker) {
-        textSpan.textContent = words + ' ';
-        const mark = document.createElement('span');
-        mark.className = 'ayah-marker';
-        mark.textContent = '﴾' + toArabicNumerals(markerNum) + '﴿';
-        textSpan.appendChild(mark);
-      } else {
-        textSpan.textContent = words;
-      }
-      lineEl.appendChild(textSpan);
-      pageEl.appendChild(lineEl);
-    });
-  }
-
-  // Convert Western numerals to Eastern Arabic-Indic numerals (٠١٢٣٤٥٦٧٨٩)
-  function toArabicNumerals(n) {
-    return String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
   }
 
   function updateMushafSummary() {
     const sumEl = document.getElementById('mushafSummary');
-    if (!mushafPageData) { sumEl.textContent = ''; return; }
-    const ayahLines = mushafPageData.filter(l => l.type === 'ayah');
-    const memLines  = ayahLines.filter(l => getMushafLineMemState(l));
-    const pct = ayahLines.length ? Math.round(memLines.length / ayahLines.length * 100) : 0;
-    sumEl.textContent = memLines.length + ' / ' + ayahLines.length + ' lines memorized (' + pct + '%)';
+    if (!activePage) { sumEl.textContent = ''; return; }
+    const complete = isPageComplete(activePage);
+    sumEl.textContent = complete ? '✓ Page memorized' : 'Tap the page or drag to mark as memorized';
   }
 
   /* ══════════════════════════════════════════════════════════════════
-     MUSHAF PAGE GESTURE SYSTEM — Highlighter Model
+     PAGE VIEW GESTURE SYSTEM  (Phase 3b — image-based)
      ────────────────────────────────────────────────────────────────
-     The page acts like a physical mushaf being highlighted:
-     • Drag right→left (Arabic reading direction) or top→bottom → MARK
-     • Drag left→right or bottom→top → UNMARK
-     • Tap a single line → toggle that line/ayah
-     
-     The tap zones (outside this function) handle page navigation.
+     The highlight overlay is page-level (whole page = memorized or not).
+     Tap or drag anywhere on the page to toggle memorized state.
+     Tap left edge strip  → next page
+     Tap right edge strip → previous page
+     Fast horizontal swipe anywhere → navigate
      ══════════════════════════════════════════════════════════════════ */
-  function setupMushafDrag(pageEl, pageNumOverride) {
-    const pageNum = pageNumOverride || activePage;
 
-    // Clone to remove old listeners
-    const fresh = pageEl.cloneNode(true);
-    pageEl.parentNode.replaceChild(fresh, pageEl);
-
-    let dragging    = false;
-    let dragMode    = null;  // 'add' | 'remove'
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let gestureSet  = false;
-
-    // Get all line elements sorted top-to-bottom
-    function getLinesTopToBottom() {
-      return [...fresh.querySelectorAll('.mushaf-line')].sort((a,b) => {
-        return a.getBoundingClientRect().top - b.getBoundingClientRect().top;
-      });
+  // Toggle the active page's memorized state, update overlay + button
+  function togglePageMemorized(pageNum, forceState) {
+    const newState = forceState !== undefined ? forceState : !isPageComplete(pageNum);
+    setPageComplete(pageNum, newState);
+    const overlay = pageNum === activePage
+      ? document.getElementById('mushafOverlayA')
+      : document.getElementById('mushafOverlayB');
+    if (overlay) {
+      overlay.classList.remove('dragging');
+      overlay.classList.toggle('active', newState);
     }
-
-    function lineElAt(x, y) {
-      const lines = fresh.querySelectorAll('.mushaf-line');
-      for (const el of lines) {
-        const r = el.getBoundingClientRect();
-        // Expand hit area slightly so touching between lines still works
-        if (y >= r.top - 2 && y <= r.bottom + 2 && x >= r.left - 4 && x <= r.right + 4) return el;
-      }
-      return null;
+    const markBtn = document.getElementById('markPageCompleteBtn');
+    if (markBtn && pageNum === activePage) {
+      markBtn.textContent = newState ? 'Mark Incomplete' : 'Mark Complete';
     }
-
-    // Apply mark to a line + all lines sharing its ayah verseKeys
-    function applyToLine(el) {
-      if (!el) return;
-      const idx  = Number(el.dataset.lineIdx);
-      // Try mushafPageData first, then a stashed reference (for facing pages)
-      const pageData = (pageNum === activePage) ? mushafPageData : (pageCache['qcom_page_' + pageNum + '_' + state.script] || []);
-      const line = pageData[idx];
-      if (!line || line.type !== 'ayah') return;
-
-      const shouldMem = dragMode === 'add';
-      toggleMushafLine(line, shouldMem);
-      el.classList.toggle('memorized', shouldMem);
-
-      // Highlight all lines of same ayah(s) on this page
-      const verseKeys = new Set(line.words.map(w => w.verseKey));
-      fresh.querySelectorAll('.mushaf-line').forEach(other => {
-        const oi = Number(other.dataset.lineIdx);
-        const ol = pageData[oi];
-        if (!ol || ol.type !== 'ayah') return;
-        const olKeys = new Set(ol.words.map(w => w.verseKey));
-        if ([...verseKeys].some(vk => olKeys.has(vk))) other.classList.toggle('memorized', shouldMem);
-      });
-      updateMushafSummary();
-      // Update mark button
-      const markBtn = document.getElementById('markPageCompleteBtn');
-      if (markBtn && pageNum === activePage) {
-        markBtn.textContent = isPageComplete(activePage) ? 'Mark Incomplete' : 'Mark Complete';
-      }
-    }
-
-    // Determine drag direction → mark or unmark
-    function determineDragMode(dx, dy, firstEl) {
-      // RTL: right-to-left (dx < 0) or top-to-bottom (dy > 0) = mark (reading direction)
-      //      left-to-right (dx > 0) or bottom-to-top (dy < 0) = unmark
-      const absX = Math.abs(dx), absY = Math.abs(dy);
-      let markDir;
-      if (absX > absY) {
-        markDir = dx < 0; // right→left = mark (Arabic reading direction)
-      } else {
-        markDir = dy > 0; // top→bottom = mark
-      }
-      // But also consider the current state of the first touched line
-      // If going in mark direction but it's already memorized, switch to unmark
-      const currentlyMem = firstEl && firstEl.classList.contains('memorized');
-      return markDir ? 'add' : 'remove';
-    }
-
-    // ── TOUCH ──
-    fresh.addEventListener('touchstart', e => {
-      const t = e.touches[0];
-      touchStartX = t.clientX;
-      touchStartY = t.clientY;
-      gestureSet  = false;
-      dragging    = true;
-      // Don't set dragMode yet — wait for direction
-    }, { passive: true });
-
-    fresh.addEventListener('touchmove', e => {
-      if (!dragging) return;
-      const t  = e.touches[0];
-      const dx = t.clientX - touchStartX;
-      const dy = t.clientY - touchStartY;
-
-      if (!gestureSet && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
-        // Direction established
-        const el = lineElAt(touchStartX, touchStartY);
-        dragMode = el && el.classList.contains('memorized')
-          ? (dx > 0 || dy < 0 ? 'remove' : 'add')   // already memorized: match unmark direction
-          : (dx < 0 || dy > 0 ? 'add' : 'remove');   // not memorized: match mark direction
-        gestureSet = true;
-        if (el) applyToLine(el);
-      }
-
-      if (gestureSet) {
-        e.preventDefault(); // block scroll during drag
-        const el = lineElAt(t.clientX, t.clientY);
-        if (el) applyToLine(el);
-      }
-    }, { passive: false });
-
-    fresh.addEventListener('touchend', e => {
-      if (!gestureSet) {
-        // Was a tap — toggle
-        const t  = e.changedTouches[0];
-        const el = lineElAt(t.clientX, t.clientY);
-        if (el) {
-          dragMode = el.classList.contains('memorized') ? 'remove' : 'add';
-          applyToLine(el);
-        }
-      }
-      dragging = false; dragMode = null; gestureSet = false;
-    });
-    fresh.addEventListener('touchcancel', () => { dragging = false; dragMode = null; gestureSet = false; });
-
-    // ── MOUSE ──
-    fresh.addEventListener('mousedown', e => {
-      const el = e.target.closest('.mushaf-line');
-      if (!el) return;
-      e.preventDefault();
-      dragging = true;
-      gestureSet = true;
-      dragMode = el.classList.contains('memorized') ? 'remove' : 'add';
-      applyToLine(el);
-    });
-    document.addEventListener('mousemove', e => {
-      if (!dragging) return;
-      const el = lineElAt(e.clientX, e.clientY);
-      if (el && fresh.contains(el)) applyToLine(el);
-    });
-    document.addEventListener('mouseup', () => { dragging = false; dragMode = null; gestureSet = false; });
+    updateMushafSummary();
+    // Refresh juz list if visible
+    if (activeJuz) openJuz(activeJuz);
   }
 
-  /* ══════════════════════════════════════════════════════════════════
-     MUSHAF PAGE GESTURE SYSTEM  (Phase 3 rewrite)
-     ────────────────────────────────────────────────────────────────
-     ZONES (portrait):
-       Left 15% strip  → tap = next page
-       Right 15% strip → tap = previous page
-       Middle 70%      → highlighter drag gesture
+  // Set up tap + drag gesture on a page wrap element
+  function setupPageWrapGestures(wrapEl, getPageNum) {
+    let startX = 0, startY = 0, startTime = 0;
+    let dragging = false, dragStarted = false;
+    let originalState = false;
 
-     HIGHLIGHTER DRAG (middle zone / whole page in landscape):
-       Any direction from start determines mode:
-         RTL (right→left) or top→bottom  → MARK  (reading direction)
-         LTR (left→right) or bottom→top  → UNMARK
-       First touched line's state OVERRIDES direction: if already in
-       the state you're dragging toward, we flip to the opposite.
-       Single tap with no movement → tap-toggle that line.
-
-     LANDSCAPE:
-       Two pages shown, swipe horizontally to navigate (no tap zones).
-       Highlighter drag works on both pages independently.
-     ══════════════════════════════════════════════════════════════════ */
-
-  function setupMushafDrag(pageEl, pageNumOverride) {
-    const pageNum = pageNumOverride !== undefined ? pageNumOverride : activePage;
-
-    // Clone to clear old event listeners
-    const fresh = pageEl.cloneNode(true);
-    pageEl.parentNode.replaceChild(fresh, pageEl);
-    // Re-register updated id if it's the primary page
-    if (!pageNumOverride || pageNumOverride === activePage) {
-      fresh.id = 'mushafPage';
-    }
-
-    let dragging    = false;
-    let dragMode    = null;   // 'add' | 'remove'
-    let gestureSet  = false;
-    let startX      = 0;
-    let startY      = 0;
-    let lastApplied = null;   // prevent re-applying same line repeatedly
-
-    function getPageData() {
-      return (pageNum === activePage)
-        ? mushafPageData
-        : (pageCache['qcom_page_' + pageNum + '_' + state.script] || []);
-    }
-
-    function lineElAt(x, y) {
-      // elementFromPoint returns a child of the line — climb up
-      const candidate = document.elementFromPoint(x, y);
-      if (!candidate) return null;
-      const lineEl = candidate.closest('.mushaf-line');
-      if (lineEl && fresh.contains(lineEl)) return lineEl;
-      // Fallback: scan lines for proximity (handles gaps between lines)
-      const lines = fresh.querySelectorAll('.mushaf-line');
-      let best = null, bestDist = Infinity;
-      for (const el of lines) {
-        const r = el.getBoundingClientRect();
-        if (x < r.left - 6 || x > r.right + 6) continue;
-        const midY = (r.top + r.bottom) / 2;
-        const dist = Math.abs(y - midY);
-        if (dist < bestDist && dist < r.height * 0.8) { bestDist = dist; best = el; }
-      }
-      return best;
-    }
-
-    function applyToLine(el) {
-      if (!el || el === lastApplied) return;
-      lastApplied = el;
-      const pageData = getPageData();
-      const idx  = Number(el.dataset.lineIdx);
-      const line = pageData[idx];
-      if (!line || line.type !== 'ayah') return;
-
-      const shouldMem = dragMode === 'add';
-      toggleMushafLine(line, shouldMem);
-      el.classList.toggle('memorized', shouldMem);
-      el.classList.add('drag-active');
-      setTimeout(() => el.classList.remove('drag-active'), 180);
-
-      // Sync all lines sharing the same ayah verseKeys
-      const verseKeys = new Set(line.words.map(w => w.verseKey));
-      fresh.querySelectorAll('.mushaf-line').forEach(other => {
-        if (other === el) return;
-        const oi = Number(other.dataset.lineIdx);
-        const ol = pageData[oi];
-        if (!ol || ol.type !== 'ayah') return;
-        if ([...verseKeys].some(vk => ol.words.some(w => w.verseKey === vk))) {
-          other.classList.toggle('memorized', shouldMem);
-        }
-      });
-
-      updateMushafSummary();
-      const markBtn = document.getElementById('markPageCompleteBtn');
-      if (markBtn && pageNum === activePage) {
-        markBtn.textContent = isPageComplete(activePage) ? 'Mark Incomplete' : 'Mark Complete';
-      }
-    }
-
-    function establishDragMode(dx, dy, firstEl) {
-      // Direction: RTL (dx<0) or downward (dy>0) = reading direction = MARK
-      const absX = Math.abs(dx), absY = Math.abs(dy);
-      const readingDir = absX >= absY ? (dx < 0) : (dy > 0);
-      const wantAdd = readingDir;
-      // If first line is already in that state, flip
-      const alreadyMem = firstEl && firstEl.classList.contains('memorized');
-      dragMode = (wantAdd && !alreadyMem) || (!wantAdd && alreadyMem) ? 'add' : 'remove';
-      // Edge case: if first line state matches what direction wants, just follow direction
-      if (wantAdd) dragMode = 'add';
-      else dragMode = 'remove';
-    }
-
-    // ── TOUCH ──
-    fresh.addEventListener('touchstart', e => {
+    wrapEl.addEventListener('touchstart', e => {
       if (e.touches.length > 1) return;
       const t = e.touches[0];
-      startX = t.clientX; startY = t.clientY;
-      dragging = true; gestureSet = false; dragMode = null; lastApplied = null;
+      startX = t.clientX; startY = t.clientY; startTime = Date.now();
+      dragging = false; dragStarted = false;
+      originalState = isPageComplete(getPageNum());
     }, { passive: true });
 
-    fresh.addEventListener('touchmove', e => {
-      if (!dragging || e.touches.length > 1) return;
+    wrapEl.addEventListener('touchmove', e => {
+      if (e.touches.length > 1) return;
       const t  = e.touches[0];
-      const dx = t.clientX - startX;
-      const dy = t.clientY - startY;
-
-      if (!gestureSet && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
-        const firstEl = lineElAt(startX, startY);
-        establishDragMode(dx, dy, firstEl);
-        gestureSet = true;
-        if (firstEl) applyToLine(firstEl);
+      const dx = Math.abs(t.clientX - startX);
+      const dy = Math.abs(t.clientY - startY);
+      if (!dragStarted && (dx > 8 || dy > 8)) {
+        dragStarted = true;
+        dragging = true;
+        // Show drag-in-progress overlay
+        const overlay = getPageNum() === activePage
+          ? document.getElementById('mushafOverlayA')
+          : document.getElementById('mushafOverlayB');
+        if (overlay) overlay.classList.add('dragging');
       }
-
-      if (gestureSet) {
-        e.preventDefault();
-        const el = lineElAt(t.clientX, t.clientY);
-        if (el) applyToLine(el);
-      }
-    }, { passive: false });
-
-    fresh.addEventListener('touchend', e => {
-      if (!gestureSet) {
-        // Tap — toggle
-        const t  = e.changedTouches[0];
-        const el = lineElAt(t.clientX, t.clientY);
-        if (el) {
-          dragMode = el.classList.contains('memorized') ? 'remove' : 'add';
-          lastApplied = null;
-          applyToLine(el);
-        }
-      }
-      dragging = false; gestureSet = false; dragMode = null; lastApplied = null;
     }, { passive: true });
 
-    fresh.addEventListener('touchcancel', () => {
-      dragging = false; gestureSet = false; dragMode = null; lastApplied = null;
+    wrapEl.addEventListener('touchend', e => {
+      const t = e.changedTouches[0];
+      const dx  = t.clientX - startX;
+      const dy  = Math.abs(t.clientY - startY);
+      const dt  = Date.now() - startTime;
+      const adx = Math.abs(dx);
+
+      // Remove dragging highlight
+      const overlay = getPageNum() === activePage
+        ? document.getElementById('mushafOverlayA')
+        : document.getElementById('mushafOverlayB');
+      if (overlay) overlay.classList.remove('dragging');
+
+      // Fast horizontal swipe → navigate (handled by swipe listener below, skip here)
+      if (adx > 50 && adx > dy * 2 && dt < 320) return;
+
+      // Tap or drag on page content → toggle memorized
+      togglePageMemorized(getPageNum());
     }, { passive: true });
 
-    // ── MOUSE ──
-    fresh.addEventListener('mousedown', e => {
-      const el = e.target.closest('.mushaf-line');
-      if (!el) return;
-      e.preventDefault();
-      dragging = true; gestureSet = true; lastApplied = null;
-      dragMode = el.classList.contains('memorized') ? 'remove' : 'add';
-      applyToLine(el);
+    // Mouse support
+    wrapEl.addEventListener('click', () => {
+      togglePageMemorized(getPageNum());
     });
-    document.addEventListener('mousemove', e => {
-      if (!dragging) return;
-      const el = lineElAt(e.clientX, e.clientY);
-      if (el && fresh.contains(el)) applyToLine(el);
-    });
-    document.addEventListener('mouseup', () => {
-      dragging = false; gestureSet = false; dragMode = null; lastApplied = null;
-    });
-
-    return fresh;
   }
 
   document.getElementById('backToPageListBtn').addEventListener('click', () => {
@@ -2994,17 +2393,23 @@
   });
 
   document.getElementById('markPageCompleteBtn').addEventListener('click', () => {
-    if (!activePage || !mushafPageData) return;
-    const complete = !isPageComplete(activePage);
-    setPageComplete(activePage, complete);
-    mushafPageData.forEach(line => {
-      if (line.type !== 'ayah') return;
-      toggleMushafLine(line, complete);
-    });
-    renderMushafPage();
-    const markBtn = document.getElementById('markPageCompleteBtn');
-    if (markBtn) markBtn.textContent = complete ? 'Mark Incomplete' : 'Mark Complete';
+    if (!activePage) return;
+    togglePageMemorized(activePage);
   });
+
+  // Wire up gesture handlers for both page wraps
+  setupPageWrapGestures(
+    document.getElementById('mushafPageWrap'),
+    () => activePage
+  );
+  setupPageWrapGestures(
+    document.getElementById('mushafPageWrapB'),
+    () => {
+      // Facing page number
+      if (!activePage) return activePage;
+      return activePage % 2 === 0 ? activePage - 1 : activePage + 1;
+    }
+  );
 
   /* ── PAGE NAVIGATION ── */
   function navigateToPage(pageNum) {
@@ -3012,10 +2417,9 @@
     openPageDetail(pageNum);
   }
 
-  /* ── TAP ZONES (portrait only): narrow left/right strips ──
-     Left strip = next page (advancing in Arabic = going left)
-     Right strip = previous page
-     Touch events on the middle pass through to the page's drag handler.
+  /* ── TAP ZONES: narrow left/right strips ──
+     Left = next page (advance in Arabic reading direction)
+     Right = previous page
   ── */
   (function() {
     const tapLeft  = document.getElementById('tapLeft');
@@ -3024,75 +2428,47 @@
 
     function flashZone(el) {
       el.classList.add('flash');
-      setTimeout(() => el.classList.remove('flash'), 160);
+      setTimeout(() => el.classList.remove('flash'), 200);
     }
 
-    // Use touchend for snappy response (touchend fires even if brief)
     function addTapHandler(el, handler) {
-      let tStartX = 0, tStartY = 0;
+      let tx = 0, ty = 0;
       el.addEventListener('touchstart', e => {
-        tStartX = e.touches[0].clientX;
-        tStartY = e.touches[0].clientY;
+        tx = e.touches[0].clientX; ty = e.touches[0].clientY;
       }, { passive: true });
       el.addEventListener('touchend', e => {
-        const dx = Math.abs(e.changedTouches[0].clientX - tStartX);
-        const dy = Math.abs(e.changedTouches[0].clientY - tStartY);
-        // Only fire if it was essentially a tap (< 12px movement)
-        if (dx < 12 && dy < 12) { e.stopPropagation(); handler(); }
-      }, { passive: false });
-      // Desktop click fallback
+        const dx = Math.abs(e.changedTouches[0].clientX - tx);
+        const dy = Math.abs(e.changedTouches[0].clientY - ty);
+        if (dx < 14 && dy < 14) { e.stopPropagation(); handler(); }
+      }, { passive: true });
       el.addEventListener('click', e => { e.stopPropagation(); handler(); });
     }
 
-    addTapHandler(tapLeft,  () => {
-      if (activePage && activePage < 604) { flashZone(tapLeft);  navigateToPage(activePage + 1); }
-    });
-    addTapHandler(tapRight, () => {
-      if (activePage && activePage > 1)   { flashZone(tapRight); navigateToPage(activePage - 1); }
-    });
+    addTapHandler(tapLeft,  () => { if (activePage < 604) { flashZone(tapLeft);  navigateToPage(activePage + 1); } });
+    addTapHandler(tapRight, () => { if (activePage > 1)   { flashZone(tapRight); navigateToPage(activePage - 1); } });
   })();
 
-  /* ── SWIPE TO NAVIGATE (landscape, or fast clear horizontal swipe in portrait) ──
-     Only fires when the drag gesture was NOT active (gestureSet = false on the page).
-     We track at the wrap level with a short time+distance threshold.
-  ── */
+  /* ── SWIPE TO NAVIGATE ── */
   (function() {
     const wrap = document.getElementById('mushafSwipeWrap');
     if (!wrap) return;
-    let sx = 0, sy = 0, st = 0, swiping = false;
-
+    let sx = 0, sy = 0, st = 0;
     wrap.addEventListener('touchstart', e => {
-      if (e.touches.length > 1) return;
-      sx = e.touches[0].clientX;
-      sy = e.touches[0].clientY;
-      st = Date.now();
-      swiping = true;
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now();
     }, { passive: true });
-
-    wrap.addEventListener('touchmove', e => {
-      if (!swiping) return;
-      const dx = Math.abs(e.touches[0].clientX - sx);
-      const dy = Math.abs(e.touches[0].clientY - sy);
-      // If clearly vertical, cancel swipe tracking
-      if (dy > dx * 1.5 && dy > 12) swiping = false;
-    }, { passive: true });
-
     wrap.addEventListener('touchend', e => {
-      if (!swiping) return;
-      swiping = false;
       const dx  = e.changedTouches[0].clientX - sx;
-      const dy  = e.changedTouches[0].clientY - sy;
+      const dy  = Math.abs(e.changedTouches[0].clientY - sy);
+      const adx = Math.abs(dx);
       const dt  = Date.now() - st;
-      const adx = Math.abs(dx), ady = Math.abs(dy);
-      // Swipe: fast (<320ms), clearly horizontal (adx > ady*2), and at least 55px
-      if (dt < 320 && adx > 55 && adx > ady * 2) {
-        if (dx < 0 && activePage < 604) navigateToPage(activePage + 1); // swipe left = next
-        if (dx > 0 && activePage > 1)   navigateToPage(activePage - 1); // swipe right = prev
+      if (dt < 320 && adx > 55 && adx > dy * 2) {
+        if (dx < 0 && activePage < 604) navigateToPage(activePage + 1);
+        if (dx > 0 && activePage > 1)   navigateToPage(activePage - 1);
       }
     }, { passive: true });
   })();
 
-  /* ── ORIENTATION CHANGE: re-render to show/hide facing page ── */
+  /* ── ORIENTATION CHANGE ── */
   window.addEventListener('orientationchange', () => {
     if (activePage && pageDetailScreen.classList.contains('active')) setTimeout(renderMushafPage, 120);
   });
