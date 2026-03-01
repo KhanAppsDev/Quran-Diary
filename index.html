@@ -24,6 +24,14 @@
       --radius:   14px; --radius-sm: 10px;
       --tile-empty: #ede8dc; --tile-text-empty: #6b5d42; --tile-text-on-progress: #1f3324; --tile-text-complete: #f6fff8;
       --tile-25: #f8e47f; --tile-50: #d9e88e; --tile-75: #9fd37c; --tile-99: #4ca867; --tile-100: #0f5132;
+      /* Swipe flash & cue pill colours — overridden per theme */
+      --sw-mark-flash:  color-mix(in srgb,#22c55e 22%,var(--surface));
+      --sw-rev-flash:   color-mix(in srgb,var(--accent) 18%,var(--surface));
+      --sw-unmark-flash:color-mix(in srgb,#ef4444 16%,var(--surface));
+      --cue-mark-bg:    color-mix(in srgb,#22c55e 14%,var(--surface));  --cue-mark-fg:#15803d;   --cue-mark-bd:color-mix(in srgb,#22c55e 30%,transparent);
+      --cue-unmark-bg:  color-mix(in srgb,#ef4444 10%,var(--surface));  --cue-unmark-fg:#b91c1c; --cue-unmark-bd:color-mix(in srgb,#ef4444 25%,transparent);
+      --cue-trans-bg:   color-mix(in srgb,var(--accent) 14%,var(--surface)); --cue-trans-fg:var(--accent); --cue-trans-bd:color-mix(in srgb,var(--accent) 30%,transparent);
+      --cue-hide-bg:    color-mix(in srgb,var(--text2) 10%,var(--surface));  --cue-hide-fg:var(--text2);   --cue-hide-bd:var(--line);
     }
     [data-theme="dark"] {
       --bg: #0f1117; --bg2: #181c24; --surface: #1e232e; --surface2: #252b38;
@@ -31,6 +39,11 @@
       --shadow: 0 6px 24px rgba(0,0,0,0.4); --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
       --tile-empty: #252b38; --tile-text-empty: #8b95ab; --tile-text-on-progress: #c8ecd0; --tile-text-complete: #c8f0ce;
       --tile-25: #3a3818; --tile-50: #2a3d18; --tile-75: #1a3f22; --tile-99: #154d28; --tile-100: #0d3a1c;
+      --sw-mark-flash:rgba(34,197,94,.32);   --sw-rev-flash:rgba(91,155,213,.28);   --sw-unmark-flash:rgba(239,68,68,.28);
+      --cue-mark-bg:rgba(34,197,94,.18);   --cue-mark-fg:#4ade80;   --cue-mark-bd:rgba(34,197,94,.3);
+      --cue-unmark-bg:rgba(239,68,68,.14); --cue-unmark-fg:#f87171; --cue-unmark-bd:rgba(239,68,68,.25);
+      --cue-trans-bg:rgba(91,155,213,.16); --cue-trans-fg:#93c5fd;  --cue-trans-bd:rgba(91,155,213,.3);
+      --cue-hide-bg:rgba(139,149,171,.14); --cue-hide-fg:#8b95ab;   --cue-hide-bd:rgba(139,149,171,.25);
     }
     [data-theme="glass"] {
       --bg: #eef2fa; --bg2: #e4eaf5; --surface: #f4f7fd; --surface2: #eaeff8;
@@ -38,6 +51,11 @@
       --shadow: 0 8px 32px rgba(30,50,120,0.14); --shadow-sm: 0 2px 12px rgba(30,50,120,0.08);
       --tile-empty: #dde5f5; --tile-text-empty: #4a5680; --tile-text-on-progress: #1a2a18; --tile-text-complete: #f0fff4;
       --tile-25: #f5e882; --tile-50: #d8eea0; --tile-75: #8fd47a; --tile-99: #3da85e; --tile-100: #0d5c30;
+      --sw-mark-flash:rgba(34,197,94,.24);   --sw-rev-flash:rgba(58,95,203,.20);    --sw-unmark-flash:rgba(239,68,68,.18);
+      --cue-mark-bg:rgba(34,197,94,.14);   --cue-mark-fg:#15803d;   --cue-mark-bd:rgba(34,197,94,.28);
+      --cue-unmark-bg:rgba(239,68,68,.10); --cue-unmark-fg:#b91c1c; --cue-unmark-bd:rgba(239,68,68,.22);
+      --cue-trans-bg:rgba(58,95,203,.12);  --cue-trans-fg:#1d4ed8;  --cue-trans-bd:rgba(58,95,203,.25);
+      --cue-hide-bg:rgba(74,86,128,.10);   --cue-hide-fg:#4a5680;   --cue-hide-bd:rgba(74,86,128,.2);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -135,18 +153,6 @@
     .theme-swatch.glass     { background: linear-gradient(135deg, rgba(200,215,255,0.8) 0%, rgba(80,200,160,0.5) 100%); border: 2px solid rgba(100,140,255,0.3); }
     .theme-name { font-family: var(--font-latin); font-size: 0.72rem; font-weight: 600; color: var(--text2); letter-spacing: 0.3px; text-align: center; }
 
-    /* View mode selector */
-    .view-mode-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
-    .view-mode-btn {
-      border: 1.5px solid var(--line); border-radius: var(--radius-sm); padding: 0.8rem 0.5rem;
-      background: var(--surface2); color: var(--text2); cursor: pointer;
-      font-family: var(--font-latin); font-size: 0.88rem; font-weight: 600; text-align: center;
-      min-height: 52px; transition: border-color 0.18s, background 0.18s, color 0.18s, box-shadow 0.18s;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem;
-    }
-    .view-mode-btn .vm-icon { font-size: 1.4rem; }
-    .view-mode-btn:hover { border-color: var(--accent); background: var(--bg2); color: var(--text); }
-    .view-mode-btn.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
 
     .enter-btn {
       font-family: var(--font-latin); font-size: 1rem; font-weight: 700; letter-spacing: 0.5px;
@@ -389,43 +395,35 @@
        Shows before release so they know what will happen.
     */
     .swipe-cue {
-      position: absolute;
-      top: 50%; transform: translateY(-50%);
-      pointer-events: none;
-      display: flex; align-items: center; gap: 0.3rem;
-      padding: 0.28rem 0.65rem;
-      border-radius: 20px;
-      font-family: var(--font-latin);
-      font-size: 0.75rem; font-weight: 700;
-      white-space: nowrap;
-      opacity: 0;
-      transition: opacity 0.12s;
-      z-index: 4;
+      position: absolute; top: 50%; transform: translateY(-50%);
+      pointer-events: none; display: flex; align-items: center; gap: 0.3rem;
+      padding: 0.28rem 0.65rem; border-radius: 20px;
+      font-family: var(--font-latin); font-size: 0.75rem; font-weight: 700;
+      white-space: nowrap; opacity: 0; transition: opacity 0.12s; z-index: 4;
     }
-    .swipe-cue.left  { right: 0.6rem; background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
-    .swipe-cue.right { left: 0.6rem;  background: color-mix(in srgb, #22c55e 14%, var(--surface));      color: #16a34a;         border: 1px solid color-mix(in srgb, #22c55e 30%, transparent); }
-    .swipe-cue.unmark-right { left: 0.6rem; background: color-mix(in srgb, #ef4444 10%, var(--surface)); color: #dc2626; border: 1px solid color-mix(in srgb, #ef4444 25%, transparent); }
-    .swipe-cue.hide-left    { right: 0.6rem; background: color-mix(in srgb, var(--text2) 10%, var(--surface)); color: var(--text2); border: 1px solid var(--line); }
-    [data-theme="dark"] .swipe-cue.right  { color: #4ade80; background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.25); }
-    [data-theme="dark"] .swipe-cue.unmark-right { color: #f87171; background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.2); }
+    /* Cue pill colours come from CSS vars — automatically correct for every theme */
+    .swipe-cue.left       { right: 0.6rem; background: var(--cue-trans-bg);  color: var(--cue-trans-fg);  border: 1px solid var(--cue-trans-bd); }
+    .swipe-cue.right      { left:  0.6rem; background: var(--cue-mark-bg);   color: var(--cue-mark-fg);   border: 1px solid var(--cue-mark-bd); }
+    .swipe-cue.unmark-right{ left: 0.6rem; background: var(--cue-unmark-bg); color: var(--cue-unmark-fg); border: 1px solid var(--cue-unmark-bd); }
+    .swipe-cue.hide-left  { right: 0.6rem; background: var(--cue-hide-bg);   color: var(--cue-hide-fg);   border: 1px solid var(--cue-hide-bd); }
     .swipe-cue.visible { opacity: 1; }
 
-    /* Swipe-left fired: background flash */
+    /* Swipe-left fired: reveal flash */
     @keyframes swipeRevealFlash {
-      0%   { background: color-mix(in srgb, var(--accent) 5%, var(--surface)); }
-      30%  { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
-      100% { background: color-mix(in srgb, var(--accent) 5%, var(--surface)); }
+      0%   { background: var(--surface); }
+      30%  { background: var(--sw-rev-flash); }
+      100% { background: var(--surface); }
     }
-    /* Swipe-right fired: green flash */
+    /* Swipe-right fired: mark flash — colour from theme var */
     @keyframes swipeMarkFlash {
-      0%   { background: color-mix(in srgb, #22c55e 5%, var(--surface)); }
-      35%  { background: color-mix(in srgb, #22c55e 20%, var(--surface)); transform: scale(1.018); }
+      0%   { background: var(--surface); }
+      35%  { background: var(--sw-mark-flash); transform: scale(1.018); }
       100% { background: var(--surface); transform: scale(1); }
     }
     /* Swipe-right unmark: red flash */
     @keyframes swipeUnmarkFlash {
-      0%   { background: color-mix(in srgb, #ef4444 5%, var(--surface)); }
-      35%  { background: color-mix(in srgb, #ef4444 14%, var(--surface)); }
+      0%   { background: var(--surface); }
+      35%  { background: var(--sw-unmark-flash); }
       100% { background: var(--surface); }
     }
     .ayah-item.swipe-reveal      { animation: swipeRevealFlash 0.38s ease; }
@@ -445,57 +443,9 @@
     .secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--line); }
     .danger    { background: color-mix(in srgb, #c0392b 12%, var(--surface)); color: #c0392b; border: 1px solid color-mix(in srgb, #c0392b 20%, var(--line)); }
 
-    /* ── JUZ / PAGE VIEW ── */
-    #pageViewScreen { display: none; position: relative; z-index: 1; }
-    .juz-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.7rem; padding: 1rem; max-width: 900px; margin: 0 auto; }
-    @media (max-width: 600px) { .juz-grid { grid-template-columns: repeat(3, 1fr); } }
-    .juz-tile {
-      background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--radius);
-      padding: 1rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
-      cursor: pointer; transition: transform 0.12s, border-color 0.15s, background 0.15s;
-      text-align: center; box-shadow: var(--shadow-sm);
-    }
-    .juz-tile:hover { transform: scale(1.03); border-color: var(--accent); }
-    .juz-tile.complete { background: var(--tile-100); border-color: transparent; }
-    .juz-tile.complete .juz-label, .juz-tile.complete .juz-num { color: var(--tile-text-complete); }
-    .juz-num   { font-family: var(--font-latin); font-size: 1.6rem; font-weight: 700; color: var(--accent); }
-    .juz-label { font-family: var(--font-latin); font-size: 0.75rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.4px; }
-    .juz-pct   { font-family: var(--font-latin); font-size: 0.72rem; color: var(--text2); }
-
-    #pageListScreen { display: none; position: relative; z-index: 1; }
-    .page-thumbnails { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.6rem; padding: 1rem; max-width: 900px; margin: 0 auto; }
-    @media (max-width: 600px) { .page-thumbnails { grid-template-columns: repeat(3, 1fr); } }
-    .page-thumb {
-      background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--radius-sm);
-      padding: 0.9rem 0.4rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
-      cursor: pointer; transition: transform 0.12s, border-color 0.15s; box-shadow: var(--shadow-sm);
-      text-align: center;
-    }
-    .page-thumb:hover { transform: scale(1.04); border-color: var(--accent); }
-    .page-thumb.complete { background: var(--tile-100); border-color: transparent; }
-    .page-thumb.complete .page-num, .page-thumb.complete .page-sub { color: var(--tile-text-complete); }
     .page-num { font-family: var(--font-latin); font-size: 1.1rem; font-weight: 700; color: var(--accent); }
     .page-sub { font-family: var(--font-latin); font-size: 0.68rem; color: var(--text2); }
 
-    /* #pageDetailScreen display controlled by .active class — see mushaf-wrap section */
-    .page-ayah-list { padding: 0.5rem 1rem 1rem; max-width: 700px; margin: 0 auto; user-select: none; -webkit-user-select: none; }
-    .page-ayah-item {
-      border: 1px solid var(--line); border-radius: var(--radius-sm);
-      padding: 0.65rem 0.9rem; margin-top: 0.45rem; background: var(--surface);
-      cursor: pointer; transition: background 0.15s, border-color 0.15s;
-    }
-    .page-ayah-item.memorized { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); border-color: var(--accent); }
-    .page-ayah-item.drag-hover { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); border-color: var(--accent); }
-    .page-ayah-ref { font-family: var(--font-latin); font-size: 0.72rem; color: var(--text2); margin-bottom: 0.2rem; }
-    .page-ayah-text { font-family: var(--font-arabic) !important; font-size: 1.15rem; line-height: 2.1; direction: rtl; text-align: right; color: var(--text); }
-
-    .back-header {
-      position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 92%, transparent);
-      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
-      padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.7rem;
-    }
-    .back-btn { padding: 0.45rem 0.8rem; font-size: 0.88rem; background: var(--surface2); color: var(--text); border: 1px solid var(--line); min-height: 38px; }
-    .back-title { font-family: var(--font-latin); font-size: 1rem; font-weight: 700; color: var(--text); flex: 1; }
 
     /* ── SETTINGS PANEL ── */
     #settingsPanel {
@@ -557,95 +507,6 @@
     #feedbackFab:hover { opacity: 0.9; transform: scale(1.04); }
     #feedbackFab.hidden { display: none; }
 
-    /* ── MUSHAF PAGE VIEW — image scan based ──────────────────────── */
-    #pageDetailScreen {
-      display: none;
-      position: fixed !important;
-      inset: 0;
-      z-index: 50;
-      background: #1a1510;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    #pageDetailScreen.active { display: flex !important; }
-
-    /* Compact back header — dark to match scan background */
-    #pageDetailScreen .back-header {
-      padding: 0.35rem 0.7rem;
-      min-height: 42px;
-      flex-shrink: 0;
-      z-index: 10;
-      background: rgba(10,8,5,0.92);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    #pageDetailScreen .back-btn,
-    #pageDetailScreen #markPageCompleteBtn {
-      font-size: 0.8rem; padding: 0.3rem 0.65rem; min-height: 34px;
-    }
-    #pageDetailScreen .back-title { color: rgba(255,255,255,0.75); font-size: 0.82rem; }
-
-    .mushaf-wrap {
-      flex: 1; min-height: 0;
-      display: flex; flex-direction: column;
-      align-items: center; overflow: hidden; position: relative;
-    }
-    .mushaf-swipe-wrap {
-      flex: 1; min-height: 0; width: 100%;
-      display: flex; align-items: center; justify-content: center;
-      position: relative; touch-action: none; gap: 6px;
-      padding: 0 4px;
-    }
-
-    /* ── MUSHAF PAGE WRAP — holds scan image + highlight overlay ── */
-    .mushaf-page-wrap {
-      position: relative; flex-shrink: 0;
-      /* width/height set by JS to preserve 17:24 ratio within available space */
-    }
-    .mushaf-page-wrap img.mushaf-scan {
-      display: block; width: 100%; height: 100%;
-      object-fit: fill;
-      user-select: none; -webkit-user-select: none;
-      /* crisp text rendering for scanned pages */
-      image-rendering: -webkit-optimize-contrast;
-      image-rendering: crisp-edges;
-      border: 1px solid rgba(120,90,30,0.4);
-      box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4);
-    }
-    /* Semi-transparent green overlay — marks the page as memorized */
-    .mushaf-highlight-overlay {
-      position: absolute; inset: 0;
-      background: rgba(34,197,94,0.22);
-      pointer-events: none;
-      opacity: 0; transition: opacity 0.22s;
-      mix-blend-mode: multiply;
-    }
-    .mushaf-highlight-overlay.active  { opacity: 1; }
-    .mushaf-highlight-overlay.dragging { background: rgba(34,197,94,0.38); opacity: 1; }
-    [data-theme="dark"] .mushaf-highlight-overlay { background: rgba(20,140,60,0.40); mix-blend-mode: screen; }
-    [data-theme="dark"] .mushaf-highlight-overlay.dragging { background: rgba(20,140,60,0.55); }
-    [data-theme="glass"] .mushaf-highlight-overlay { background: rgba(58,95,203,0.22); }
-
-    /* Tap zones — narrow strips on each side of the page wrap */
-    .page-tap-zones {
-      position: absolute; inset: 0;
-      display: flex; pointer-events: none; z-index: 6;
-    }
-    .tap-zone { height: 100%; pointer-events: auto; position: relative; }
-    .tap-zone-left  { width: 14%; }
-    .tap-zone-right { width: 14%; }
-    .tap-zone-mid   { flex: 1; pointer-events: none; }
-    /* Chevron arrows on the strips */
-    .tap-zone-left::after, .tap-zone-right::after {
-      content: ''; position: absolute; top: 50%; transform: translateY(-50%);
-      width: 0; height: 0; border-style: solid; opacity: 0.5;
-    }
-    .tap-zone-left::after  { left: 5px;  border-width: 9px 11px 9px 0; border-color: transparent rgba(255,210,80,0.8) transparent transparent; }
-    .tap-zone-right::after { right: 5px; border-width: 9px 0 9px 11px; border-color: transparent transparent transparent rgba(255,210,80,0.8); }
-    .tap-zone.flash { background: rgba(255,210,80,0.10); }
-
-    @media (orientation: landscape) {
-      .page-tap-zones { display: none; }
-      .mushaf-gesture-hint { display: none; }
     }
 
     /* Bottom bar */
@@ -756,67 +617,9 @@
     </footer>
   </main>
 
-  <!-- ── PAGE VIEW: JUZ GRID ── -->
-  <main id="pageViewScreen">
-    <header class="app-header">
-      <div class="title-row">
-        <h1 id="pageViewTitle"></h1>
-        <button id="gearBtn2" title="Settings" aria-label="Settings">⚙️</button>
-      </div>
-    </header>
-    <div class="container">
-      <section class="stats" id="stats2"></section>
-      <div style="font-family:var(--font-latin);font-size:0.85rem;color:var(--text2);text-align:center;padding:0.5rem 0 0.8rem;">Tap a Juz to explore its pages</div>
-      <div class="juz-grid" id="juzGrid"></div>
-    </div>
-    <footer class="app-footer">
-      <div class="ack-text">
-        <button id="ackBtn2" onclick="showAckPopup()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-family:var(--font-latin);font-size:0.75rem;padding:0;min-height:auto;text-decoration:underline dotted;text-underline-offset:2px;">Acknowledgements</button>
-      </div>
-    </footer>
-  </main>
 
-  <!-- ── PAGE VIEW: PAGE THUMBNAILS ── -->
-  <div id="pageListScreen">
-    <header class="back-header">
-      <button class="back-btn secondary" id="backToJuzBtn">← Juz</button>
-      <span class="back-title" id="pageListTitle"></span>
-      <button class="primary" id="markJuzCompleteBtn" style="padding:0.45rem 0.8rem;font-size:0.82rem;min-height:38px;">Mark Juz Complete</button>
-    </header>
-    <div class="page-thumbnails" id="pageThumbs"></div>
   </div>
 
-  <!-- ── PAGE VIEW: PAGE DETAIL (full-screen) ── -->
-  <div id="pageDetailScreen">
-    <!-- Compact back header -->
-    <header class="back-header" style="padding:0.5rem 0.8rem;min-height:44px;">
-      <button class="back-btn secondary" id="backToPageListBtn" style="padding:0.3rem 0.7rem;font-size:0.82rem;min-height:36px;">← Pages</button>
-      <span class="back-title" id="pageDetailTitle" style="font-size:0.88rem;"></span>
-      <button class="primary" id="markPageCompleteBtn" style="padding:0.3rem 0.7rem;font-size:0.8rem;min-height:36px;">Mark Complete</button>
-    </header>
-
-    <div class="mushaf-wrap" id="mushafWrap">
-      <div class="mushaf-swipe-wrap" id="mushafSwipeWrap">
-        <!-- Primary page (always shown) -->
-        <div class="mushaf-page-wrap" id="mushafPageWrap">
-          <div class="page-tap-zones" id="pageTapZones">
-            <div class="tap-zone tap-zone-left"  id="tapLeft"  aria-label="Next page"></div>
-            <div class="tap-zone tap-zone-mid"   id="tapMid"></div>
-            <div class="tap-zone tap-zone-right" id="tapRight" aria-label="Previous page"></div>
-          </div>
-          <img class="mushaf-scan" id="mushafScanA" src="" alt="" draggable="false" />
-          <div class="mushaf-highlight-overlay" id="mushafOverlayA"></div>
-        </div>
-        <!-- Facing page (landscape only) -->
-        <div class="mushaf-page-wrap" id="mushafPageWrapB" style="display:none">
-          <img class="mushaf-scan" id="mushafScanB" src="" alt="" draggable="false" />
-          <div class="mushaf-highlight-overlay" id="mushafOverlayB"></div>
-        </div>
-      </div>
-      <div class="mushaf-summary" id="mushafSummary"></div>
-      <div class="mushaf-gesture-hint" id="mushafGestureHint">Drag anywhere to mark page · tap edges to turn · swipe to navigate</div>
-    </div>
-  </div>
 
   <!-- Ayah badge shown during drag-select in surah view -->
   <div id="dragScrollBadge">Ayah 1</div>
@@ -885,17 +688,6 @@
         <select id="settingsLangSelect" class="lang-select" style="width:100%"></select>
       </div>
 
-      <div class="settings-section">
-        <div class="settings-label">View mode</div>
-        <div class="view-mode-options" id="settingsViewMode">
-          <button class="view-mode-btn selected" data-view="surah" type="button">
-            <span class="vm-icon">📖</span>Surah View
-          </button>
-          <button class="view-mode-btn" data-view="page" type="button">
-            <span class="vm-icon">📄</span>Page View
-          </button>
-        </div>
-      </div>
 
       <div class="settings-section">
         <div class="settings-label">Theme</div>
@@ -928,7 +720,7 @@
         <p>"It will be said to the companion of the Quran: Recite and ascend as you recited in the world! Verily, your rank is determined by the last verse you recite."</p>
         <cite>— Prophet Muhammad ﷺ · Sunan al-Tirmidhī 2914 · Sahih</cite>
       </div>
-      <div class="tutorial-body">May this be an aid on your journey. <em>Tap any surah to begin.</em></div>
+      <div class="tutorial-body">Tap any surah to open it. <em>Swipe right</em> to mark an ayah memorised · <em>Swipe left</em> for its translation · <em>Long-press</em> to drag-select many at once.</div>
       <div class="tutorial-nav">
         <button class="tut-btn-primary" id="tutNextBtn" type="button">Begin →</button>
       </div>
@@ -986,56 +778,47 @@
           close:'Close', prev:'← Prev', next:'Next →', translations:'🌐 Translations',
           hideTranslations:'🌐 Hide translations', loading:'Loading…', noConnection:'Could not load. Check connection.',
           memorizedPct:'% memorized', pageComplete:'Mark Complete', pageIncomplete:'Mark Incomplete',
-          dragHint:'Swipe ← translation · Swipe → mark done · Long press to drag-select',
-          pageHint:'Drag like a highlighter to mark · Tap left = next · Tap right = previous' },
+          dragHint:'Swipe ← translation · Swipe → mark done · Long press to drag-select' },
     ar: { diveIn:'اقرأ واحفظ', markComplete:'تحديد كمحفوظ', markIncomplete:'إلغاء التحديد',
           close:'إغلاق', prev:'← السابق', next:'التالي →', translations:'🌐 الترجمة',
           hideTranslations:'🌐 إخفاء الترجمة', loading:'جار التحميل…', noConnection:'تعذّر التحميل. تحقق من الاتصال.',
           memorizedPct:'% محفوظ', pageComplete:'تحديد الصفحة', pageIncomplete:'إلغاء تحديد الصفحة',
-          dragHint:'مرر ← للترجمة · مرر → للتحديد · اضغط طويلاً للسحب',
-          pageHint:'اسحب كالقلم لتحديد الآيات · اضغط يساراً للتالي · يميناً للسابق' },
+          dragHint:'مرر ← للترجمة · مرر → للتحديد · اضغط طويلاً للسحب' },
     fr: { diveIn:'Lire & Mémoriser', markComplete:'Marquer mémorisé', markIncomplete:'Démarquer',
           close:'Fermer', prev:'← Préc.', next:'Suiv. →', translations:'🌐 Traductions',
           hideTranslations:'🌐 Cacher les traductions', loading:'Chargement…', noConnection:'Impossible de charger. Vérifiez la connexion.',
           memorizedPct:'% mémorisé', pageComplete:'Marquer complète', pageIncomplete:'Démarquer',
-          dragHint:'Balayer ← traduction · Balayer → mémorisé · Appui long pour sélection',
-          pageHint:'Glisser comme un surligneur · Gauche = suivant · Droite = précédent' },
+          dragHint:'Balayer ← traduction · Balayer → mémorisé · Appui long pour sélection' },
     de: { diveIn:'Lesen & Auswendiglernen', markComplete:'Als gelernt markieren', markIncomplete:'Markierung aufheben',
           close:'Schließen', prev:'← Zurück', next:'Weiter →', translations:'🌐 Übersetzungen',
           hideTranslations:'🌐 Übersetzungen ausblenden', loading:'Laden…', noConnection:'Laden fehlgeschlagen. Verbindung prüfen.',
           memorizedPct:'% auswendig', pageComplete:'Seite abschließen', pageIncomplete:'Markierung aufheben',
-          dragHint:'← Wischen = Übersetzung · → Wischen = markieren · Lang drücken = Auswahl',
-          pageHint:'Wie ein Textmarker wischen · Links = nächste · Rechts = vorherige' },
+          dragHint:'← Wischen = Übersetzung · → Wischen = markieren · Lang drücken = Auswahl' },
     es: { diveIn:'Leer y Memorizar', markComplete:'Marcar memorizado', markIncomplete:'Desmarcar',
           close:'Cerrar', prev:'← Ant.', next:'Sig. →', translations:'🌐 Traducciones',
           hideTranslations:'🌐 Ocultar traducciones', loading:'Cargando…', noConnection:'No se pudo cargar. Comprueba tu conexión.',
           memorizedPct:'% memorizado', pageComplete:'Marcar completo', pageIncomplete:'Desmarcar',
-          dragHint:'Deslizar ← traducción · Deslizar → marcar · Pulsar largo para selección',
-          pageHint:'Desliza como un resaltador · Izquierda = siguiente · Derecha = anterior' },
+          dragHint:'Deslizar ← traducción · Deslizar → marcar · Pulsar largo para selección' },
     tr: { diveIn:'Oku & Ezberle', markComplete:'Ezberlenmiş olarak işaretle', markIncomplete:'İşareti kaldır',
           close:'Kapat', prev:'← Önceki', next:'Sonraki →', translations:'🌐 Çeviriler',
           hideTranslations:'🌐 Çevirileri gizle', loading:'Yükleniyor…', noConnection:'Yüklenemedi. Bağlantını kontrol et.',
           memorizedPct:'% ezberlendi', pageComplete:'Sayfayı tamamla', pageIncomplete:'İşareti kaldır',
-          dragHint:'← Kaydır = çeviri · → Kaydır = ezber işareti · Uzun bas = sürükle seç',
-          pageHint:'İşaretçi gibi sürükle · Sol = sonraki · Sağ = önceki' },
+          dragHint:'← Kaydır = çeviri · → Kaydır = ezber işareti · Uzun bas = sürükle seç' },
     ur: { diveIn:'پڑھیں اور حفظ کریں', markComplete:'حفظ شدہ نشان کریں', markIncomplete:'نشان ہٹائیں',
           close:'بند کریں', prev:'← پچھلا', next:'اگلا →', translations:'🌐 ترجمہ',
           hideTranslations:'🌐 ترجمہ چھپائیں', loading:'لوڈ ہو رہا ہے…', noConnection:'لوڈ نہیں ہوا۔ کنکشن چیک کریں۔',
           memorizedPct:'٪ حفظ', pageComplete:'صفحہ مکمل کریں', pageIncomplete:'نشان ہٹائیں',
-          dragHint:'بائیں سوائپ = ترجمہ · دائیں سوائپ = نشان · دبائیں = ڈریگ سلیکشن',
-          pageHint:'ہائی لائٹر کی طرح گھسیٹیں · بائیں = اگلا · دائیں = پچھلا' },
+          dragHint:'بائیں سوائپ = ترجمہ · دائیں سوائپ = نشان · دبائیں = ڈریگ سلیکشن' },
     id: { diveIn:'Baca & Hafalkan', markComplete:'Tandai dihafalkan', markIncomplete:'Hapus tanda',
           close:'Tutup', prev:'← Sebelum', next:'Berikut →', translations:'🌐 Terjemahan',
           hideTranslations:'🌐 Sembunyikan terjemahan', loading:'Memuat…', noConnection:'Gagal memuat. Periksa koneksi.',
           memorizedPct:'% dihafal', pageComplete:'Tandai selesai', pageIncomplete:'Hapus tanda',
-          dragHint:'Geser ← terjemahan · Geser → tandai hafal · Tahan lama untuk seret',
-          pageHint:'Seret seperti stabilo · Kiri = berikutnya · Kanan = sebelumnya' },
+          dragHint:'Geser ← terjemahan · Geser → tandai hafal · Tahan lama untuk seret' },
     ru: { diveIn:'Читать и учить', markComplete:'Отметить выученным', markIncomplete:'Снять отметку',
           close:'Закрыть', prev:'← Пред.', next:'След. →', translations:'🌐 Переводы',
           hideTranslations:'🌐 Скрыть переводы', loading:'Загрузка…', noConnection:'Не удалось загрузить. Проверьте соединение.',
           memorizedPct:'% выучено', pageComplete:'Отметить страницу', pageIncomplete:'Снять отметку',
-          dragHint:'← Свайп = перевод · → Свайп = отметить · Долгое нажатие = выбор',
-          pageHint:'Проводите как маркером · Влево = следующая · Вправо = предыдущая' },
+          dragHint:'← Свайп = перевод · → Свайп = отметить · Долгое нажатие = выбор' },
   };
 
   function t(key) {
@@ -1052,7 +835,6 @@
     const prevSurah = document.getElementById('prevSurahBtn');
     const nextSurah = document.getElementById('nextSurahBtn');
     const toggleTrans = document.getElementById('toggleTransBtn');
-    const markPage = document.getElementById('markPageCompleteBtn');
     const dragHints = document.querySelectorAll('.drag-hint');
 
     if (diveIn) diveIn.textContent = t('diveIn');
@@ -1064,7 +846,6 @@
     if (prevSurah) prevSurah.textContent = t('prev');
     if (nextSurah) nextSurah.textContent = t('next');
     if (toggleTrans) toggleTrans.textContent = translationsVisible ? t('hideTranslations') : t('translations');
-    if (markPage) markPage.textContent = activePage && isPageComplete(activePage) ? t('pageIncomplete') : t('pageComplete');
     dragHints.forEach(el => { el.textContent = t('dragHint'); });
   }
 
@@ -1102,14 +883,6 @@
   ];
 
   /* Juz data: [startSurah(1-based), startAyah, endSurah(1-based), endAyah] */
-  const JUZ_DATA = [
-    [1,1,2,141],[2,142,2,252],[2,253,3,92],[3,93,4,23],[4,24,4,147],
-    [4,148,5,81],[5,82,6,110],[6,111,7,87],[7,88,8,40],[8,41,9,92],
-    [9,93,11,5],[11,6,12,52],[12,53,14,52],[15,1,16,128],[17,1,18,74],
-    [18,75,20,135],[21,1,22,78],[23,1,25,20],[25,21,27,55],[27,56,29,45],
-    [29,46,33,30],[33,31,36,27],[36,28,39,31],[39,32,41,46],[42,1,45,37],
-    [46,1,51,30],[51,31,57,29],[58,1,66,12],[67,1,77,50],[78,1,114,6]
-  ];
 
   /* ─────────────────────────────────────────────────────────────
      STORAGE: IndexedDB with localStorage fallback
@@ -1166,17 +939,14 @@
 
   /* ── STATE ── */
   const DEFAULT_STATE = {
-    firstName:'', memorized:{}, pageMemorized:{},
-    script:'uthmani', theme:'parchment', lang:'en', viewMode:'surah',
+    firstName:'', memorized:{},
+    script:'uthmani', theme:'parchment', lang:'en',
     landingSeen:false, tutorialSeen:false
   };
   let state = { ...DEFAULT_STATE };
   let activeSurahIndex = null;
   let surahCache = {};
   let transCache  = {};
-  let activeJuz   = null;
-  let activePage  = null;
-  let pageCache   = {};
   let translationsVisible = false;
 
   function saveState() { storageSave(state); }
@@ -1186,17 +956,12 @@
   const landingName      = document.getElementById("landingName");
   const landingEnterBtn  = document.getElementById("landingEnterBtn");
   const appScreen        = document.getElementById("appScreen");
-  const pageViewScreen   = document.getElementById("pageViewScreen");
-  const pageListScreen   = document.getElementById("pageListScreen");
-  const pageDetailScreen = document.getElementById("pageDetailScreen");
   const appTitle         = document.getElementById("appTitle");
-  const pageViewTitle    = document.getElementById("pageViewTitle");
   const overallHeader    = document.getElementById("overallHeader");
   const statsEl          = document.getElementById("stats");
   const surahGrid        = document.getElementById("surahGrid");
   const clearDataBtn     = document.getElementById("clearDataBtn");
   const gearBtn          = document.getElementById("gearBtn");
-  const gearBtn2         = document.getElementById("gearBtn2");
   const surahDialog      = document.getElementById("surahDialog");
   const modalTitleArabic = document.getElementById("modalTitleArabic");
   const modalTitleLatin  = document.getElementById("modalTitleLatin");
@@ -1233,7 +998,7 @@
     if (lu) { lu.classList.toggle('active', script === 'uthmani'); li.classList.toggle('active', script === 'indopak'); }
     // All script buttons
     document.querySelectorAll('.script-btn').forEach(b => b.classList.toggle('selected', b.dataset.script === script));
-    surahCache = {}; transCache = {}; pageCache = {};
+    surahCache = {}; transCache = {};
   }
 
   /* ── LANG GRID ── */
@@ -1281,10 +1046,6 @@
     });
   }
 
-  /* ── VIEW MODE ── */
-  function applyViewMode(mode) {
-    document.querySelectorAll('.view-mode-btn').forEach(b => b.classList.toggle('selected', b.dataset.view === mode));
-  }
 
   /* ── POSSESSIVE ── */
   function possessive(name) { return name.endsWith('s') ? name + "'" : name + "'s"; }
@@ -1331,7 +1092,6 @@
   function initLanding() {
     applyTheme(state.theme);
     applyScript(state.script);
-    applyViewMode(state.viewMode);
     buildLangSelects();
     if (state.firstName) landingName.value = state.firstName;
   }
@@ -1349,13 +1109,6 @@
       applyTheme(state.theme);
       saveState();
       if (!appScreen.classList.contains('hidden')) renderSurahView();
-    });
-  });
-  document.querySelectorAll('.view-mode-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.viewMode = btn.dataset.view;
-      applyViewMode(state.viewMode);
-      saveState();
     });
   });
 
@@ -1376,22 +1129,11 @@
   /* ── SHOW MAIN VIEW ── */
   function showMainView() {
     landingScreen.classList.add('hidden');
-    appScreen.classList.add('hidden');
-    pageViewScreen.style.display = 'none';
-    pageListScreen.style.display = 'none';
-    pageDetailScreen.classList.remove('active');
-
     applyLocale();
-    if (state.viewMode === 'page') {
-      pageViewScreen.style.display = 'block';
-      renderPageView();
-      feedbackFab.classList.remove('hidden');
-    } else {
-      appScreen.classList.remove('hidden');
-      renderSurahView();
-      feedbackFab.classList.remove('hidden');
-      if (!state.tutorialSeen) setTimeout(showTutorial, 320);
-    }
+    appScreen.classList.remove('hidden');
+    renderSurahView();
+    feedbackFab.classList.remove('hidden');
+    if (!state.tutorialSeen) setTimeout(showTutorial, 320);
   }
 
   /* ── SURAH VIEW ── */
@@ -1945,10 +1687,12 @@
           // No translations in DOM — nothing to toggle
           return;
         }
+        const anchor = getScrollAnchor(container);
         const anyVisible = [...allTrans].some(el => el.classList.contains('visible'));
         const newState = !anyVisible;
         allTrans.forEach(el => el.classList.toggle('visible', newState));
         translationsVisible = newState;
+        restoreScrollAnchor(container, anchor);
 
         // Sync the toggle button text
         const toggleBtn = document.getElementById('toggleTransBtn');
@@ -2046,13 +1790,38 @@
     }
   }
 
+
+  /* ── SCROLL ANCHOR HELPERS ──────────────────────────────────
+     When translations are toggled the list height changes and
+     the browser snaps to the top.  We record which ayah is at
+     the top of the viewport BEFORE the toggle, then restore it
+     AFTER the DOM mutation via requestAnimationFrame.
+  ─────────────────────────────────────────────────────────── */
+  function getScrollAnchor(listEl) {
+    const top = listEl.scrollTop;
+    const items = listEl.querySelectorAll('[data-ayah]');
+    for (const item of items) {
+      if (item.offsetTop + item.offsetHeight > top) return item;
+    }
+    return items[items.length - 1] || null;
+  }
+  function restoreScrollAnchor(listEl, anchorEl) {
+    if (!anchorEl) return;
+    // Use rAF so the DOM has finished reflowing after class changes
+    requestAnimationFrame(() => {
+      listEl.scrollTop = anchorEl.offsetTop;
+    });
+  }
   /* ── TOGGLE ALL TRANSLATIONS ── */
   toggleTransBtn.addEventListener('click', () => {
+    const anchor = getScrollAnchor(ayahListEl);
     translationsVisible = !translationsVisible;
-    toggleTransBtn.textContent = translationsVisible ? '🌐 Hide translations' : '🌐 Translations';
+    const btn = document.getElementById('toggleTransBtn');
+    if (btn) btn.textContent = translationsVisible ? t('hideTranslations') : t('translations');
     ayahListEl.querySelectorAll('.ayah-translation').forEach(el => {
       el.classList.toggle('visible', translationsVisible);
     });
+    restoreScrollAnchor(ayahListEl, anchor);
   });
 
   /* ── MODAL LISTENERS ── */
@@ -2083,432 +1852,28 @@
     await diveIn(activeSurahIndex);
   });
 
-  /* ── PAGE VIEW ── */
-  function renderPageView() {
-    const name = state.firstName.trim();
-    const stats = getGlobalStats();
-    pageViewTitle.textContent = possessive(name) + " Quran Diary";
-    const stats2 = document.getElementById('stats2');
-    if (stats2) stats2.innerHTML = `
-      <div class="stat"><strong>${stats.percent}%</strong><span>Overall</span></div>
-      <div class="stat"><strong>${stats.memorizedAyahs}</strong><span>Ayahs</span></div>
-      <div class="stat"><strong>${stats.completedSurahs}/114</strong><span>Surahs</span></div>
-    `;
-    const grid = document.getElementById('juzGrid');
-    grid.innerHTML = '';
-    JUZ_DATA.forEach((juz, idx) => {
-      const juzNum = idx + 1;
-      const complete = isJuzComplete(juzNum);
-      const tile = document.createElement('div');
-      tile.className = 'juz-tile' + (complete ? ' complete' : '');
-      tile.innerHTML = `<div class="juz-num">${juzNum}</div><div class="juz-label">Juz ${juzNum}</div>`;
-      tile.addEventListener('click', () => openJuz(juzNum));
-      grid.appendChild(tile);
-    });
-  }
-
-  function isJuzComplete(juzNum) {
-    const pages = getJuzPages(juzNum);
-    return pages.every(pg => isPageComplete(pg));
-  }
-
-  // Authoritative juz start pages — Madani Mushaf 15-line, 604 pages
-  // Source: surahquran.com, cross-checked with quran.com page metadata
-  const JUZ_START_PAGES = [
-    1,   // Juz 1  — Al-Fatiha 1:1
-    22,  // Juz 2  — Al-Baqarah 2:142
-    42,  // Juz 3  — Al-Baqarah 2:253
-    62,  // Juz 4  — Ali 'Imran 3:93
-    82,  // Juz 5  — An-Nisa 4:24
-    102, // Juz 6  — An-Nisa 4:148 (laa yuhibbu)
-    121, // Juz 7  — Al-Ma'idah 5:82
-    142, // Juz 8  — Al-An'am 6:111
-    162, // Juz 9  — Al-A'raf 7:88
-    182, // Juz 10 — Al-Anfal 8:41
-    201, // Juz 11 — At-Tawbah 9:93
-    222, // Juz 12 — Hud 11:6
-    242, // Juz 13 — Yusuf 12:53
-    262, // Juz 14 — Al-Hijr 15:1
-    282, // Juz 15 — Al-Isra 17:1
-    302, // Juz 16 — Al-Kahf 18:75
-    322, // Juz 17 — Al-Anbiya 21:1
-    342, // Juz 18 — Al-Mu'minun 23:1
-    362, // Juz 19 — Al-Furqan 25:21
-    382, // Juz 20 — An-Naml 27:56
-    402, // Juz 21 — Al-Ankabut 29:46
-    422, // Juz 22 — Al-Ahzab 33:31
-    442, // Juz 23 — Ya-Sin 36:28
-    462, // Juz 24 — Az-Zumar 39:32
-    482, // Juz 25 — Fussilat 41:47
-    502, // Juz 26 — Al-Ahqaf 46:1
-    522, // Juz 27 — Adh-Dhariyat 51:31
-    542, // Juz 28 — Al-Mujadila 58:1
-    562, // Juz 29 — Al-Mulk 67:1
-    582, // Juz 30 — An-Naba 78:1
-  ];
-
-  function getJuzPages(juzNum) {
-    const start = JUZ_START_PAGES[juzNum - 1];
-    const end   = juzNum === 30 ? 604 : JUZ_START_PAGES[juzNum] - 1;
-    const pages = [];
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
-  }
-
-  function isPageComplete(pageNum) {
-    return !!(state.pageMemorized && state.pageMemorized[String(pageNum)]);
-  }
-  function setPageComplete(pageNum, val) {
-    if (!state.pageMemorized) state.pageMemorized = {};
-    state.pageMemorized[String(pageNum)] = val;
-    saveState();
-  }
-
-  function openJuz(juzNum) {
-    activeJuz = juzNum;
-    pageViewScreen.style.display = 'none';
-    pageListScreen.style.display = 'block';
-    pageDetailScreen.classList.remove('active');
-
-    document.getElementById('pageListTitle').textContent = 'Juz ' + juzNum;
-    const pages = getJuzPages(juzNum);
-    const thumbs = document.getElementById('pageThumbs');
-    thumbs.innerHTML = '';
-    pages.forEach(pg => {
-      const complete = isPageComplete(pg);
-      const th = document.createElement('div');
-      th.className = 'page-thumb' + (complete ? ' complete' : '');
-      th.innerHTML = `<div class="page-num">${pg}</div><div class="page-sub">Page ${pg}</div>`;
-      th.addEventListener('click', () => openPageDetail(pg));
-      thumbs.appendChild(th);
-    });
-  }
-
-  document.getElementById('backToJuzBtn').addEventListener('click', () => {
-    pageListScreen.style.display = 'none';
-    pageViewScreen.style.display = 'block';
-    renderPageView();
-  });
-
-  document.getElementById('markJuzCompleteBtn').addEventListener('click', () => {
-    if (!activeJuz) return;
-    const pages = getJuzPages(activeJuz);
-    const allComplete = pages.every(p => isPageComplete(p));
-    pages.forEach(p => setPageComplete(p, !allComplete));
-    openJuz(activeJuz);
-  });
-
-  /* ══════════════════════════════════════════════════════════════════
-     PAGE VIEW — Image Scan System  (Phase 3b)
-     ────────────────────────────────────────────────────────────────
-     Scan source: static.quran.com/images/madani/pages/page{NNN}.png
-     King Fahd Complex Madani Mushaf (15-line), same as quran.com.
-     Pages are static images — no text rendering, no API calls for
-     line data. Highlight overlay = page-level memorized state.
-     Portrait: 1 page. Landscape: 2 pages side by side.
-     ══════════════════════════════════════════════════════════════════ */
-
-  const PAGE_RATIO = 17 / 24; // Madani Mushaf: 17cm × 24cm
-
-  function mushafScanUrl(pageNum) {
-    const n = String(pageNum).padStart(3, '0');
-    return 'https://static.quran.com/images/madani/pages/page' + n + '.png';
-  }
-
-  function sizeMushafPages() {
-    // Available space = viewport minus header (~42px) minus summary/hint (~36px)
-    const headerH = 42, footerH = 36;
-    const availH  = Math.max(160, window.innerHeight - headerH - footerH);
-    const availW  = window.innerWidth;
-    const isLandscape = window.matchMedia('(orientation: landscape)').matches;
-
-    if (isLandscape) {
-      // Two pages side by side with a small gap
-      const gap = 6;
-      const maxW = (availW - gap - 8) / 2;
-      const maxH = availH;
-      // Constrain by both dimensions keeping ratio
-      let w = Math.min(maxW, maxH * PAGE_RATIO);
-      let h = w / PAGE_RATIO;
-      if (h > maxH) { h = maxH; w = h * PAGE_RATIO; }
-      return { w: Math.floor(w), h: Math.floor(h), landscape: true };
-    } else {
-      // Single page — fill as much as possible
-      let w = Math.min(availW - 8, availH * PAGE_RATIO);
-      let h = w / PAGE_RATIO;
-      if (h > availH) { h = availH; w = h * PAGE_RATIO; }
-      return { w: Math.floor(w), h: Math.floor(h), landscape: false };
-    }
-  }
-
-  function applyPageSize(wrapEl, w, h) {
-    wrapEl.style.width  = w + 'px';
-    wrapEl.style.height = h + 'px';
-  }
-
-  async function openPageDetail(pageNum) {
-    activePage = pageNum;
-    pageListScreen.style.display = 'none';
-    pageDetailScreen.classList.add('active');
-    document.getElementById('pageDetailTitle').textContent = 'Page ' + pageNum;
-    const markBtn = document.getElementById('markPageCompleteBtn');
-    if (markBtn) markBtn.textContent = isPageComplete(pageNum) ? 'Mark Incomplete' : 'Mark Complete';
-    renderMushafPage();
-  }
-
-  function renderMushafPage() {
-    if (!activePage) return;
-    const isLandscape = window.matchMedia('(orientation: landscape)').matches;
-    const { w, h, landscape } = sizeMushafPages();
-
-    const wrapA = document.getElementById('mushafPageWrap');
-    const wrapB = document.getElementById('mushafPageWrapB');
-    const scanA = document.getElementById('mushafScanA');
-    const scanB = document.getElementById('mushafScanB');
-    const overlayA = document.getElementById('mushafOverlayA');
-    const overlayB = document.getElementById('mushafOverlayB');
-
-    // Size primary page
-    applyPageSize(wrapA, w, h);
-    scanA.src = mushafScanUrl(activePage);
-    overlayA.classList.toggle('active', isPageComplete(activePage));
-
-    // Facing page in landscape
-    if (landscape && activePage > 1) {
-      // Real Mushaf binding: odd pages are on the right, even on the left
-      // activePage on right (odd) or left (even) — show facing page opposite
-      const facingNum = activePage % 2 === 0 ? activePage - 1 : activePage + 1;
-      if (facingNum >= 1 && facingNum <= 604) {
-        wrapB.style.display = '';
-        applyPageSize(wrapB, w, h);
-        scanB.src = mushafScanUrl(facingNum);
-        overlayB.classList.toggle('active', isPageComplete(facingNum));
-      } else {
-        wrapB.style.display = 'none';
-      }
-    } else {
-      wrapB.style.display = 'none';
-    }
-
-    updateMushafSummary();
-  }
-
-  function updateMushafSummary() {
-    const sumEl = document.getElementById('mushafSummary');
-    if (!activePage) { sumEl.textContent = ''; return; }
-    const complete = isPageComplete(activePage);
-    sumEl.textContent = complete ? '✓ Page memorized' : 'Tap the page or drag to mark as memorized';
-  }
-
-  /* ══════════════════════════════════════════════════════════════════
-     PAGE VIEW GESTURE SYSTEM  (Phase 3b — image-based)
-     ────────────────────────────────────────────────────────────────
-     The highlight overlay is page-level (whole page = memorized or not).
-     Tap or drag anywhere on the page to toggle memorized state.
-     Tap left edge strip  → next page
-     Tap right edge strip → previous page
-     Fast horizontal swipe anywhere → navigate
-     ══════════════════════════════════════════════════════════════════ */
-
-  // Toggle the active page's memorized state, update overlay + button
-  function togglePageMemorized(pageNum, forceState) {
-    const newState = forceState !== undefined ? forceState : !isPageComplete(pageNum);
-    setPageComplete(pageNum, newState);
-    const overlay = pageNum === activePage
-      ? document.getElementById('mushafOverlayA')
-      : document.getElementById('mushafOverlayB');
-    if (overlay) {
-      overlay.classList.remove('dragging');
-      overlay.classList.toggle('active', newState);
-    }
-    const markBtn = document.getElementById('markPageCompleteBtn');
-    if (markBtn && pageNum === activePage) {
-      markBtn.textContent = newState ? 'Mark Incomplete' : 'Mark Complete';
-    }
-    updateMushafSummary();
-    // Refresh juz list if visible
-    if (activeJuz) openJuz(activeJuz);
-  }
-
-  // Set up tap + drag gesture on a page wrap element
-  function setupPageWrapGestures(wrapEl, getPageNum) {
-    let startX = 0, startY = 0, startTime = 0;
-    let dragging = false, dragStarted = false;
-    let originalState = false;
-
-    wrapEl.addEventListener('touchstart', e => {
-      if (e.touches.length > 1) return;
-      const t = e.touches[0];
-      startX = t.clientX; startY = t.clientY; startTime = Date.now();
-      dragging = false; dragStarted = false;
-      originalState = isPageComplete(getPageNum());
-    }, { passive: true });
-
-    wrapEl.addEventListener('touchmove', e => {
-      if (e.touches.length > 1) return;
-      const t  = e.touches[0];
-      const dx = Math.abs(t.clientX - startX);
-      const dy = Math.abs(t.clientY - startY);
-      if (!dragStarted && (dx > 8 || dy > 8)) {
-        dragStarted = true;
-        dragging = true;
-        // Show drag-in-progress overlay
-        const overlay = getPageNum() === activePage
-          ? document.getElementById('mushafOverlayA')
-          : document.getElementById('mushafOverlayB');
-        if (overlay) overlay.classList.add('dragging');
-      }
-    }, { passive: true });
-
-    wrapEl.addEventListener('touchend', e => {
-      const t = e.changedTouches[0];
-      const dx  = t.clientX - startX;
-      const dy  = Math.abs(t.clientY - startY);
-      const dt  = Date.now() - startTime;
-      const adx = Math.abs(dx);
-
-      // Remove dragging highlight
-      const overlay = getPageNum() === activePage
-        ? document.getElementById('mushafOverlayA')
-        : document.getElementById('mushafOverlayB');
-      if (overlay) overlay.classList.remove('dragging');
-
-      // Fast horizontal swipe → navigate (handled by swipe listener below, skip here)
-      if (adx > 50 && adx > dy * 2 && dt < 320) return;
-
-      // Tap or drag on page content → toggle memorized
-      togglePageMemorized(getPageNum());
-    }, { passive: true });
-
-    // Mouse support
-    wrapEl.addEventListener('click', () => {
-      togglePageMemorized(getPageNum());
-    });
-  }
-
-  document.getElementById('backToPageListBtn').addEventListener('click', () => {
-    pageDetailScreen.classList.remove('active');
-    pageListScreen.style.display = 'block';
-    if (activeJuz) openJuz(activeJuz);
-  });
-
-  document.getElementById('markPageCompleteBtn').addEventListener('click', () => {
-    if (!activePage) return;
-    togglePageMemorized(activePage);
-  });
-
-  // Wire up gesture handlers for both page wraps
-  setupPageWrapGestures(
-    document.getElementById('mushafPageWrap'),
-    () => activePage
-  );
-  setupPageWrapGestures(
-    document.getElementById('mushafPageWrapB'),
-    () => {
-      // Facing page number
-      if (!activePage) return activePage;
-      return activePage % 2 === 0 ? activePage - 1 : activePage + 1;
-    }
-  );
-
-  /* ── PAGE NAVIGATION ── */
-  function navigateToPage(pageNum) {
-    if (pageNum < 1 || pageNum > 604) return;
-    openPageDetail(pageNum);
-  }
-
-  /* ── TAP ZONES: narrow left/right strips ──
-     Left = next page (advance in Arabic reading direction)
-     Right = previous page
-  ── */
-  (function() {
-    const tapLeft  = document.getElementById('tapLeft');
-    const tapRight = document.getElementById('tapRight');
-    if (!tapLeft || !tapRight) return;
-
-    function flashZone(el) {
-      el.classList.add('flash');
-      setTimeout(() => el.classList.remove('flash'), 200);
-    }
-
-    function addTapHandler(el, handler) {
-      let tx = 0, ty = 0;
-      el.addEventListener('touchstart', e => {
-        tx = e.touches[0].clientX; ty = e.touches[0].clientY;
-      }, { passive: true });
-      el.addEventListener('touchend', e => {
-        const dx = Math.abs(e.changedTouches[0].clientX - tx);
-        const dy = Math.abs(e.changedTouches[0].clientY - ty);
-        if (dx < 14 && dy < 14) { e.stopPropagation(); handler(); }
-      }, { passive: true });
-      el.addEventListener('click', e => { e.stopPropagation(); handler(); });
-    }
-
-    addTapHandler(tapLeft,  () => { if (activePage < 604) { flashZone(tapLeft);  navigateToPage(activePage + 1); } });
-    addTapHandler(tapRight, () => { if (activePage > 1)   { flashZone(tapRight); navigateToPage(activePage - 1); } });
-  })();
-
-  /* ── SWIPE TO NAVIGATE ── */
-  (function() {
-    const wrap = document.getElementById('mushafSwipeWrap');
-    if (!wrap) return;
-    let sx = 0, sy = 0, st = 0;
-    wrap.addEventListener('touchstart', e => {
-      sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now();
-    }, { passive: true });
-    wrap.addEventListener('touchend', e => {
-      const dx  = e.changedTouches[0].clientX - sx;
-      const dy  = Math.abs(e.changedTouches[0].clientY - sy);
-      const adx = Math.abs(dx);
-      const dt  = Date.now() - st;
-      if (dt < 320 && adx > 55 && adx > dy * 2) {
-        if (dx < 0 && activePage < 604) navigateToPage(activePage + 1);
-        if (dx > 0 && activePage > 1)   navigateToPage(activePage - 1);
-      }
-    }, { passive: true });
-  })();
-
-  /* ── ORIENTATION CHANGE ── */
-  window.addEventListener('orientationchange', () => {
-    if (activePage && pageDetailScreen.classList.contains('active')) setTimeout(renderMushafPage, 120);
-  });
-  window.matchMedia('(orientation: landscape)').addEventListener('change', () => {
-    if (activePage && pageDetailScreen.classList.contains('active')) setTimeout(renderMushafPage, 120);
-  });
 
   /* ── GEAR / SETTINGS ── */
   function openSettings() {
     buildLangSelects();
-    applyViewMode(state.viewMode);
     settingsPanel.classList.add('open');
   }
   function closeSettings() {
     settingsPanel.classList.remove('open');
-    // Re-render current view with new settings
-    if (state.viewMode === 'page') {
-      if (pageDetailScreen.classList.contains('active')) { /* keep current */ }
-      else if (pageListScreen.style.display !== 'none') { if (activeJuz) openJuz(activeJuz); }
-      else { renderPageView(); }
-    } else {
-      renderSurahView();
-    }
+    renderSurahView();
   }
   gearBtn.addEventListener('click', openSettings);
-  gearBtn2.addEventListener('click', openSettings);
   document.getElementById('settingsCloseBtn').addEventListener('click', closeSettings);
 
   document.getElementById('resetDataBtn').addEventListener('click', function() {
     if (!confirm('Reset all progress and return to the start? This cannot be undone.')) return;
     state = { ...DEFAULT_STATE };
-    surahCache = {}; transCache = {}; pageCache = {};
+    surahCache = {}; transCache = {};
     saveState();
     settingsPanel.classList.remove('open');
     applyTheme('parchment');
     applyScript('uthmani');
     appScreen.classList.add('hidden');
-    pageViewScreen.style.display = 'none';
-    pageListScreen.style.display = 'none';
-    pageDetailScreen.classList.remove('active');
     feedbackFab.classList.add('hidden');
     landingScreen.classList.remove('hidden');
     initLanding();
@@ -2530,39 +1895,16 @@
       saveState();
     });
   });
-  document.querySelectorAll('#settingsViewMode .view-mode-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.viewMode = btn.dataset.view;
-      applyViewMode(state.viewMode);
-      saveState();
-      closeSettings();
-      // Switch view
-      appScreen.classList.add('hidden');
-      pageViewScreen.style.display = 'none';
-      pageListScreen.style.display = 'none';
-      pageDetailScreen.classList.remove('active');
-      if (state.viewMode === 'page') {
-        pageViewScreen.style.display = 'block';
-        renderPageView();
-      } else {
-        appScreen.classList.remove('hidden');
-        renderSurahView();
-      }
-    });
-  });
 
   /* ── CLEAR DATA ── */
   clearDataBtn.addEventListener("click", function() {
     if (!confirm("Clear your name and all memorization progress on this device?")) return;
     state = { ...DEFAULT_STATE };
-    surahCache = {}; transCache = {}; pageCache = {};
+    surahCache = {}; transCache = {};
     saveState();
     applyTheme("parchment");
     applyScript("uthmani");
     appScreen.classList.add('hidden');
-    pageViewScreen.style.display = 'none';
-    pageListScreen.style.display = 'none';
-    pageDetailScreen.classList.remove('active');
     feedbackFab.classList.add('hidden');
     landingScreen.classList.remove('hidden');
     initLanding();
@@ -2772,11 +2114,9 @@
         ...DEFAULT_STATE,
         firstName:    saved.firstName    || "",
         memorized:    saved.memorized    || {},
-        pageMemorized:saved.pageMemorized|| {},
         script:       saved.script       || "uthmani",
         theme:        saved.theme        || "parchment",
         lang:         saved.lang         || "en",
-        viewMode:     saved.viewMode     || "surah",
         landingSeen:  saved.landingSeen  || false,
         tutorialSeen: saved.tutorialSeen || false
       };
@@ -2799,6 +2139,6 @@
   boot();
   </script>
 
-  <!-- Version: 2.0.0 -->
+  <!-- Version: 2.1.0 -->
 </body>
 </html>
